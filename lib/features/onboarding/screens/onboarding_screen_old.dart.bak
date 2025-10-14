@@ -1,0 +1,511 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../bloc/onboarding_bloc.dart';
+import '../bloc/onboarding_event.dart';
+import '../bloc/onboarding_state.dart';
+import '../widgets/full_name_step.dart';
+import '../widgets/sells_products_step.dart';
+import '../widgets/monthly_revenue_step.dart';
+import '../widgets/email_address_step.dart';
+
+class OnboardingScreen extends StatelessWidget {
+  final bool useMockData;
+
+  const OnboardingScreen({
+    super.key,
+    this.useMockData = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => OnboardingBloc()
+        ..add(InitializeOnboarding(useMockData: useMockData)),
+      child: const _OnboardingView(),
+    );
+  }
+}
+
+class _OnboardingView extends StatelessWidget {
+  const _OnboardingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<OnboardingBloc, OnboardingState>(
+      listener: (context, state) {
+        if (state is OnboardingCompleted) {
+          // Navigate to dashboard when onboarding is completed
+          context.go('/');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: BlocBuilder<OnboardingBloc, OnboardingState>(
+            builder: (context, state) {
+              if (state is OnboardingInProgress) {
+                return Column(
+                  children: [
+                    // Header with illustration
+                    _buildHeader(context),
+                    
+                    // Progress indicator
+                    _buildProgressIndicator(state),
+                    
+                    // Main content area
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title
+                            const Text(
+                              'Onboarding',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFFF59E0B),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'A few quick questions to\ncustomize your experience.',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF111827),
+                                height: 1.3,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            
+                            // Steps list
+                            _buildStepsList(context, state),
+                            
+                            const SizedBox(height: 32),
+                            
+                            // Current step content
+                            _buildCurrentStep(context, state),
+                            
+                            const SizedBox(height: 32),
+                            
+                            // Helper text
+                            _buildHelperText(state),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    // Bottom navigation
+                    _buildBottomNavigation(context, state),
+                  ],
+                );
+              }
+              
+              // Loading state
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFDCFCE7),
+            Color(0xFFBFDBFE),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          // Emoji illustration (placeholder for actual illustration)
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Text(
+                '🛍️',
+                style: TextStyle(fontSize: 40),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.shopping_bag,
+                  color: Color(0xFF10B981),
+                  size: 16,
+                ),
+                SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ZareShop',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    Text(
+                      'Vendor Portal',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator(OnboardingInProgress state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                '${state.currentStep + 1}/${state.totalSteps}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${(state.progress * 100).toInt()}% Complete',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF10B981),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              tween: Tween(begin: 0.0, end: state.progress),
+              builder: (context, value, child) {
+                return LinearProgressIndicator(
+                  value: value,
+                  minHeight: 8,
+                  backgroundColor: const Color(0xFFE5E7EB),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF10B981),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepsList(BuildContext context, OnboardingInProgress state) {
+    final steps = [
+      {'icon': Icons.person_outline, 'title': 'Full Name'},
+      {'icon': Icons.store_outlined, 'title': 'Do you sell products online?'},
+      {'icon': Icons.monetization_on_outlined, 'title': 'Average Monthly Revenue'},
+      {'icon': Icons.email_outlined, 'title': 'Email Address'},
+    ];
+
+    return Column(
+      children: List.generate(steps.length, (index) {
+        final isCompleted = state.data.isStepCompleted(index);
+        final isCurrent = state.currentStep == index;
+        final isAccessible = index <= state.currentStep || isCompleted;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: GestureDetector(
+            onTap: isAccessible
+                ? () {
+                    context.read<OnboardingBloc>().add(GoToStep(index));
+                  }
+                : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isCurrent
+                    ? const Color(0xFF10B981).withOpacity(0.1)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isCurrent
+                      ? const Color(0xFF10B981)
+                      : isCompleted
+                          ? const Color(0xFF10B981).withOpacity(0.3)
+                          : const Color(0xFFE5E7EB),
+                  width: isCurrent ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isCompleted
+                          ? const Color(0xFF10B981)
+                          : isCurrent
+                              ? const Color(0xFF10B981).withOpacity(0.2)
+                              : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: isCompleted
+                          ? const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 18,
+                            )
+                          : Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isCurrent
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFF9CA3AF),
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      steps[index]['title'] as String,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w500,
+                        color: isAccessible
+                            ? const Color(0xFF111827)
+                            : const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildCurrentStep(BuildContext context, OnboardingInProgress state) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.1, 0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        key: ValueKey<int>(state.currentStep),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9FAFB),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+          ),
+        ),
+        child: _getStepWidget(state.currentStep),
+      ),
+    );
+  }
+
+  Widget _getStepWidget(int step) {
+    switch (step) {
+      case 0:
+        return const FullNameStep();
+      case 1:
+        return const SellsProductsStep();
+      case 2:
+        return const MonthlyRevenueStep();
+      case 3:
+        return const EmailAddressStep();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildHelperText(OnboardingInProgress state) {
+    String helperText;
+    switch (state.currentStep) {
+      case 0:
+        helperText = "Let's start with your Good name!";
+        break;
+      case 1:
+        helperText = 'This helps us understand your business model';
+        break;
+      case 2:
+        helperText = 'We use this to provide relevant insights';
+        break;
+      case 3:
+        helperText = 'Almost done! Just need your email';
+        break;
+      default:
+        helperText = '';
+    }
+
+    return Row(
+      children: [
+        const Icon(
+          Icons.info_outline,
+          color: Color(0xFF6B7280),
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            helperText,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF6B7280),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavigation(BuildContext context, OnboardingInProgress state) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Back button
+          if (!state.isFirstStep)
+            OutlinedButton(
+              onPressed: () {
+                context.read<OnboardingBloc>().add(const PreviousStep());
+              },
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                side: const BorderSide(color: Color(0xFFE5E7EB)),
+              ),
+              child: const Text(
+                'Back',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
+                ),
+              ),
+            ),
+          const SizedBox(width: 12),
+          
+          // Next/Finish button
+          Expanded(
+            child: ElevatedButton(
+              onPressed: state.canProceed
+                  ? () {
+                      context.read<OnboardingBloc>().add(const NextStep());
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                disabledBackgroundColor: const Color(0xFFE5E7EB),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                state.isLastStep ? 'Finish' : 'Continue',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: state.canProceed ? Colors.white : const Color(0xFF9CA3AF),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

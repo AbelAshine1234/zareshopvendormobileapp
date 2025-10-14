@@ -6,11 +6,12 @@ import '../../features/products/screens/products_screen.dart';
 import '../../features/wallet/screens/wallet_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/sales/screens/sales_report_screen.dart';
+import '../../features/onboarding/screens/onboarding_screen.dart';
 import 'main_navigation.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/onboarding',
     routes: [
       ShellRoute(
         builder: (context, state, child) {
@@ -73,6 +74,14 @@ class AppRouter {
         path: '/sales-report',
         name: 'salesReport',
         builder: (context, state) => const SalesReportScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        name: 'onboarding',
+        builder: (context, state) {
+          final useMockData = state.uri.queryParameters['mock'] == 'true';
+          return OnboardingScreen(useMockData: useMockData);
+        },
       ),
     ],
   );
