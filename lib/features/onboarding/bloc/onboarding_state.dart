@@ -22,7 +22,7 @@ class OnboardingInProgress extends OnboardingState {
   const OnboardingInProgress({
     required this.currentStep,
     required this.data,
-    this.totalSteps = 4,
+    this.totalSteps = 6,
   });
 
   OnboardingInProgress copyWith({

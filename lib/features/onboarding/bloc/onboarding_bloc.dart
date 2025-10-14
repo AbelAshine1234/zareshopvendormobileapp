@@ -9,11 +9,34 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<NextStep>(_onNextStep);
     on<PreviousStep>(_onPreviousStep);
     on<GoToStep>(_onGoToStep);
-    on<UpdateFullName>(_onUpdateFullName);
-    on<UpdateSellsProductsOnline>(_onUpdateSellsProductsOnline);
-    on<UpdateMonthlyRevenue>(_onUpdateMonthlyRevenue);
-    on<UpdateEmailAddress>(_onUpdateEmailAddress);
     on<CompleteOnboarding>(_onCompleteOnboarding);
+    
+    // Step 1: Phone Number
+    on<UpdatePhoneNumber>(_onUpdatePhoneNumber);
+    on<UpdateVendorType>(_onUpdateVendorType);
+    
+    // Step 2: OTP
+    on<UpdateOTP>(_onUpdateOTP);
+    on<ResendOTP>(_onResendOTP);
+    
+    // Step 3: Basic Info
+    on<UpdateFullName>(_onUpdateFullName);
+    on<UpdateBusinessName>(_onUpdateBusinessName);
+    on<UpdateEmail>(_onUpdateEmail);
+    on<UpdateLanguagePreference>(_onUpdateLanguagePreference);
+    on<UpdateAddress>(_onUpdateAddress);
+    on<UpdateBusinessDescription>(_onUpdateBusinessDescription);
+    on<UpdateCategory>(_onUpdateCategory);
+    
+    // Step 4: Documents
+    on<UpdateFaydaIdNumber>(_onUpdateFaydaIdNumber);
+    on<UpdateBusinessLicenseNumber>(_onUpdateBusinessLicenseNumber);
+    on<UpdateTaxId>(_onUpdateTaxId);
+    
+    // Step 5: Payout
+    on<UpdatePayoutMethod>(_onUpdatePayoutMethod);
+    on<UpdateBankAccount>(_onUpdateBankAccount);
+    on<UpdateMobileWallet>(_onUpdateMobileWallet);
   }
 
   void _onInitializeOnboarding(
@@ -25,10 +48,18 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       emit(const OnboardingInProgress(
         currentStep: 0,
         data: OnboardingData(
+          phoneNumber: '+251912345678',
+          vendorType: 'individual',
+          otp: '123456',
           fullName: 'Arthur Taylor',
-          sellsProductsOnline: true,
-          monthlyRevenue: '5k_10k',
-          emailAddress: 'arthur.taylor@zareshop.com',
+          email: 'arthur.taylor@zareshop.com',
+          street: 'Bole Road',
+          city: 'Addis Ababa',
+          category: 'electronics',
+          businessDescription: 'Selling quality electronics',
+          faydaIdNumber: 'FYD123456',
+          preferredPayoutMethod: 'wallet',
+          mobileWalletNumber: '+251912345678',
         ),
       ));
     } else {
@@ -105,10 +136,42 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
-  void _onUpdateFullName(
-    UpdateFullName event,
-    Emitter<OnboardingState> emit,
-  ) {
+  // Step 1: Phone Number Events
+  void _onUpdatePhoneNumber(UpdatePhoneNumber event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(phoneNumber: event.phoneNumber),
+      ));
+    }
+  }
+
+  void _onUpdateVendorType(UpdateVendorType event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(vendorType: event.vendorType),
+      ));
+    }
+  }
+
+  // Step 2: OTP Events
+  void _onUpdateOTP(UpdateOTP event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(otp: event.otp),
+      ));
+    }
+  }
+
+  void _onResendOTP(ResendOTP event, Emitter<OnboardingState> emit) {
+    // TODO: Implement OTP resend logic
+    // This would typically call a backend service to resend OTP
+  }
+
+  // Step 3: Basic Info Events
+  void _onUpdateFullName(UpdateFullName event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
@@ -117,40 +180,120 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
-  void _onUpdateSellsProductsOnline(
-    UpdateSellsProductsOnline event,
-    Emitter<OnboardingState> emit,
-  ) {
+  void _onUpdateBusinessName(UpdateBusinessName event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(businessName: event.businessName),
+      ));
+    }
+  }
+
+  void _onUpdateEmail(UpdateEmail event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(email: event.email),
+      ));
+    }
+  }
+
+  void _onUpdateLanguagePreference(UpdateLanguagePreference event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(languagePreference: event.languagePreference),
+      ));
+    }
+  }
+
+  void _onUpdateAddress(UpdateAddress event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
         data: currentState.data.copyWith(
-          sellsProductsOnline: event.sellsProductsOnline,
+          street: event.street,
+          city: event.city,
+          region: event.region,
+          zone: event.zone,
         ),
       ));
     }
   }
 
-  void _onUpdateMonthlyRevenue(
-    UpdateMonthlyRevenue event,
-    Emitter<OnboardingState> emit,
-  ) {
+  void _onUpdateBusinessDescription(UpdateBusinessDescription event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
-        data: currentState.data.copyWith(monthlyRevenue: event.monthlyRevenue),
+        data: currentState.data.copyWith(businessDescription: event.businessDescription),
       ));
     }
   }
 
-  void _onUpdateEmailAddress(
-    UpdateEmailAddress event,
-    Emitter<OnboardingState> emit,
-  ) {
+  void _onUpdateCategory(UpdateCategory event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
-        data: currentState.data.copyWith(emailAddress: event.emailAddress),
+        data: currentState.data.copyWith(category: event.category),
+      ));
+    }
+  }
+
+  // Step 4: Documents Events
+  void _onUpdateFaydaIdNumber(UpdateFaydaIdNumber event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(faydaIdNumber: event.faydaIdNumber),
+      ));
+    }
+  }
+
+  void _onUpdateBusinessLicenseNumber(UpdateBusinessLicenseNumber event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(businessLicenseNumber: event.businessLicenseNumber),
+      ));
+    }
+  }
+
+  void _onUpdateTaxId(UpdateTaxId event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(taxId: event.taxId),
+      ));
+    }
+  }
+
+  // Step 5: Payout Events
+  void _onUpdatePayoutMethod(UpdatePayoutMethod event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(preferredPayoutMethod: event.payoutMethod),
+      ));
+    }
+  }
+
+  void _onUpdateBankAccount(UpdateBankAccount event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(
+          bankAccountNumber: event.bankAccountNumber,
+          bankName: event.bankName,
+        ),
+      ));
+    }
+  }
+
+  void _onUpdateMobileWallet(UpdateMobileWallet event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(mobileWalletNumber: event.mobileWalletNumber),
       ));
     }
   }
