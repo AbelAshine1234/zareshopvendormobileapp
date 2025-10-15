@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' show InputElement, FileReader, document;
+import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -1314,62 +1314,49 @@ class _OnboardingViewState extends State<_OnboardingView>
   }
 
   Future<void> _pickImage(Function(String) onImagePicked) async {
-    if (kIsWeb) {
-      // Web-specific image picker
-      try {
-        // Create file input element
-        final input = document.createElement('input') as InputElement;
-        input.type = 'file';
-        input.accept = 'image/*';
-        
-        // Listen for file selection
-        input.onChange.listen((event) {
-          final files = input.files;
-          if (files != null && files.isNotEmpty) {
-            final file = files[0];
-            final reader = FileReader();
-            
-            reader.onLoadEnd.listen((event) {
-              if (mounted) {
-                final dataUrl = reader.result as String;
-                onImagePicked(dataUrl);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${file.name} selected (${(file.size / 1024).toStringAsFixed(1)} KB)'),
-                    backgroundColor: const Color(0xFF10B981),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
-            });
-            
-            reader.readAsDataUrl(file);
-          }
-        });
-        
-        // Trigger file selection
-        input.click();
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error picking image: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+    try {
+      final picker = ImagePicker();
+      final XFile? xfile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 2000,
+        maxHeight: 2000,
+        imageQuality: 85,
+      );
+
+      if (xfile == null) return;
+
+      // If a file path is available (mobile/desktop), use it. On web, path may be empty.
+      if (xfile.path.isNotEmpty) {
+        onImagePicked(xfile.path);
+      } else {
+        // Web: convert to data URL
+        final bytes = await xfile.readAsBytes();
+        final ext = xfile.name.contains('.') ? xfile.name.split('.').last.toLowerCase() : 'png';
+        final mime = (ext == 'jpg') ? 'image/jpeg' : 'image/$ext';
+        final dataUrl = 'data:$mime;base64,${base64Encode(bytes)}';
+        onImagePicked(dataUrl);
       }
-    } else {
-      // Mobile fallback
+
       if (mounted) {
+        final sizeBytes = await xfile.length();
+        final kb = (sizeBytes / 1024).toStringAsFixed(1);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Add image_picker package for mobile support'),
-            backgroundColor: Color(0xFF10B981),
+          SnackBar(
+            content: Text('${xfile.name} selected ($kb KB)'),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
-      onImagePicked('/simulated/path/image.jpg');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

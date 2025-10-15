@@ -6,6 +6,9 @@ A comprehensive Flutter vendor management application built with **BLoC architec
 ![Dart](https://img.shields.io/badge/Dart-3.0-blue)
 ![BLoC](https://img.shields.io/badge/State%20Management-BLoC-purple)
 ![License](https://img.shields.io/badge/License-MIT-green)
+flutter emulators --launch Medium_Phone_API_36.1
+# In another terminal, start emulator with flags (if not auto-launched by Studio/CLI):
+emulator -avd Medium_Phone_API_36.1 -accel on -gpu host -no-boot-anim -camera-back none -camera-front none
 
 ## ✨ Features
 
