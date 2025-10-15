@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer' as developer;
 import '../models/onboarding_data.dart';
 import 'onboarding_event.dart';
 import 'onboarding_state.dart';
+import '../../../core/services/api_service.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   OnboardingBloc() : super(const OnboardingInitial()) {
@@ -74,7 +76,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   void _onNextStep(
     NextStep event,
     Emitter<OnboardingState> emit,
-  ) {
+  ) async {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       
@@ -83,11 +85,118 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         return;
       }
 
+      // Handle Step 0 → Step 1: Register user and send OTP
+      if (currentState.currentStep == 0) {
+        print('📞 Starting registration...');
+        developer.log('📞 Starting registration...', name: 'OnboardingBloc');
+        emit(const OnboardingLoading());
+        
+        try {
+          final vendorType = currentState.data.vendorType;
+          final phoneNumber = currentState.data.phoneNumber;
+          
+          print('📝 Registration Details:');
+          print('   Vendor Type: $vendorType');
+          print('   Phone: $phoneNumber');
+          developer.log(
+            '📝 Registration Details:\n'
+            '   Vendor Type: $vendorType\n'
+            '   Phone: $phoneNumber',
+            name: 'OnboardingBloc',
+          );
+          
+          // Get name from basic info or use phone as fallback
+          final name = currentState.data.fullName.isNotEmpty 
+              ? currentState.data.fullName 
+              : phoneNumber;
+          
+          // Create a temporary password (user will set it later or it can be sent via SMS)
+          final tempPassword = 'Temp@${phoneNumber.replaceAll('+', '')}123';
+          
+          print('🔑 Generated temp password: $tempPassword');
+          developer.log('🔑 Generated temp password: $tempPassword', name: 'OnboardingBloc');
+          
+          Map<String, dynamic> result;
+          
+          // Call appropriate registration endpoint based on vendor type
+          if (vendorType == 'individual') {
+            print('🚀 Calling register-client API...');
+            developer.log('🚀 Calling register-client API...', name: 'OnboardingBloc');
+            // Register as CLIENT
+            result = await ApiService.registerClient(
+              name: name,
+              phoneNumber: phoneNumber,
+              password: tempPassword,
+              email: currentState.data.email,
+            );
+          } else {
+            print('🚀 Calling register-vendor-owner API...');
+            developer.log('🚀 Calling register-vendor-owner API...', name: 'OnboardingBloc');
+            // Register as VENDOR_OWNER
+            result = await ApiService.registerVendorOwner(
+              name: name,
+              phoneNumber: phoneNumber,
+              password: tempPassword,
+              email: currentState.data.email,
+            );
+          }
+          
+          print('📥 API Response: $result');
+          developer.log('📥 API Response: $result', name: 'OnboardingBloc');
+          
+          if (result['success'] == true) {
+            print('✅ Registration successful! Moving to OTP step...');
+            developer.log('✅ Registration successful! Moving to OTP step...', name: 'OnboardingBloc');
+            // Registration successful, OTP sent
+            emit(currentState.copyWith(currentStep: 1));
+          } else {
+            print('❌ Registration failed: ${result['error']}');
+            developer.log('❌ Registration failed: ${result['error']}', name: 'OnboardingBloc');
+            // Registration failed
+            emit(OnboardingError(result['error'] ?? 'Registration failed'));
+            emit(currentState); // Return to current state
+          }
+        } catch (e) {
+          print('💥 Exception during registration: $e');
+          developer.log('💥 Exception during registration: $e', name: 'OnboardingBloc', error: e);
+          emit(OnboardingError('Network error: ${e.toString()}'));
+          emit(currentState); // Return to current state
+        }
+        return;
+      }
+
+      // Handle Step 1 → Step 2: Verify OTP
+      if (currentState.currentStep == 1) {
+        emit(const OnboardingLoading());
+        
+        try {
+          final result = await ApiService.verifyOtp(
+            phoneNumber: currentState.data.phoneNumber,
+            code: currentState.data.otp,
+          );
+          
+          if (result['success'] == true) {
+            // OTP verified successfully
+            emit(currentState.copyWith(currentStep: 2));
+          } else {
+            // OTP verification failed - show error
+            print('❌ OTP Error: ${result['error']}');
+            emit(OnboardingError(result['error'] ?? 'Invalid OTP'));
+            emit(currentState); // Return to current state
+          }
+        } catch (e) {
+          print('❌ Network Error: ${e.toString()}');
+          emit(OnboardingError('Network error: ${e.toString()}'));
+          emit(currentState); // Return to current state
+        }
+        return;
+      }
+
       // Check if it's the last step
       if (currentState.isLastStep) {
         emit(OnboardingCompleted(currentState.data));
       } else {
-        // Move to next step
+        // Move to next step (for other steps)
         emit(currentState.copyWith(
           currentStep: currentState.currentStep + 1,
         ));
@@ -165,9 +274,33 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
-  void _onResendOTP(ResendOTP event, Emitter<OnboardingState> emit) {
-    // TODO: Implement OTP resend logic
-    // This would typically call a backend service to resend OTP
+  void _onResendOTP(ResendOTP event, Emitter<OnboardingState> emit) async {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      
+      developer.log('📲 Resending OTP to ${currentState.data.phoneNumber}...', name: 'OnboardingBloc');
+      
+      try {
+        final result = await ApiService.resendOtp(
+          phoneNumber: currentState.data.phoneNumber,
+        );
+        
+        developer.log('📥 Resend OTP Response: $result', name: 'OnboardingBloc');
+        
+        if (result['success'] != true) {
+          developer.log('❌ Failed to resend OTP: ${result['error']}', name: 'OnboardingBloc');
+          emit(OnboardingError(result['error'] ?? 'Failed to resend OTP'));
+          emit(currentState); // Return to current state
+        } else {
+          developer.log('✅ OTP resent successfully!', name: 'OnboardingBloc');
+        }
+        // If successful, just stay on current state (OTP has been resent)
+      } catch (e) {
+        developer.log('💥 Exception during resend OTP: $e', name: 'OnboardingBloc', error: e);
+        emit(OnboardingError('Network error: ${e.toString()}'));
+        emit(currentState); // Return to current state
+      }
+    }
   }
 
   // Step 3: Basic Info Events

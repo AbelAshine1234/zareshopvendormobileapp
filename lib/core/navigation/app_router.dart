@@ -7,11 +7,13 @@ import '../../features/wallet/screens/wallet_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/sales/screens/sales_report_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/forgot_password_screen.dart';
 import 'main_navigation.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/onboarding',
+    initialLocation: '/login',
     routes: [
       ShellRoute(
         builder: (context, state, child) {
@@ -82,6 +84,16 @@ class AppRouter {
           final useMockData = state.uri.queryParameters['mock'] == 'true';
           return OnboardingScreen(useMockData: useMockData);
         },
+      ),
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: 'forgotPassword',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
     ],
   );

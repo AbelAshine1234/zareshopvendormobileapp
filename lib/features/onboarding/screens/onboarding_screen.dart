@@ -142,6 +142,16 @@ class _OnboardingViewState extends State<_OnboardingView>
         if (state is OnboardingCompleted) {
           context.go('/');
         }
+        // Show error messages
+        if (state is OnboardingError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
         // Start OTP timer when reaching OTP step
         if (state is OnboardingInProgress && state.currentStep == 1) {
           if (_otpCountdown == 60 && _otpTimer == null) {

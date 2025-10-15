@@ -57,6 +57,11 @@ class OnboardingCompleted extends OnboardingState {
   List<Object?> get props => [data];
 }
 
+/// Loading state
+class OnboardingLoading extends OnboardingState {
+  const OnboardingLoading();
+}
+
 /// Error state
 class OnboardingError extends OnboardingState {
   final String message;

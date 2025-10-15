@@ -10,6 +10,9 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String orderDetail = '/order/:id';
   static const String salesReport = '/sales-report';
+  static const String login = '/login';
+  static const String forgotPassword = '/forgot-password';
+  static const String onboarding = '/onboarding';
 }
 
 /// Extension methods for easier navigation
