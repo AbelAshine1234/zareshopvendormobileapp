@@ -7,28 +7,68 @@ A multi-step onboarding screen for ZareShop Vendor App with BLoC architecture an
 ```
 onboarding/
 ├── bloc/
-│   ├── onboarding_bloc.dart      # Main BLoC logic
-│   ├── onboarding_event.dart     # All onboarding events
-│   └── onboarding_state.dart     # All onboarding states
+│   ├── onboarding_bloc.dart           # Main BLoC logic
+│   ├── onboarding_event.dart          # All onboarding events
+│   └── onboarding_state.dart          # All onboarding states
 ├── models/
-│   └── onboarding_data.dart      # Data models
+│   └── onboarding_data.dart           # Data models
 ├── screens/
-│   └── onboarding_screen.dart    # Main screen
-├── widgets/
-│   ├── full_name_step.dart       # Step 1: Full Name input
-│   ├── sells_products_step.dart  # Step 2: Yes/No selection
-│   ├── monthly_revenue_step.dart # Step 3: Revenue selection
-│   └── email_address_step.dart   # Step 4: Email input
-└── README.md
+│   └── onboarding_screen.dart         # Main screen (refactored)
+├── widgets/                            # ✨ Modular Components
+│   ├── animated_checkbox.dart         # Checkbox with animations
+│   ├── animated_form_fields.dart      # Text fields with focus effects
+│   ├── payment_widgets.dart           # Payment method cards & lists
+│   ├── step_indicator.dart            # Progress dots & animated bar
+│   ├── vendor_type_selector.dart      # Individual/Business selector
+│   ├── category_selector.dart         # Category grid with 8 options
+│   ├── image_upload_field.dart        # Image upload with preview
+│   ├── onboarding_header.dart         # Animated collapsible header
+│   └── welcome_section.dart           # Welcome text section
+├── utils/                              # ✨ Utilities
+│   ├── onboarding_constants.dart      # Colors, durations, categories
+│   └── onboarding_dialogs.dart        # Reusable dialog utilities
+├── README.md                           # This file
+├── REFACTORING_SUMMARY.md             # Architecture overview
+└── COMPONENT_GUIDE.md                 # Component usage guide
 ```
+
+## ⭐ What's New - Modular Architecture
+
+The onboarding has been **fully refactored** into reusable, modular components:
+
+### 📦 Reusable Components (11 Widget Files)
+1. **AnimatedCheckbox** - Interactive checkbox with scale animations
+2. **AnimatedTextField** - Text fields with focus glow effects
+3. **AnimatedPhoneField** - Ethiopian phone input with +251 flag
+4. **StepIndicator** - Progress dots with spring animations
+5. **PaymentMethodCard** - Animated payment selection cards
+6. **VendorTypeSelector** - Individual/Business type selection
+7. **CategorySelector** - 8 business categories in grid
+8. **ImageUploadField** - Upload with animated preview
+9. **OnboardingHeader** - Collapsible animated header
+10. **WelcomeSection** - Fade/slide welcome text
+11. **PaymentMethodsList** - Payment methods with badges
+
+### 🛠️ Utilities (2 Files)
+- **OnboardingConstants** - Centralized colors, durations, spacing
+- **OnboardingDialogs** - Terms & success dialogs
+
+### 📚 Documentation (3 Files)
+- **README.md** - Main documentation (this file)
+- **REFACTORING_SUMMARY.md** - Architecture & improvements
+- **COMPONENT_GUIDE.md** - Usage guide for all components
+
+---
 
 ## Features
 
-### ✨ Multi-Step Form
-- **Step 1**: Full Name - Text input with validation
-- **Step 2**: Do you sell products online? - Yes/No button selection
-- **Step 3**: Average Monthly Revenue - Multiple choice selection
-- **Step 4**: Email Address - Email input with validation
+### ✨ 6-Step Vendor Onboarding
+- **Step 0**: Phone Number & Vendor Type - Ethiopian number validation
+- **Step 1**: OTP Verification - 6-digit code entry
+- **Step 2**: Basic Info - Business name, description, category
+- **Step 3**: Documents - Fayda ID or Business License upload
+- **Step 4**: Payout Details - Mobile wallet or bank account
+- **Step 5**: Admin Approval - Completion & waiting screen
 
 ### 🎨 Modern UI Design
 - Clean and modern design inspired by the reference images

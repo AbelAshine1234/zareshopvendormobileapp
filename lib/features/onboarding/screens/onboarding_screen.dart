@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -39,6 +43,19 @@ class _OnboardingViewState extends State<_OnboardingView>
   late Animation<Offset> _contentSlideAnimation;
   late ScrollController _scrollController;
   bool _isHeaderCollapsed = false;
+  
+  // Checkbox states
+  bool _confirmDetailsCheck = false;
+  bool _agreeTermsCheck = false;
+  bool _authorizePayoutCheck = false;
+  
+  // Phone validation
+  String? _phoneError;
+  String? _walletPhoneError;
+  
+  // OTP timer
+  int _otpCountdown = 60;
+  Timer? _otpTimer;
 
   @override
   void initState() {
@@ -88,7 +105,34 @@ class _OnboardingViewState extends State<_OnboardingView>
   void dispose() {
     _contentController.dispose();
     _scrollController.dispose();
+    _otpTimer?.cancel();
     super.dispose();
+  }
+  
+  void _startOTPTimer() {
+    _otpTimer?.cancel();
+    setState(() => _otpCountdown = 60);
+    
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_otpCountdown > 0) {
+        setState(() => _otpCountdown--);
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+  
+  void _resendOTP() {
+    context.read<OnboardingBloc>().add(const ResendOTP());
+    _startOTPTimer();
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('OTP sent successfully'),
+        backgroundColor: Color(0xFF10B981),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -97,6 +141,12 @@ class _OnboardingViewState extends State<_OnboardingView>
       listener: (context, state) {
         if (state is OnboardingCompleted) {
           context.go('/');
+        }
+        // Start OTP timer when reaching OTP step
+        if (state is OnboardingInProgress && state.currentStep == 1) {
+          if (_otpCountdown == 60 && _otpTimer == null) {
+            _startOTPTimer();
+          }
         }
       },
       child: Scaffold(
@@ -114,6 +164,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                     Expanded(
                       child: SingleChildScrollView(
                         controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: SlideTransition(
                           position: _contentSlideAnimation,
@@ -288,28 +339,38 @@ class _OnboardingViewState extends State<_OnboardingView>
                 color: Color(0xFF111827),
               ),
             ),
-            // Step dots
+            // Step dots with spring animation
             Row(
               children: List.generate(state.totalSteps, (index) {
                 final isActive = index == state.currentStep;
                 final isCompleted = index < state.currentStep;
-                return Container(
-                  margin: const EdgeInsets.only(left: 8),
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: isCompleted || isActive
-                        ? const Color(0xFF10B981)
-                        : Colors.grey.shade300,
-                    shape: BoxShape.circle,
-                  ),
+                return TweenAnimationBuilder<double>(
+                  key: ValueKey('dot_$index'),
+                  duration: Duration(milliseconds: 300 + (index * 50)),
+                  curve: Curves.easeOutBack,
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: _DotIndicator(
+                        index: index,
+                        isActive: isActive,
+                        isCompleted: isCompleted,
+                        onTap: isCompleted
+                            ? () {
+                                context.read<OnboardingBloc>().add(GoToStep(index));
+                              }
+                            : null,
+                      ),
+                    );
+                  },
                 );
               }),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        // Progress bar
+        // Progress bar with overshoot effect
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: Stack(
@@ -322,17 +383,26 @@ class _OnboardingViewState extends State<_OnboardingView>
                 ),
               ),
               TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.elasticOut,
                 tween: Tween(begin: 0.0, end: state.progress),
                 builder: (context, value, child) {
                   return FractionallySizedBox(
-                    widthFactor: value,
+                    widthFactor: value.clamp(0.0, 1.0),
                     child: Container(
                       height: 8,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF22C55E)],
+                        ),
                         borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -349,18 +419,49 @@ class _OnboardingViewState extends State<_OnboardingView>
 
   Widget _buildCurrentStepCard(BuildContext context, OnboardingInProgress state) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 350),
-      switchInCurve: Curves.easeInOut,
-      switchOutCurve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 600),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      layoutBuilder: (currentChild, previousChildren) {
+        return Stack(
+          clipBehavior: Clip.hardEdge,
+          children: <Widget>[
+            ...previousChildren,
+            if (currentChild != null) currentChild,
+          ],
+        );
+      },
       transitionBuilder: (Widget child, Animation<double> animation) {
+        // Smooth combined animation: fade + slide + scale
+        final fadeAnimation = CurvedAnimation(
+          parent: animation,
+          curve: const Interval(0.0, 1.0, curve: Curves.easeOut),
+        );
+        
+        final slideAnimation = CurvedAnimation(
+          parent: animation,
+          curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
+        );
+        
+        final scaleAnimation = CurvedAnimation(
+          parent: animation,
+          curve: const Interval(0.2, 1.0, curve: Curves.easeOutBack),
+        );
+        
         return FadeTransition(
-          opacity: animation,
+          opacity: fadeAnimation,
           child: SlideTransition(
             position: Tween<Offset>(
-              begin: const Offset(0.1, 0),
+              begin: const Offset(0, 0.15),
               end: Offset.zero,
-            ).animate(animation),
-            child: child,
+            ).animate(slideAnimation),
+            child: ScaleTransition(
+              scale: Tween<double>(
+                begin: 0.95,
+                end: 1.0,
+              ).animate(scaleAnimation),
+              child: child,
+            ),
           ),
         );
       },
@@ -374,6 +475,13 @@ class _OnboardingViewState extends State<_OnboardingView>
             color: Colors.grey.shade300,
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: _getStepWidget(state.currentStep),
       ),
@@ -496,12 +604,19 @@ class _OnboardingViewState extends State<_OnboardingView>
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
+                        _validateEthiopianPhone(value);
                         context.read<OnboardingBloc>().add(UpdatePhoneNumber('+251$value'));
                       },
-                      keyboardType: TextInputType.phone,
+                      keyboardType: TextInputType.number,
+                      maxLength: 9,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(9),
+                      ],
                       decoration: const InputDecoration(
                         hintText: '912345678',
                         border: InputBorder.none,
+                        counterText: '',
                         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         hintStyle: TextStyle(
                           color: Color(0xFF9CA3AF),
@@ -520,11 +635,33 @@ class _OnboardingViewState extends State<_OnboardingView>
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            if (_phoneError != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _phoneError!,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Text(
               'We\'ll send a 6-digit OTP for verification.',
               style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF6B7280),
+                color: _phoneError != null ? Colors.red.shade300 : const Color(0xFF6B7280),
               ),
             ),
             const SizedBox(height: 32),
@@ -540,20 +677,46 @@ class _OnboardingViewState extends State<_OnboardingView>
             Row(
               children: [
                 Expanded(
-                  child: _buildVendorTypeCard(
-                    'Individual Vendor',
-                    'individual',
-                    Icons.person,
-                    state.data.vendorType == 'individual',
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutBack,
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.translate(
+                        offset: Offset(0, 20 * (1 - value)),
+                        child: Opacity(
+                          opacity: value.clamp(0.0, 1.0),
+                          child: _buildVendorTypeCard(
+                            'Individual Vendor',
+                            'individual',
+                            Icons.person,
+                            state.data.vendorType == 'individual',
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildVendorTypeCard(
-                    'Business Vendor',
-                    'business',
-                    Icons.business,
-                    state.data.vendorType == 'business',
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutBack,
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.translate(
+                        offset: Offset(0, 20 * (1 - value)),
+                        child: Opacity(
+                          opacity: value.clamp(0.0, 1.0),
+                          child: _buildVendorTypeCard(
+                            'Business Vendor',
+                            'business',
+                            Icons.business,
+                            state.data.vendorType == 'business',
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -654,12 +817,48 @@ class _OnboardingViewState extends State<_OnboardingView>
             ),
             const SizedBox(height: 16),
             Center(
-              child: TextButton(
-                onPressed: () {
-                  context.read<OnboardingBloc>().add(const ResendOTP());
-                },
-                child: const Text('Resend OTP'),
-              ),
+              child: _otpCountdown > 0
+                  ? TweenAnimationBuilder<double>(
+                      key: ValueKey(_otpCountdown),
+                      duration: const Duration(milliseconds: 300),
+                      tween: Tween(begin: 0.8, end: 1.0),
+                      curve: Curves.easeOut,
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: Text(
+                            'Resend OTP in $_otpCountdown seconds',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 400),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      curve: Curves.easeOutBack,
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: TextButton.icon(
+                            onPressed: _resendOTP,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Resend OTP'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFF22C55E),
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         );
@@ -766,8 +965,8 @@ class _OnboardingViewState extends State<_OnboardingView>
               _buildImageUploadField(
                 label: 'Fayda ID Photo',
                 hint: 'Tap to upload your Fayda ID',
+                imagePath: state.data.faydaIdNumber,
                 onTap: () {
-                  // TODO: Implement image picker
                   _pickImage((path) {
                     context.read<OnboardingBloc>().add(UpdateFaydaIdNumber(path));
                   });
@@ -777,6 +976,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               _buildImageUploadField(
                 label: 'Business License Photo',
                 hint: 'Tap to upload business license',
+                imagePath: state.data.businessLicenseNumber,
                 onTap: () {
                   _pickImage((path) {
                     context.read<OnboardingBloc>().add(UpdateBusinessLicenseNumber(path));
@@ -787,6 +987,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               _buildImageUploadField(
                 label: 'Tax ID Document (Optional)',
                 hint: 'Tap to upload tax ID',
+                imagePath: state.data.taxId,
                 onTap: () {
                   _pickImage((path) {
                     context.read<OnboardingBloc>().add(UpdateTaxId(path));
@@ -835,20 +1036,46 @@ class _OnboardingViewState extends State<_OnboardingView>
             Row(
               children: [
                 Expanded(
-                  child: _buildPayoutMethodCard(
-                    'Mobile Wallet',
-                    'wallet',
-                    Icons.phone_android,
-                    !isBank,
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutBack,
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.translate(
+                        offset: Offset(-20 * (1 - value), 0),
+                        child: Opacity(
+                          opacity: value.clamp(0.0, 1.0),
+                          child: _buildPayoutMethodCard(
+                            'Mobile Wallet',
+                            'wallet',
+                            Icons.phone_android,
+                            !isBank,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildPayoutMethodCard(
-                    'Bank Account',
-                    'bank',
-                    Icons.account_balance,
-                    isBank,
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutBack,
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.translate(
+                        offset: Offset(20 * (1 - value), 0),
+                        child: Opacity(
+                          opacity: value.clamp(0.0, 1.0),
+                          child: _buildPayoutMethodCard(
+                            'Bank Account',
+                            'bank',
+                            Icons.account_balance,
+                            isBank,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -877,26 +1104,129 @@ class _OnboardingViewState extends State<_OnboardingView>
                 ),
               ),
               const SizedBox(height: 8),
-              TextField(
-                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateMobileWallet(value)),
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  hintText: '+251912345678',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF22C55E), width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFF9FAFB),
+                ),
+                child: Row(
+                  children: [
+                    // Country code with flag
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16, right: 12),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.network(
+                                'https://flagcdn.com/w40/et.png',
+                                width: 28,
+                                height: 20,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'ET',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            '+251',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF22C55E),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Divider
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: const Color(0xFFE5E7EB),
+                    ),
+                    // Phone number input
+                    Expanded(
+                      child: TextField(
+                        onChanged: (value) {
+                          _validateEthiopianWalletPhone(value);
+                          context.read<OnboardingBloc>().add(UpdateMobileWallet('+251$value'));
+                        },
+                        keyboardType: TextInputType.number,
+                        maxLength: 9,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(9),
+                        ],
+                        decoration: const InputDecoration(
+                          hintText: '912345678',
+                          border: InputBorder.none,
+                          counterText: '',
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          hintStyle: TextStyle(
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF374151),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              // Wallet phone error message
+              if (_walletPhoneError != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _walletPhoneError!,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
             
             // Show confirmation section if payment data is entered
@@ -1036,6 +1366,14 @@ class _OnboardingViewState extends State<_OnboardingView>
   Widget _buildPaymentMethodsList(OnboardingInProgress state) {
     final isBank = state.data.preferredPayoutMethod == 'bank';
     
+    // Safely get last 4 digits of bank account
+    String getBankAccountDisplay(String accountNumber) {
+      if (accountNumber.length <= 4) {
+        return accountNumber;
+      }
+      return '****** ${accountNumber.substring(accountNumber.length - 4)}';
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1048,7 +1386,7 @@ class _OnboardingViewState extends State<_OnboardingView>
             _buildPaymentMethodItem(
               icon: Icons.account_balance,
               title: 'Bank Account',
-              subtitle: '****** ${state.data.bankAccountNumber.substring(state.data.bankAccountNumber.length - 4)}',
+              subtitle: getBankAccountDisplay(state.data.bankAccountNumber),
               isVerified: true,
             )
           else
@@ -1142,12 +1480,14 @@ class _OnboardingViewState extends State<_OnboardingView>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Set as default payment method',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF111827),
+          const Expanded(
+            child: Text(
+              'Set as default payment method',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF111827),
+              ),
             ),
           ),
           Switch(
@@ -1172,31 +1512,55 @@ class _OnboardingViewState extends State<_OnboardingView>
         children: [
           _buildCheckboxItem(
             'I confirm that the above payment details are correct',
+            value: _confirmDetailsCheck,
+            onChanged: (value) {
+              setState(() {
+                _confirmDetailsCheck = value ?? false;
+              });
+            },
           ),
           const SizedBox(height: 16),
           _buildCheckboxItem(
             'I agree to the Zareshop Payout Terms',
+            value: _agreeTermsCheck,
+            onChanged: (value) {
+              setState(() {
+                _agreeTermsCheck = value ?? false;
+              });
+            },
             linkText: 'View terms',
             onLinkTap: () {
-              // Show terms dialog
+              _showTermsDialog();
             },
           ),
           const SizedBox(height: 16),
           _buildCheckboxItem(
             'I authorize payouts to the selected default payment method',
+            value: _authorizePayoutCheck,
+            onChanged: (value) {
+              setState(() {
+                _authorizePayoutCheck = value ?? false;
+              });
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCheckboxItem(String text, {String? linkText, VoidCallback? onLinkTap}) {
+  Widget _buildCheckboxItem(
+    String text, {
+    required bool value,
+    required Function(bool?) onChanged,
+    String? linkText,
+    VoidCallback? onLinkTap,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Checkbox(
-          value: false,
-          onChanged: (value) {},
+          value: value,
+          onChanged: onChanged,
           activeColor: const Color(0xFF22C55E),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
@@ -1234,6 +1598,102 @@ class _OnboardingViewState extends State<_OnboardingView>
           ),
         ),
       ],
+    );
+  }
+
+  void _showTermsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Zareshop Payout Terms',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Payment Processing',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Zareshop will process your payouts according to the selected payment method. Payouts are typically processed within 2-5 business days.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Fees and Charges',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'A standard processing fee of 2.5% applies to all transactions. Additional fees may apply based on your payment method.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Verification',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Payment details must be verified before payouts can be processed. Please ensure all information is accurate.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  color: Color(0xFF22C55E),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        );
+      },
     );
   }
 
@@ -1313,6 +1773,48 @@ class _OnboardingViewState extends State<_OnboardingView>
     );
   }
 
+  void _validateEthiopianPhone(String phone) {
+    setState(() {
+      // Remove any spaces or special characters
+      final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+      
+      // Ethiopian mobile numbers:
+      // - Start with 09 or 07 (when local format)
+      // - Total 9 digits (without +251)
+      // - Valid prefixes: 9 or 7
+      
+      if (cleanPhone.isEmpty) {
+        _phoneError = null;
+      } else if (cleanPhone.length < 9) {
+        _phoneError = 'Phone number too short';
+      } else if (cleanPhone.length > 9) {
+        _phoneError = 'Phone number too long';
+      } else if (!cleanPhone.startsWith('9') && !cleanPhone.startsWith('7')) {
+        _phoneError = 'Must start with 9 or 7 (e.g., 912345678)';
+      } else {
+        _phoneError = null;
+      }
+    });
+  }
+
+  void _validateEthiopianWalletPhone(String phone) {
+    setState(() {
+      final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+      
+      if (cleanPhone.isEmpty) {
+        _walletPhoneError = null;
+      } else if (cleanPhone.length < 9) {
+        _walletPhoneError = 'Phone number too short';
+      } else if (cleanPhone.length > 9) {
+        _walletPhoneError = 'Phone number too long';
+      } else if (!cleanPhone.startsWith('9') && !cleanPhone.startsWith('7')) {
+        _walletPhoneError = 'Must start with 9 or 7 (e.g., 912345678)';
+      } else {
+        _walletPhoneError = null;
+      }
+    });
+  }
+
   Future<void> _pickImage(Function(String) onImagePicked) async {
     try {
       final picker = ImagePicker();
@@ -1364,7 +1866,21 @@ class _OnboardingViewState extends State<_OnboardingView>
     required String label,
     required String hint,
     required VoidCallback onTap,
+    String? imagePath,
   }) {
+    final hasImage = imagePath != null && imagePath.isNotEmpty;
+    final isDataUrl = hasImage && imagePath.startsWith('data:');
+    
+    // Debug logging
+    if (hasImage) {
+      print('=== Image Upload Debug ===');
+      print('Has image: $hasImage');
+      print('Is data URL: $isDataUrl');
+      print('Image path length: ${imagePath?.length}');
+      print('Image path preview: ${imagePath?.substring(0, imagePath.length > 100 ? 100 : imagePath.length)}');
+      print('Platform: web=${kIsWeb}');
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1381,7 +1897,8 @@ class _OnboardingViewState extends State<_OnboardingView>
           onTap: onTap,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+            height: hasImage ? 200 : null,
+            padding: hasImage ? EdgeInsets.zero : const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(
@@ -1391,54 +1908,196 @@ class _OnboardingViewState extends State<_OnboardingView>
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 2000),
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  curve: Curves.easeInOut,
-                  builder: (context, value, child) {
-                    return Transform.translate(
-                      offset: Offset(0, -4 * (0.5 - (value - 0.5).abs())),
-                      child: child,
-                    );
-                  },
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF22C55E),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.cloud_upload_rounded,
-                      size: 32,
-                      color: Colors.white,
-                    ),
+            child: hasImage
+                ? TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.elasticOut,
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: value,
+                        child: Opacity(
+                          opacity: value.clamp(0.0, 1.0),
+                          child: Container(
+                            color: Colors.grey.shade100,
+                            child: Stack(
+                              children: [
+                                // Image preview
+                                ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 200,
+                                  child: isDataUrl
+                                      ? Image.memory(
+                                          base64Decode(imagePath.split(',')[1]),
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            print('Image.memory error: $error');
+                                            return Container(
+                                              color: Colors.grey.shade200,
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
+                                                  const SizedBox(height: 8),
+                                                  const Text('Failed to load image', style: TextStyle(color: Colors.red)),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : (kIsWeb
+                                          ? Image.network(
+                                              imagePath,
+                                              fit: BoxFit.cover,
+                                              loadingBuilder: (context, child, loadingProgress) {
+                                                if (loadingProgress == null) return child;
+                                                return Center(
+                                                  child: CircularProgressIndicator(
+                                                    value: loadingProgress.expectedTotalBytes != null
+                                                        ? loadingProgress.cumulativeBytesLoaded /
+                                                            loadingProgress.expectedTotalBytes!
+                                                        : null,
+                                                    color: const Color(0xFF22C55E),
+                                                  ),
+                                                );
+                                              },
+                                              errorBuilder: (context, error, stackTrace) {
+                                                print('Image.network error: $error');
+                                                return Container(
+                                                  color: Colors.grey.shade200,
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
+                                                      const SizedBox(height: 8),
+                                                      const Text('Failed to load image', style: TextStyle(color: Colors.red)),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Image.file(
+                                              File(imagePath),
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                print('Image.file error: $error');
+                                                print('Image path: $imagePath');
+                                                return Container(
+                                                  color: Colors.grey.shade200,
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
+                                                      const SizedBox(height: 8),
+                                                      const Text('Failed to load image', style: TextStyle(color: Colors.red)),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        'Path: ${imagePath.split('/').last}',
+                                                        style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            )),
+                                ),
+                              ),
+                              // Edit overlay
+                              Positioned(
+                                bottom: 8,
+                                right: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF22C55E),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.edit,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Change',
+                                        style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 2000),
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        curve: Curves.easeInOut,
+                        builder: (context, value, child) {
+                          return Transform.translate(
+                            offset: Offset(0, -4 * (0.5 - (value - 0.5).abs())),
+                            child: child,
+                          );
+                        },
+                        child: Container(
+                          width: 64,
+                          height: 64,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF22C55E),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.cloud_upload_rounded,
+                            size: 32,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Upload Image',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF16A34A),
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Up to 4 photos',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Upload Image',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF16A34A),
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Up to 4 photos',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ],
@@ -1489,11 +2148,20 @@ class _OnboardingViewState extends State<_OnboardingView>
                 final category = categories[index];
                 final isSelected = selectedCategory == category['name'];
                 
-                return GestureDetector(
-                  onTap: () {
-                    context.read<OnboardingBloc>().add(UpdateCategory(category['name'] as String));
-                  },
-                  child: AnimatedContainer(
+                return TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 400 + (index * 80)),
+                  curve: Curves.easeOutBack,
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.translate(
+                      offset: Offset(0, 30 * (1 - value)),
+                      child: Opacity(
+                        opacity: value.clamp(0.0, 1.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            context.read<OnboardingBloc>().add(UpdateCategory(category['name'] as String));
+                          },
+                          child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1544,7 +2212,11 @@ class _OnboardingViewState extends State<_OnboardingView>
                         ),
                       ],
                     ),
-                  ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -1603,12 +2275,97 @@ class _OnboardingViewState extends State<_OnboardingView>
             state.isLastStep ? 'Finish Setup' : 'Continue',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w600, // SemiBold
+              fontWeight: FontWeight.w400, // Regular weight - lighter
               color: state.canProceed ? Colors.white : const Color(0xFF9CA3AF),
               letterSpacing: 0.2,
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Separate widget for dot indicator with spring animation
+class _DotIndicator extends StatefulWidget {
+  final int index;
+  final bool isActive;
+  final bool isCompleted;
+  final VoidCallback? onTap;
+
+  const _DotIndicator({
+    required this.index,
+    required this.isActive,
+    required this.isCompleted,
+    this.onTap,
+  });
+
+  @override
+  State<_DotIndicator> createState() => _DotIndicatorState();
+}
+
+class _DotIndicatorState extends State<_DotIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.5).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    if (widget.onTap != null) {
+      _controller.forward(from: 0).then((_) {
+        widget.onTap!();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              margin: const EdgeInsets.only(left: 8),
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: widget.isCompleted || widget.isActive
+                    ? const Color(0xFF10B981)
+                    : Colors.grey.shade300,
+                shape: BoxShape.circle,
+                boxShadow: widget.isCompleted
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
