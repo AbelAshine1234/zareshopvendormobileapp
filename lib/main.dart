@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'core/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'shared/theme/theme_provider.dart';
 import 'core/constants/app_constants.dart';
-import 'core/navigation/app_router.dart';
 import 'core/utils/app_bloc_observer.dart';
+import 'features/splash/splash_screen.dart';
 
 void main() {
   // Set up BlocObserver for debugging
@@ -20,11 +21,18 @@ class ZareshopVendorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: AppConstants.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      routerConfig: AppRouter.router,
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: AppConstants.appName,
+            debugShowCheckedModeBanner: false,
+            theme: themeProvider.themeData,
+            home: const SplashScreen(),
+          );
+        },
+      ),
     );
   }
 }

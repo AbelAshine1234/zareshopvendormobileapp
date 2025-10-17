@@ -4,12 +4,15 @@ import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
+import '../../../core/services/api_service.dart';
+import '../../../core/utils/validation_utils.dart';
 
 class OnboardingScreen extends StatelessWidget {
   final bool useMockData;
@@ -56,6 +59,14 @@ class _OnboardingViewState extends State<_OnboardingView>
   // OTP timer
   int _otpCountdown = 60;
   Timer? _otpTimer;
+  
+  // Categories from backend
+  List<Map<String, dynamic>> _categories = [];
+  bool _loadingCategories = false;
+  
+  // Subscriptions from backend
+  List<Map<String, dynamic>> _subscriptions = [];
+  bool _loadingSubscriptions = false;
 
   @override
   void initState() {
@@ -87,6 +98,166 @@ class _OnboardingViewState extends State<_OnboardingView>
     _scrollController.addListener(_onScroll);
 
     _contentController.forward();
+    
+    // Fetch categories from backend
+    _fetchCategories();
+  }
+  
+  Future<void> _fetchSubscriptions() async {
+    
+    setState(() {
+      _loadingSubscriptions = true;
+    });
+    
+    print('🔄 [FRONTEND] Set loading state to true, calling ApiService...');
+    
+    try {
+      final result = await ApiService.fetchSubscriptions();
+      
+      print('📦 [FRONTEND] API Result received:');
+      print('   Success: ${result['success']}');
+      print('   Keys: ${result.keys.toList()}');
+      
+      if (result['success'] == true && mounted) {
+        print('✅ [FRONTEND] Success response received, processing data...');
+        final subscriptionsData = result['subscriptions'] as List<dynamic>;
+        print('📊 [FRONTEND] Raw subscriptions data: $subscriptionsData');
+        print('📊 [FRONTEND] Subscriptions count: ${subscriptionsData.length}');
+        
+        final processedSubscriptions = subscriptionsData.map((sub) {
+          print('🔍 [FRONTEND] Processing subscription: $sub');
+          return {
+            'id': sub['id'],
+            'name': sub['name'],
+            'price': sub['price'],
+            'duration': sub['duration'],
+            'features': sub['features'] ?? [],
+          };
+        }).toList();
+        
+        print('✅ [FRONTEND] Processed ${processedSubscriptions.length} subscriptions');
+        
+        setState(() {
+          _subscriptions = processedSubscriptions;
+          _loadingSubscriptions = false;
+        });
+        
+        print('✅ [FRONTEND] State updated successfully!');
+        print('📋 [FRONTEND] Final subscriptions in state: $_subscriptions');
+      } else if (mounted) {
+        print('❌ [FRONTEND] API call failed or returned error');
+        print('❌ [FRONTEND] Error details: ${result['error'] ?? 'Unknown error'}');
+        
+        setState(() {
+          _loadingSubscriptions = false;
+        });
+        
+        print('🔄 [FRONTEND] Setting fallback subscription...');
+        // Fallback to default subscription if fetch fails
+        setState(() {
+          _subscriptions = [
+            {
+              'id': 1,
+              'name': 'Basic Plan (Fallback)',
+              'price': 99.99,
+              'duration': 'monthly',
+              'features': ['Up to 100 products', 'Basic analytics', 'Email support'],
+            },
+          ];
+        });
+        
+        print('⚠️ [FRONTEND] Fallback subscription set: $_subscriptions');
+      } else {
+        print('⚠️ [FRONTEND] Widget not mounted, skipping state update');
+      }
+    } catch (e, stackTrace) {
+      
+      if (mounted) {
+        setState(() {
+          _loadingSubscriptions = false;
+          _subscriptions = [
+            {
+              'id': 1,
+              'name': 'Basic Plan (Error Fallback)',
+              'price': 99.99,
+              'duration': 'monthly',
+              'features': ['Up to 100 products', 'Basic analytics', 'Email support'],
+            },
+          ];
+        });
+        print('🛡️ [FRONTEND] Error fallback subscription set');
+      }
+    }
+  }
+  
+  Future<void> _fetchCategories() async {
+    setState(() {
+      _loadingCategories = true;
+    });
+    
+    final result = await ApiService.fetchCategories();
+    
+    if (result['success'] == true && mounted) {
+      final categoriesData = result['categories'] as List<dynamic>;
+      setState(() {
+        _categories = categoriesData.map((cat) {
+          return {
+            'id': cat['id'],
+            'name': cat['name'],
+            'icon': _getCategoryIcon(cat['name']),
+            'color': _getCategoryColor(cat['name']),
+          };
+        }).toList();
+        _loadingCategories = false;
+      });
+    } else if (mounted) {
+      setState(() {
+        _loadingCategories = false;
+      });
+      // Fallback to default categories if fetch fails
+      setState(() {
+        _categories = [
+          {'id': 1, 'name': 'Electronics', 'icon': Icons.devices, 'color': const Color(0xFF6366F1)},
+          {'id': 2, 'name': 'Fashion', 'icon': Icons.checkroom, 'color': const Color(0xFFEC4899)},
+          {'id': 3, 'name': 'Food & Beverage', 'icon': Icons.restaurant, 'color': const Color(0xFFF59E0B)},
+          {'id': 4, 'name': 'Beauty & Health', 'icon': Icons.spa, 'color': const Color(0xFF8B5CF6)},
+        ];
+      });
+    }
+  }
+  
+  IconData _getCategoryIcon(String categoryName) {
+    // Map category names to icons
+    final iconMap = {
+      'Electronics': Icons.devices,
+      'Fashion': Icons.checkroom,
+      'Food & Beverage': Icons.restaurant,
+      'Beauty & Health': Icons.spa,
+      'Home & Garden': Icons.home,
+      'Sports & Outdoor': Icons.sports_soccer,
+      'Books & Media': Icons.menu_book,
+      'Toys & Kids': Icons.toys,
+      'Automotive': Icons.directions_car,
+      'Jewelry': Icons.diamond,
+    };
+    return iconMap[categoryName] ?? Icons.category;
+  }
+  
+  Color _getCategoryColor(String categoryName) {
+    // Map category names to colors
+    final colorMap = {
+      'Electronics': const Color(0xFF6366F1),
+      'Fashion': const Color(0xFFEC4899),
+      'Food & Beverage': const Color(0xFFF59E0B),
+      'Beauty & Health': const Color(0xFF8B5CF6),
+      'Home & Garden': const Color(0xFF10B981),
+      'Sports & Outdoor': const Color(0xFF3B82F6),
+      'Books & Media': const Color(0xFFF97316),
+      'Toys & Kids': const Color(0xFFEF4444),
+      'Automotive': const Color(0xFF64748B),
+      'Jewelry': const Color(0xFFFBBF24),
+    };
+    return colorMap[categoryName] ?? const Color(0xFF6B7280);
   }
 
   void _onScroll() {
@@ -142,6 +313,44 @@ class _OnboardingViewState extends State<_OnboardingView>
         if (state is OnboardingCompleted) {
           context.go('/');
         }
+        
+        // Handle vendor submission success
+        if (state is OnboardingVendorSubmitted) {
+          // Success handled in BlocBuilder
+        }
+        
+        // Handle vendor submission failure
+        if (state is OnboardingVendorSubmissionFailed) {
+          // Error handled in BlocBuilder
+        }
+        
+        // Handle user already exists - redirect to login
+        if (state is OnboardingUserAlreadyExists) {
+          // Show message and redirect to login page
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 3),
+              action: SnackBarAction(
+                label: 'Login',
+                textColor: Colors.white,
+                onPressed: () {
+                  // Navigate to login page
+                  context.go('/login');
+                },
+              ),
+            ),
+          );
+          
+          // Auto redirect after a short delay
+          Future.delayed(const Duration(seconds: 4), () {
+            if (context.mounted) {
+              context.go('/login');
+            }
+          });
+        }
+        
         // Show error messages
         if (state is OnboardingError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -152,6 +361,7 @@ class _OnboardingViewState extends State<_OnboardingView>
             ),
           );
         }
+        
         // Start OTP timer when reaching OTP step
         if (state is OnboardingInProgress && state.currentStep == 1) {
           if (_otpCountdown == 60 && _otpTimer == null) {
@@ -189,7 +399,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                                 _buildProgressSection(state),
                                 const SizedBox(height: 32),
                                 _buildCurrentStepCard(context, state),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 100),
                               ],
                             ),
                           ),
@@ -203,6 +413,22 @@ class _OnboardingViewState extends State<_OnboardingView>
                 );
               }
               
+              // Handle vendor submission success
+              if (state is OnboardingVendorSubmitted) {
+                return _buildVendorSubmissionSuccessPage(state);
+              }
+              
+              // Handle user already exists - show redirect page
+              if (state is OnboardingUserAlreadyExists) {
+                return _buildUserAlreadyExistsPage(state);
+              }
+              
+              // Handle vendor submission failure
+              if (state is OnboardingVendorSubmissionFailed) {
+                return _buildVendorSubmissionErrorPage(state);
+              }
+              
+              // Loading state
               return const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
@@ -499,6 +725,14 @@ class _OnboardingViewState extends State<_OnboardingView>
   }
 
   Widget _getStepWidget(int step) {
+    // Fetch subscriptions when reaching step 6
+    if (step == 6 && _subscriptions.isEmpty && !_loadingSubscriptions) {
+      // Use WidgetsBinding to avoid calling setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchSubscriptions();
+      });
+    }
+    
     switch (step) {
       case 0:
         return _buildPhoneNumberStep();
@@ -507,10 +741,14 @@ class _OnboardingViewState extends State<_OnboardingView>
       case 2:
         return _buildBasicInfoStep();
       case 3:
-        return _buildDocumentsStep();
+        return _buildShippingAddressStep();
       case 4:
-        return _buildPayoutStep();
+        return _buildDocumentsStep();
       case 5:
+        return _buildPayoutStep();
+      case 6:
+        return _buildSubscriptionStep();
+      case 7:
         return _buildAdminApprovalStep();
       default:
         return const SizedBox.shrink();
@@ -527,7 +765,7 @@ class _OnboardingViewState extends State<_OnboardingView>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Phone Number',
+              'Business Vendor Registration',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -535,15 +773,67 @@ class _OnboardingViewState extends State<_OnboardingView>
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Enter your phone number to get started',
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF6B7280),
-                height: 1.5,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF22C55E).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF22C55E),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.business,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Business Account',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Register your business to start selling',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
+            const Text(
+              'Phone Number',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
@@ -674,108 +964,59 @@ class _OnboardingViewState extends State<_OnboardingView>
                 color: _phoneError != null ? Colors.red.shade300 : const Color(0xFF6B7280),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             const Text(
-              'Vendor Type',
+              'Password',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
                 color: Color(0xFF111827),
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TweenAnimationBuilder<double>(
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeOutBack,
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    builder: (context, value, child) {
-                      return Transform.translate(
-                        offset: Offset(0, 20 * (1 - value)),
-                        child: Opacity(
-                          opacity: value.clamp(0.0, 1.0),
-                          child: _buildVendorTypeCard(
-                            'Individual Vendor',
-                            'individual',
-                            Icons.person,
-                            state.data.vendorType == 'individual',
-                          ),
-                        ),
-                      );
-                    },
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFF9FAFB),
+              ),
+              child: TextField(
+                onChanged: (value) {
+                  context.read<OnboardingBloc>().add(UpdatePassword(value));
+                },
+                obscureText: true,
+                decoration: const InputDecoration(
+                  hintText: 'Enter your password',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  hintStyle: TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.lock_outline,
+                    color: Color(0xFF22C55E),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TweenAnimationBuilder<double>(
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeOutBack,
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    builder: (context, value, child) {
-                      return Transform.translate(
-                        offset: Offset(0, 20 * (1 - value)),
-                        child: Opacity(
-                          opacity: value.clamp(0.0, 1.0),
-                          child: _buildVendorTypeCard(
-                            'Business Vendor',
-                            'business',
-                            Icons.business,
-                            state.data.vendorType == 'business',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF374151),
                 ),
-              ],
+              ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Minimum 6 characters required',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 32),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildVendorTypeCard(String label, String value, IconData icon, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        context.read<OnboardingBloc>().add(UpdateVendorType(value));
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF0FDF4) : Colors.white,
-          border: Border.all(
-            color: isSelected ? const Color(0xFF22C55E) : const Color(0xFFE5E7EB),
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? const Color(0xFF22C55E) : const Color(0xFF6B7280),
-              size: 40,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? const Color(0xFF22C55E) : const Color(0xFF374151),
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -882,58 +1123,95 @@ class _OnboardingViewState extends State<_OnboardingView>
       builder: (context, state) {
         if (state is! OnboardingInProgress) return const SizedBox.shrink();
         
-        final isIndividual = state.data.isIndividual;
-        
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              isIndividual ? 'Your Information' : 'Business Information',
-              style: const TextStyle(
+            const Text(
+              'Business Information',
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF111827),
               ),
             ),
             const SizedBox(height: 24),
-            if (isIndividual) ...[
-              _buildTextField(
-                label: 'Full Name',
-                hint: 'Enter your full name',
-                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateFullName(value)),
-              ),
-            ] else ...[
-              _buildTextField(
-                label: 'Business Name',
-                hint: 'Enter business name',
-                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateBusinessName(value)),
-              ),
-            ],
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    label: 'First Name *',
+                    hint: 'Enter first name',
+                    onChanged: (value) {
+                      context.read<OnboardingBloc>().add(UpdateFirstName(value));
+                      // Auto-update full name when first or last name changes
+                      final state = context.read<OnboardingBloc>().state;
+                      if (state is OnboardingInProgress) {
+                        final lastName = state.data.lastName;
+                        final fullName = '$value ${lastName}'.trim();
+                        context.read<OnboardingBloc>().add(UpdateFullName(fullName));
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'First name is required';
+                      }
+                      if (value.trim().length < 2) {
+                        return 'First name must be at least 2 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(
+                    label: 'Last Name *',
+                    hint: 'Enter last name',
+                    onChanged: (value) {
+                      context.read<OnboardingBloc>().add(UpdateLastName(value));
+                      // Auto-update full name when first or last name changes
+                      final state = context.read<OnboardingBloc>().state;
+                      if (state is OnboardingInProgress) {
+                        final firstName = state.data.firstName;
+                        final fullName = '$firstName $value'.trim();
+                        context.read<OnboardingBloc>().add(UpdateFullName(fullName));
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Last name is required';
+                      }
+                      if (value.trim().length < 2) {
+                        return 'Last name must be at least 2 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             _buildTextField(
-              label: 'Email (Optional)',
+              label: 'Business Name *',
+              hint: 'Enter business name',
+              onChanged: (value) => context.read<OnboardingBloc>().add(UpdateBusinessName(value)),
+              validator: ValidationUtils.validateBusinessName,
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              label: 'Email Address *',
               hint: 'your@email.com',
               keyboardType: TextInputType.emailAddress,
               onChanged: (value) => context.read<OnboardingBloc>().add(UpdateEmail(value)),
+              validator: ValidationUtils.validateEmail,
             ),
             const SizedBox(height: 16),
             _buildTextField(
-              label: 'Street',
-              hint: 'Enter street address',
-              onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(street: value)),
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              label: 'City',
-              hint: 'Enter city',
-              onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(city: value)),
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              label: 'Business Description',
+              label: 'Business Description *',
               hint: 'Describe what you sell',
               maxLines: 3,
               onChanged: (value) => context.read<OnboardingBloc>().add(UpdateBusinessDescription(value)),
+              validator: ValidationUtils.validateBusinessDescription,
             ),
             const SizedBox(height: 16),
             _buildCategoryDropdown(),
@@ -943,13 +1221,199 @@ class _OnboardingViewState extends State<_OnboardingView>
     );
   }
 
-  // Step 3: Documents
-  Widget _buildDocumentsStep() {
+  // Step 3: Shipping Address
+  Widget _buildShippingAddressStep() {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state is! OnboardingInProgress) return const SizedBox.shrink();
         
-        final isIndividual = state.data.isIndividual;
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Shipping Address',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Enter your business shipping address',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Google Maps Location Picker
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.map,
+                        size: 60,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Tap to select location on map',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // TODO: Open Google Maps picker
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Google Maps picker coming soon!')),
+                          );
+                        },
+                        icon: const Icon(Icons.location_on),
+                        label: const Text('Pick Location'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF22C55E),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              const Text(
+                'Address Details',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Required: Address Line 1
+              _buildTextField(
+                label: 'Address Line 1 *',
+                hint: 'Street address, P.O. box',
+                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(addressLine1: value)),
+              ),
+              const SizedBox(height: 16),
+              
+              // Optional: Address Line 2
+              _buildTextField(
+                label: 'Address Line 2 (Optional)',
+                hint: 'Apartment, suite, unit, building, floor',
+                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(addressLine2: value)),
+              ),
+              const SizedBox(height: 16),
+              
+              // Optional: City
+              _buildTextField(
+                label: 'City (Optional)',
+                hint: 'e.g., Addis Ababa',
+                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(city: value)),
+              ),
+              const SizedBox(height: 16),
+              
+              // Optional: Region and State in Row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Region (Optional)',
+                      hint: 'e.g., Oromia',
+                      onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(region: value)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'State (Optional)',
+                      hint: 'State',
+                      onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(state: value)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Optional: Subcity and Woreda in Row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Subcity (Optional)',
+                      hint: 'e.g., Bole',
+                      onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(subcity: value)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Woreda (Optional)',
+                      hint: 'Woreda',
+                      onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(woreda: value)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Optional: Kebele and Postal Code in Row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Kebele (Optional)',
+                      hint: 'Kebele',
+                      onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(kebele: value)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: 'Postal Code (Optional)',
+                      hint: 'e.g., 1000',
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(postalCode: value)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Optional: Country (default Ethiopia)
+              _buildTextField(
+                label: 'Country (Optional)',
+                hint: 'Ethiopia',
+                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateAddress(country: value)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Step 4: Documents
+  Widget _buildDocumentsStep() {
+    return BlocBuilder<OnboardingBloc, OnboardingState>(
+      builder: (context, state) {
+        if (state is! OnboardingInProgress) return const SizedBox.shrink();
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -971,40 +1435,27 @@ class _OnboardingViewState extends State<_OnboardingView>
               ),
             ),
             const SizedBox(height: 24),
-            if (isIndividual) ...[
-              _buildImageUploadField(
-                label: 'Fayda ID Photo',
-                hint: 'Tap to upload your Fayda ID',
-                imagePath: state.data.faydaIdNumber,
-                onTap: () {
-                  _pickImage((path) {
-                    context.read<OnboardingBloc>().add(UpdateFaydaIdNumber(path));
-                  });
-                },
-              ),
-            ] else ...[
-              _buildImageUploadField(
-                label: 'Business License Photo',
-                hint: 'Tap to upload business license',
-                imagePath: state.data.businessLicenseNumber,
-                onTap: () {
-                  _pickImage((path) {
-                    context.read<OnboardingBloc>().add(UpdateBusinessLicenseNumber(path));
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildImageUploadField(
-                label: 'Tax ID Document (Optional)',
-                hint: 'Tap to upload tax ID',
-                imagePath: state.data.taxId,
-                onTap: () {
-                  _pickImage((path) {
-                    context.read<OnboardingBloc>().add(UpdateTaxId(path));
-                  });
-                },
-              ),
-            ],
+            _buildImageUploadField(
+              label: 'Cover Photo',
+              hint: 'Tap to upload business cover photo',
+              imagePath: state.data.coverPhotoUrl,
+              onTap: () {
+                _pickImage((path) {
+                  context.read<OnboardingBloc>().add(UpdateCoverPhoto(path));
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            _buildImageUploadField(
+              label: 'Business License Photo',
+              hint: 'Tap to upload business license',
+              imagePath: state.data.businessLicenseNumber,
+              onTap: () {
+                _pickImage((path) {
+                  context.read<OnboardingBloc>().add(UpdateBusinessLicenseNumber(path));
+                });
+              },
+            ),
           ],
         );
       },
@@ -1093,8 +1544,14 @@ class _OnboardingViewState extends State<_OnboardingView>
             const SizedBox(height: 24),
             if (isBank) ...[
               _buildTextField(
+                label: 'Account Holder Name',
+                hint: 'Enter account holder full name',
+                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateBankAccount(accountHolderName: value)),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
                 label: 'Bank Name',
-                hint: 'Enter bank name',
+                hint: 'Enter bank name (e.g., CBE, Dashen)',
                 onChanged: (value) => context.read<OnboardingBloc>().add(UpdateBankAccount(bankName: value)),
               ),
               const SizedBox(height: 16),
@@ -1105,15 +1562,110 @@ class _OnboardingViewState extends State<_OnboardingView>
                 onChanged: (value) => context.read<OnboardingBloc>().add(UpdateBankAccount(bankAccountNumber: value)),
               ),
             ] else ...[
-              const Text(
-                'Mobile Wallet Number',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                ),
+              // Phone number suggestion for Telebirr
+              BlocBuilder<OnboardingBloc, OnboardingState>(
+                builder: (context, state) {
+                  if (state is OnboardingInProgress) {
+                    final userPhone = state.data.phoneNumber;
+                    final walletNumber = state.data.mobileWalletNumber;
+                    final shouldShowSuggestion = userPhone.isNotEmpty && 
+                                                walletNumber.isEmpty && 
+                                                userPhone.startsWith('+251');
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'Telebirr Wallet Number',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF111827),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (shouldShowSuggestion)
+                              GestureDetector(
+                                onTap: () {
+                                  context.read<OnboardingBloc>().add(UpdateMobileWallet(userPhone));
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF22C55E).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFF22C55E).withOpacity(0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.auto_fix_high,
+                                        size: 14,
+                                        color: const Color(0xFF22C55E),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Use my phone',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF22C55E),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (shouldShowSuggestion) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF22C55E).withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF22C55E).withOpacity(0.2)),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF22C55E).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Icon(
+                                    Icons.lightbulb_outline,
+                                    size: 16,
+                                    color: const Color(0xFF22C55E),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Would you like to use your phone number ($userPhone) as your Telebirr wallet?',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: const Color(0xFF059669),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
-              const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -1237,6 +1789,12 @@ class _OnboardingViewState extends State<_OnboardingView>
                     ],
                   ),
                 ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'Account Holder Name',
+                hint: 'Enter your full name',
+                onChanged: (value) => context.read<OnboardingBloc>().add(UpdateBankAccount(accountHolderName: value)),
+              ),
             ],
             
             // Show confirmation section if payment data is entered
@@ -1270,7 +1828,327 @@ class _OnboardingViewState extends State<_OnboardingView>
     );
   }
 
-  // Step 5: Admin Approval
+  // Step 5: Subscription Selection
+  Widget _buildSubscriptionStep() {
+    return BlocBuilder<OnboardingBloc, OnboardingState>(
+      builder: (context, state) {
+        if (state is! OnboardingInProgress) {
+          return const SizedBox.shrink();
+        }
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Choose Your Plan',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    print('🔧 [DEBUG] Manual subscription fetch triggered');
+                    _fetchSubscriptions();
+                  },
+                  child: const Text(
+                    'Debug: Fetch',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Select a subscription plan to get started',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 24),
+            if (_loadingSubscriptions) ...
+              [
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
+                    ),
+                  ),
+                ),
+                // Add loading text for better UX
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Text(
+                      'Loading subscription plans...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ),
+              ]
+            else if (_subscriptions.isEmpty) ...
+              [
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No subscription plans available',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Please check your internet connection and try again',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            print('🔄 [SUBSCRIPTION_WIDGET] Retry button pressed');
+                            _fetchSubscriptions();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF22C55E),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ]
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _subscriptions.length,
+                itemBuilder: (context, index) {
+                  final subscription = _subscriptions[index];
+                  final isSelected = state.data.selectedSubscriptionId == subscription['id'];
+                  
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: GestureDetector(
+                      onTap: () {
+                        context.read<OnboardingBloc>().add(
+                          UpdateSubscription(subscription['id'] as int),
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: isSelected 
+                              ? const Color(0xFF22C55E).withValues(alpha: 0.1)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected 
+                                ? const Color(0xFF22C55E)
+                                : Colors.grey.shade300,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF22C55E).withValues(alpha: 0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  subscription['name'] as String,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: isSelected 
+                                        ? const Color(0xFF22C55E)
+                                        : const Color(0xFF111827),
+                                  ),
+                                ),
+                                if (isSelected)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF22C55E),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'Selected',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${subscription['price']} ETB',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '/ ${subscription['duration']}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (subscription['features'] != null && 
+                                (subscription['features'] as List).isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              ...((subscription['features'] as List).map((feature) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle,
+                                        size: 20,
+                                        color: Color(0xFF22C55E),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          feature as String,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey.shade700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList()),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 24),
+              
+              // Terms and Conditions Checkbox
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: state.data.agreeTermsCheck,
+                    onChanged: (value) {
+                      context.read<OnboardingBloc>().add(ToggleTermsAgreement(value ?? false));
+                    },
+                    activeColor: const Color(0xFF22C55E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF111827),
+                              height: 1.5,
+                            ),
+                            children: [
+                              const TextSpan(text: 'I agree to the '),
+                              TextSpan(
+                                text: 'Terms and Conditions',
+                                style: const TextStyle(
+                                  color: Color(0xFF22C55E),
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                              const TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: const TextStyle(
+                                  color: Color(0xFF22C55E),
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Step 7: Admin Approval
   Widget _buildAdminApprovalStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1511,50 +2389,42 @@ class _OnboardingViewState extends State<_OnboardingView>
   }
 
   Widget _buildConfirmationChecks() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-      ),
-      child: Column(
-        children: [
-          _buildCheckboxItem(
-            'I confirm that the above payment details are correct',
-            value: _confirmDetailsCheck,
-            onChanged: (value) {
-              setState(() {
-                _confirmDetailsCheck = value ?? false;
-              });
-            },
+    return BlocBuilder<OnboardingBloc, OnboardingState>(
+      builder: (context, state) {
+        if (state is! OnboardingInProgress) return const SizedBox.shrink();
+        
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200, width: 1),
           ),
-          const SizedBox(height: 16),
-          _buildCheckboxItem(
-            'I agree to the Zareshop Payout Terms',
-            value: _agreeTermsCheck,
-            onChanged: (value) {
-              setState(() {
-                _agreeTermsCheck = value ?? false;
-              });
-            },
-            linkText: 'View terms',
-            onLinkTap: () {
-              _showTermsDialog();
-            },
+          child: Column(
+            children: [
+              _buildCheckboxItem(
+                'I confirm that the above payment details are correct',
+                value: state.data.confirmDetailsCheck,
+                onChanged: (value) {
+                  context.read<OnboardingBloc>().add(UpdatePayoutCheckboxes(
+                    confirmDetailsCheck: value,
+                  ));
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildCheckboxItem(
+                'I authorize payouts to the selected default payment method',
+                value: state.data.authorizePayoutCheck,
+                onChanged: (value) {
+                  context.read<OnboardingBloc>().add(UpdatePayoutCheckboxes(
+                    authorizePayoutCheck: value,
+                  ));
+                },
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          _buildCheckboxItem(
-            'I authorize payouts to the selected default payment method',
-            value: _authorizePayoutCheck,
-            onChanged: (value) {
-              setState(() {
-                _authorizePayoutCheck = value ?? false;
-              });
-            },
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1713,31 +2583,17 @@ class _OnboardingViewState extends State<_OnboardingView>
     TextInputType? keyboardType,
     int maxLines = 1,
     required Function(String) onChanged,
+    String? Function(String?)? validator,
+    String? initialValue,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          onChanged: onChanged,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ],
+    return _TextFieldWidget(
+      label: label,
+      hint: hint,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      onChanged: onChanged,
+      validator: validator,
+      initialValue: initialValue,
     );
   }
 
@@ -2115,17 +2971,7 @@ class _OnboardingViewState extends State<_OnboardingView>
   }
 
   Widget _buildCategoryDropdown() {
-    final categories = [
-      {'name': 'Electronics', 'icon': Icons.devices, 'color': const Color(0xFF6366F1)},
-      {'name': 'Fashion', 'icon': Icons.checkroom, 'color': const Color(0xFFEC4899)},
-      {'name': 'Food & Beverage', 'icon': Icons.restaurant, 'color': const Color(0xFFF59E0B)},
-      {'name': 'Beauty & Health', 'icon': Icons.spa, 'color': const Color(0xFF8B5CF6)},
-      {'name': 'Home & Garden', 'icon': Icons.home, 'color': const Color(0xFF10B981)},
-      {'name': 'Sports & Outdoor', 'icon': Icons.sports_soccer, 'color': const Color(0xFF3B82F6)},
-      {'name': 'Books & Media', 'icon': Icons.menu_book, 'color': const Color(0xFFF97316)},
-      {'name': 'Toys & Kids', 'icon': Icons.toys, 'color': const Color(0xFFEF4444)},
-    ];
-
+    // Use categories from backend (fetched in initState)
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state is! OnboardingInProgress) return const SizedBox.shrink();
@@ -2136,7 +2982,7 @@ class _OnboardingViewState extends State<_OnboardingView>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Business Category',
+              'Business Category *',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -2144,19 +2990,48 @@ class _OnboardingViewState extends State<_OnboardingView>
               ),
             ),
             const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 2.5,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = selectedCategory == category['name'];
+            if (_loadingCategories)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
+                  ),
+                ),
+              )
+            else if (_categories.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text(
+                    'No categories available',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 2.5,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  final category = _categories[index];
+                // Support multiple category selection
+                final selectedCategories = selectedCategory.isEmpty 
+                    ? <String>[]
+                    : selectedCategory.contains(',')
+                        ? selectedCategory.split(',').map((e) => e.trim()).toList()
+                        : [selectedCategory];
+                final isSelected = selectedCategories.contains(category['name']);
                 
                 return TweenAnimationBuilder<double>(
                   duration: Duration(milliseconds: 400 + (index * 80)),
@@ -2169,7 +3044,25 @@ class _OnboardingViewState extends State<_OnboardingView>
                         opacity: value.clamp(0.0, 1.0),
                         child: GestureDetector(
                           onTap: () {
-                            context.read<OnboardingBloc>().add(UpdateCategory(category['name'] as String));
+                            final categoryName = category['name'] as String;
+                            final currentCategories = selectedCategory.isEmpty 
+                                ? <String>[]
+                                : selectedCategory.contains(',')
+                                    ? selectedCategory.split(',').map((e) => e.trim()).toList()
+                                    : [selectedCategory];
+                            
+                            List<String> newCategories;
+                            if (currentCategories.contains(categoryName)) {
+                              // Remove category if already selected
+                              newCategories = currentCategories.where((c) => c != categoryName).toList();
+                            } else {
+                              // Add category if not selected
+                              newCategories = [...currentCategories, categoryName];
+                            }
+                            
+                            // Convert back to comma-separated string
+                            final newCategoryString = newCategories.join(',');
+                            context.read<OnboardingBloc>().add(UpdateCategory(newCategoryString));
                           },
                           child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -2294,6 +3187,647 @@ class _OnboardingViewState extends State<_OnboardingView>
       ),
     );
   }
+
+  // Success page for vendor submission
+  Widget _buildVendorSubmissionSuccessPage(OnboardingVendorSubmitted state) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF10B981), // Emerald green
+              Color(0xFF22C55E), // Green
+              Color(0xFF16A34A), // Dark green
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+      child: Stack(
+        children: [
+          // Animated background particles
+          ...List.generate(20, (index) => 
+            TweenAnimationBuilder<double>(
+              duration: Duration(milliseconds: 2000 + (index * 100)),
+              tween: Tween(begin: 0.0, end: 1.0),
+              builder: (context, value, child) {
+                return Positioned(
+                  left: (index * 50.0) % MediaQuery.of(context).size.width,
+                  top: (index * 80.0) % MediaQuery.of(context).size.height,
+                  child: Transform.scale(
+                    scale: 0.3 + (value * 0.7),
+                    child: Opacity(
+                      opacity: (0.1 + (value * 0.3)).clamp(0.0, 1.0),
+                      child: Container(
+                        width: 20 + (index % 3) * 10,
+                        height: 20 + (index % 3) * 10,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          // Main content
+          SafeArea(
+            child: SingleChildScrollView(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+              // Animated success icon with celebration
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.elasticOut,
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: value,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Outer glow ring
+                        Container(
+                          width: 180,
+                          height: 180,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.3),
+                                blurRadius: 30,
+                                spreadRadius: 10,
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Main success circle
+                        Container(
+                          width: 140,
+                          height: 140,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.5),
+                              width: 3,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.celebration,
+                            size: 70,
+                            color: Colors.white,
+                          ),
+                        ),
+                        // Floating particles around icon
+                        ...List.generate(8, (index) {
+                          final angle = (index * 45.0) * (3.14159 / 180);
+                          return Transform.translate(
+                            offset: Offset(
+                              math.cos(angle) * 100 * value,
+                              math.sin(angle) * 100 * value,
+                            ),
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 40),
+              
+              // Animated title
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOutBack,
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 30 * (1 - value)),
+                    child: Opacity(
+                      opacity: value.clamp(0.0, 1.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            '🎉 Congratulations! 🎉',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Application Submitted Successfully!',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                              height: 1.2,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Animated message with beautiful card
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.easeOutBack,
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 20 * (1 - value)),
+                    child: Opacity(
+                      opacity: value.clamp(0.0, 1.0),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 32),
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.hourglass_empty,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 32,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Your vendor application is now under review',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withOpacity(0.95),
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'We\'ll notify you once it\'s approved. This usually takes 1-2 business days.',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white.withOpacity(0.8),
+                                height: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 40),
+              
+              // Animated buttons
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutBack,
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 30 * (1 - value)),
+                    child: Opacity(
+                      opacity: value.clamp(0.0, 1.0),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          children: [
+                            // Primary button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // Contact help functionality - could open help page or contact form
+                                  // For now, just show a snackbar
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Contact our support team at support@zareshop.com'),
+                                      backgroundColor: Color(0xFF10B981),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF10B981),
+                                  padding: const EdgeInsets.symmetric(vertical: 18),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 8,
+                                  shadowColor: Colors.black.withOpacity(0.3),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.support_agent, size: 20),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Contact Help',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Secondary button
+                            SizedBox(
+                              width: double.infinity,
+                              child: TextButton(
+                                onPressed: () {
+                                  // Could add functionality to view application status
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white.withOpacity(0.9),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: BorderSide(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.track_changes, size: 18, color: Colors.white.withOpacity(0.8)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Track Application Status',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      ),
+    );
+  }
+
+  // Error page for vendor submission failure
+  Widget _buildVendorSubmissionErrorPage(OnboardingVendorSubmissionFailed state) {
+    
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFDC2626), Color(0xFFEF4444)],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Error Icon
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.error_outline,
+              size: 80,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 32),
+          
+          // Error Title
+          const Text(
+            'Submission Failed',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          
+          // Error Message
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              state.error,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 32),
+          
+          // Action Buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                // Try Again Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.read<OnboardingBloc>().add(const InitializeOnboarding());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFFDC2626),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Try Again',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Go to Dashboard Button
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () {
+                      context.go('/');
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text(
+                      'Skip to Dashboard',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Page for when user already exists - redirect to login
+  Widget _buildUserAlreadyExistsPage(OnboardingUserAlreadyExists state) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFEA580C), Color(0xFFF97316)],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Info Icon
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.person_outline,
+              size: 80,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 32),
+          
+          // Title
+          const Text(
+            'Account Already Exists',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          
+          // Message
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              state.message,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          
+          if (state.phoneNumber != null || state.email != null) ...[
+            const SizedBox(height: 24),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  if (state.phoneNumber != null) ...[
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.phone,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          state.phoneNumber!,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (state.email != null && state.phoneNumber != null)
+                    const SizedBox(height: 8),
+                  if (state.email != null) ...[
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.email,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            state.email!,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+          
+          const SizedBox(height: 32),
+          
+          // Action Buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                // Go to Login Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.go('/login');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFFEA580C),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Go to Login',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Start Over Button
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () {
+                      context.read<OnboardingBloc>().add(const InitializeOnboarding());
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text(
+                      'Start Over with Different Info',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // Separate widget for dot indicator with spring animation
@@ -2377,6 +3911,105 @@ class _DotIndicatorState extends State<_DotIndicator>
           );
         },
       ),
+    );
+  }
+}
+
+class _TextFieldWidget extends StatefulWidget {
+  final String label;
+  final String hint;
+  final TextInputType? keyboardType;
+  final int maxLines;
+  final Function(String) onChanged;
+  final String? Function(String?)? validator;
+  final String? initialValue;
+
+  const _TextFieldWidget({
+    required this.label,
+    required this.hint,
+    this.keyboardType,
+    this.maxLines = 1,
+    required this.onChanged,
+    this.validator,
+    this.initialValue,
+  });
+
+  @override
+  State<_TextFieldWidget> createState() => _TextFieldWidgetState();
+}
+
+class _TextFieldWidgetState extends State<_TextFieldWidget> {
+  late TextEditingController _controller;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue ?? '');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged(String value) {
+    // Validate the input
+    if (widget.validator != null) {
+      setState(() {
+        _errorText = widget.validator!(value);
+      });
+    }
+    
+    // Call the onChanged callback
+    widget.onChanged(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF111827),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _controller,
+          onChanged: _onTextChanged,
+          keyboardType: widget.keyboardType,
+          maxLines: widget.maxLines,
+          decoration: InputDecoration(
+            hintText: widget.hint,
+            errorText: _errorText,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: _errorText != null ? Colors.red : Colors.grey.shade300,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: _errorText != null ? Colors.red : Colors.grey.shade300,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: _errorText != null ? Colors.red : const Color(0xFF22C55E),
+                width: 2,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -22,7 +22,7 @@ class OnboardingInProgress extends OnboardingState {
   const OnboardingInProgress({
     required this.currentStep,
     required this.data,
-    this.totalSteps = 6,
+    this.totalSteps = 8,
   });
 
   OnboardingInProgress copyWith({
@@ -57,6 +57,38 @@ class OnboardingCompleted extends OnboardingState {
   List<Object?> get props => [data];
 }
 
+/// Vendor submission successful state
+class OnboardingVendorSubmitted extends OnboardingState {
+  final OnboardingData data;
+  final Map<String, dynamic> apiResponse;
+  final String message;
+
+  const OnboardingVendorSubmitted({
+    required this.data,
+    required this.apiResponse,
+    this.message = 'Application submitted for review',
+  });
+
+  @override
+  List<Object?> get props => [data, apiResponse, message];
+}
+
+/// Vendor submission failed state
+class OnboardingVendorSubmissionFailed extends OnboardingState {
+  final OnboardingData data;
+  final Map<String, dynamic> apiResponse;
+  final String error;
+
+  const OnboardingVendorSubmissionFailed({
+    required this.data,
+    required this.apiResponse,
+    required this.error,
+  });
+
+  @override
+  List<Object?> get props => [data, apiResponse, error];
+}
+
 /// Loading state
 class OnboardingLoading extends OnboardingState {
   const OnboardingLoading();
@@ -70,4 +102,22 @@ class OnboardingError extends OnboardingState {
 
   @override
   List<Object?> get props => [message];
+}
+
+/// User already exists state - should redirect to login
+class OnboardingUserAlreadyExists extends OnboardingState {
+  final OnboardingData data;
+  final String message;
+  final String? phoneNumber;
+  final String? email;
+
+  const OnboardingUserAlreadyExists({
+    required this.data,
+    required this.message,
+    this.phoneNumber,
+    this.email,
+  });
+
+  @override
+  List<Object?> get props => [data, message, phoneNumber, email];
 }

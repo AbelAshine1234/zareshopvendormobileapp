@@ -2,14 +2,20 @@ import 'package:equatable/equatable.dart';
 
 /// Model to hold all onboarding data
 class OnboardingData extends Equatable {
-  // Step 1: Phone Number
+  // Step 0: Phone Number
   final String phoneNumber;
-  final String vendorType; // 'individual' or 'business'
+  final String vendorType; // Always 'business' - kept for compatibility
+  final String password;
+  final bool userExists;
+  final bool isOtpVerified;
+  final bool hasVendor;
   
-  // Step 2: OTP
+  // Step 1: OTP
   final String otp;
   
-  // Step 3: Basic Info
+  // Step 2: Basic Info
+  final String firstName;
+  final String lastName;
   final String fullName;
   final String businessName;
   final String email;
@@ -29,16 +35,44 @@ class OnboardingData extends Equatable {
   final String businessLicensePhotoUrl;
   final String taxId;
   
-  // Step 5: Payout
-  final String preferredPayoutMethod; // 'wallet' or 'bank'
-  final String bankAccountNumber;
+  // Step 4: Shipping Address
+  final String addressLine1;
+  final String addressLine2;
+  final String shippingCity;
+  final String state;
+  final String shippingRegion;
+  final String subcity;
+  final String woreda;
+  final String kebele;
+  final String postalCode;
+  final String country;
+  final String latitude;
+  final String longitude;
+  
+  // Step 5: Subscription Selection
+  final int? selectedSubscriptionId;
+  final String selectedSubscriptionName;
+  final bool agreeTermsCheck;
+  
+  // Step 6: Payout Information
+  final String preferredPayoutMethod; // 'bank' or 'wallet'
+  final String accountHolderName; // Account holder's full name
   final String bankName;
+  final String bankAccountNumber;
   final String mobileWalletNumber;
+  final bool confirmDetailsCheck;
+  final bool authorizePayoutCheck;
 
   const OnboardingData({
     this.phoneNumber = '',
-    this.vendorType = 'individual',
+    this.vendorType = 'business',
+    this.password = '',
+    this.userExists = false,
+    this.isOtpVerified = false,
+    this.hasVendor = false,
     this.otp = '',
+    this.firstName = '',
+    this.lastName = '',
     this.fullName = '',
     this.businessName = '',
     this.email = '',
@@ -55,16 +89,40 @@ class OnboardingData extends Equatable {
     this.businessLicenseNumber = '',
     this.businessLicensePhotoUrl = '',
     this.taxId = '',
+    this.addressLine1 = '',
+    this.addressLine2 = '',
+    this.shippingCity = '',
+    this.state = '',
+    this.shippingRegion = '',
+    this.subcity = '',
+    this.woreda = '',
+    this.kebele = '',
+    this.postalCode = '',
+    this.country = 'Ethiopia',
+    this.latitude = '',
+    this.longitude = '',
+    this.selectedSubscriptionId,
+    this.selectedSubscriptionName = '',
+    this.agreeTermsCheck = false,
     this.preferredPayoutMethod = 'wallet',
-    this.bankAccountNumber = '',
+    this.accountHolderName = '',
     this.bankName = '',
+    this.bankAccountNumber = '',
     this.mobileWalletNumber = '',
+    this.confirmDetailsCheck = false,
+    this.authorizePayoutCheck = false,
   });
 
   OnboardingData copyWith({
     String? phoneNumber,
     String? vendorType,
+    String? password,
+    bool? userExists,
+    bool? isOtpVerified,
+    bool? hasVendor,
     String? otp,
+    String? firstName,
+    String? lastName,
     String? fullName,
     String? businessName,
     String? email,
@@ -81,15 +139,39 @@ class OnboardingData extends Equatable {
     String? businessLicenseNumber,
     String? businessLicensePhotoUrl,
     String? taxId,
+    String? addressLine1,
+    String? addressLine2,
+    String? shippingCity,
+    String? state,
+    String? shippingRegion,
+    String? subcity,
+    String? woreda,
+    String? kebele,
+    String? postalCode,
+    String? country,
+    String? latitude,
+    String? longitude,
+    int? selectedSubscriptionId,
+    String? selectedSubscriptionName,
+    bool? agreeTermsCheck,
     String? preferredPayoutMethod,
-    String? bankAccountNumber,
+    String? accountHolderName,
     String? bankName,
+    String? bankAccountNumber,
     String? mobileWalletNumber,
+    bool? confirmDetailsCheck,
+    bool? authorizePayoutCheck,
   }) {
     return OnboardingData(
       phoneNumber: phoneNumber ?? this.phoneNumber,
       vendorType: vendorType ?? this.vendorType,
+      password: password ?? this.password,
+      userExists: userExists ?? this.userExists,
+      isOtpVerified: isOtpVerified ?? this.isOtpVerified,
+      hasVendor: hasVendor ?? this.hasVendor,
       otp: otp ?? this.otp,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       fullName: fullName ?? this.fullName,
       businessName: businessName ?? this.businessName,
       email: email ?? this.email,
@@ -106,10 +188,28 @@ class OnboardingData extends Equatable {
       businessLicenseNumber: businessLicenseNumber ?? this.businessLicenseNumber,
       businessLicensePhotoUrl: businessLicensePhotoUrl ?? this.businessLicensePhotoUrl,
       taxId: taxId ?? this.taxId,
+      addressLine1: addressLine1 ?? this.addressLine1,
+      addressLine2: addressLine2 ?? this.addressLine2,
+      shippingCity: shippingCity ?? this.shippingCity,
+      state: state ?? this.state,
+      shippingRegion: shippingRegion ?? this.shippingRegion,
+      subcity: subcity ?? this.subcity,
+      woreda: woreda ?? this.woreda,
+      kebele: kebele ?? this.kebele,
+      postalCode: postalCode ?? this.postalCode,
+      country: country ?? this.country,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      selectedSubscriptionId: selectedSubscriptionId ?? this.selectedSubscriptionId,
+      selectedSubscriptionName: selectedSubscriptionName ?? this.selectedSubscriptionName,
+      agreeTermsCheck: agreeTermsCheck ?? this.agreeTermsCheck,
       preferredPayoutMethod: preferredPayoutMethod ?? this.preferredPayoutMethod,
-      bankAccountNumber: bankAccountNumber ?? this.bankAccountNumber,
+      accountHolderName: accountHolderName ?? this.accountHolderName,
       bankName: bankName ?? this.bankName,
+      bankAccountNumber: bankAccountNumber ?? this.bankAccountNumber,
       mobileWalletNumber: mobileWalletNumber ?? this.mobileWalletNumber,
+      confirmDetailsCheck: confirmDetailsCheck ?? this.confirmDetailsCheck,
+      authorizePayoutCheck: authorizePayoutCheck ?? this.authorizePayoutCheck,
     );
   }
 
@@ -118,37 +218,31 @@ class OnboardingData extends Equatable {
 
   bool isStepCompleted(int step) {
     switch (step) {
-      case 0: // Phone Number
-        return phoneNumber.isNotEmpty && phoneNumber.length >= 10;
-      case 1: // OTP
-        return otp.isNotEmpty && otp.length == 6;
-      case 2: // Basic Info
-        if (isIndividual) {
-          return fullName.isNotEmpty &&
-              street.isNotEmpty &&
-              city.isNotEmpty &&
-              businessDescription.isNotEmpty &&
-              category.isNotEmpty;
-        } else {
-          return businessName.isNotEmpty &&
-              street.isNotEmpty &&
-              city.isNotEmpty &&
-              businessDescription.isNotEmpty &&
-              category.isNotEmpty;
-        }
-      case 3: // Documents
-        if (isIndividual) {
-          return faydaIdNumber.isNotEmpty;
-        } else {
-          return businessLicenseNumber.isNotEmpty;
-        }
-      case 4: // Payout
-        if (preferredPayoutMethod == 'bank') {
-          return bankAccountNumber.isNotEmpty && bankName.isNotEmpty;
-        } else {
-          return mobileWalletNumber.isNotEmpty;
-        }
-      case 5: // Admin Approval (always allow to view)
+      case 0: // Phone Number & Password
+        return phoneNumber.isNotEmpty && 
+               phoneNumber.length >= 10 && 
+               password.isNotEmpty && 
+               password.length >= 6;
+      case 1: // OTP - If user got past this step, it was verified by API
+        return true; // Always true - verified by backend when moving to step 2
+      case 2: // Basic Info (Business only)
+        return businessName.isNotEmpty &&
+            businessDescription.isNotEmpty &&
+            category.isNotEmpty;
+      case 3: // Shipping Address
+        return addressLine1.isNotEmpty && addressLine1.length >= 3;
+      case 4: // Documents (Business only)
+        return coverPhotoUrl.isNotEmpty && businessLicenseNumber.isNotEmpty;
+      case 5: // Payout Information
+        // Check if payout method is selected and details are filled
+        final isBank = preferredPayoutMethod == 'bank';
+        final hasPaymentData = isBank 
+            ? bankAccountNumber.isNotEmpty && bankName.isNotEmpty && accountHolderName.isNotEmpty
+            : mobileWalletNumber.isNotEmpty && accountHolderName.isNotEmpty;
+        return hasPaymentData && confirmDetailsCheck && authorizePayoutCheck;
+      case 6: // Subscription Selection
+        return selectedSubscriptionId != null && agreeTermsCheck;
+      case 7: // Admin Approval (always true - user just waits)
         return true;
       default:
         return false;
@@ -159,7 +253,13 @@ class OnboardingData extends Equatable {
   List<Object?> get props => [
         phoneNumber,
         vendorType,
+        password,
+        userExists,
+        isOtpVerified,
+        hasVendor,
         otp,
+        firstName,
+        lastName,
         fullName,
         businessName,
         email,
@@ -176,9 +276,27 @@ class OnboardingData extends Equatable {
         businessLicenseNumber,
         businessLicensePhotoUrl,
         taxId,
+        addressLine1,
+        addressLine2,
+        shippingCity,
+        state,
+        shippingRegion,
+        subcity,
+        woreda,
+        kebele,
+        postalCode,
+        country,
+        latitude,
+        longitude,
+        selectedSubscriptionId,
+        selectedSubscriptionName,
+        agreeTermsCheck,
         preferredPayoutMethod,
-        bankAccountNumber,
+        accountHolderName,
         bankName,
+        bankAccountNumber,
         mobileWalletNumber,
+        confirmDetailsCheck,
+        authorizePayoutCheck,
       ];
 }

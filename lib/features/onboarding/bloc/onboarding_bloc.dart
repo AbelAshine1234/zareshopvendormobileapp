@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as developer;
+import 'dart:convert';
 import '../models/onboarding_data.dart';
 import 'onboarding_event.dart';
 import 'onboarding_state.dart';
@@ -13,19 +14,23 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<GoToStep>(_onGoToStep);
     on<CompleteOnboarding>(_onCompleteOnboarding);
     
-    // Step 1: Phone Number
+    // Step 1: Phone Number & Vendor Type
     on<UpdatePhoneNumber>(_onUpdatePhoneNumber);
     on<UpdateVendorType>(_onUpdateVendorType);
+    on<UpdatePassword>(_onUpdatePassword);
     
     // Step 2: OTP
     on<UpdateOTP>(_onUpdateOTP);
     on<ResendOTP>(_onResendOTP);
     
     // Step 3: Basic Info
+    on<UpdateFirstName>(_onUpdateFirstName);
+    on<UpdateLastName>(_onUpdateLastName);
     on<UpdateFullName>(_onUpdateFullName);
     on<UpdateBusinessName>(_onUpdateBusinessName);
     on<UpdateEmail>(_onUpdateEmail);
     on<UpdateLanguagePreference>(_onUpdateLanguagePreference);
+    on<UpdateCoverPhoto>(_onUpdateCoverPhoto);
     on<UpdateAddress>(_onUpdateAddress);
     on<UpdateBusinessDescription>(_onUpdateBusinessDescription);
     on<UpdateCategory>(_onUpdateCategory);
@@ -35,10 +40,21 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<UpdateBusinessLicenseNumber>(_onUpdateBusinessLicenseNumber);
     on<UpdateTaxId>(_onUpdateTaxId);
     
-    // Step 5: Payout
+    // Step 4: Shipping Address
+    on<UpdateShippingAddress>(_onUpdateShippingAddress);
+    
+    // Step 5: Subscription
+    on<SelectSubscription>(_onSelectSubscription);
+    on<ToggleTermsAgreement>(_onToggleTermsAgreement);
+    
+    // Step 6: Payout
     on<UpdatePayoutMethod>(_onUpdatePayoutMethod);
     on<UpdateBankAccount>(_onUpdateBankAccount);
     on<UpdateMobileWallet>(_onUpdateMobileWallet);
+    on<UpdatePayoutCheckboxes>(_onUpdatePayoutCheckboxes);
+    
+    // Step 7: Subscription
+    on<UpdateSubscription>(_onUpdateSubscription);
   }
 
   void _onInitializeOnboarding(
@@ -51,16 +67,17 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         currentStep: 0,
         data: OnboardingData(
           phoneNumber: '+251912345678',
-          vendorType: 'individual',
+          vendorType: 'business',
           otp: '123456',
-          fullName: 'Arthur Taylor',
-          email: 'arthur.taylor@zareshop.com',
+          businessName: 'Test Business',
+          email: 'test@zareshop.com',
           street: 'Bole Road',
           city: 'Addis Ababa',
           category: 'electronics',
           businessDescription: 'Selling quality electronics',
-          faydaIdNumber: 'FYD123456',
+          businessLicenseNumber: 'BL123456',
           preferredPayoutMethod: 'wallet',
+          accountHolderName: 'Test User',
           mobileWalletNumber: '+251912345678',
         ),
       ));
@@ -110,45 +127,76 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
               ? currentState.data.fullName 
               : phoneNumber;
           
-          // Create a temporary password (user will set it later or it can be sent via SMS)
-          final tempPassword = 'Temp@${phoneNumber.replaceAll('+', '')}123';
+          // Use password from state
+          final password = currentState.data.password.isNotEmpty 
+              ? currentState.data.password 
+              : 'Temp@${phoneNumber.replaceAll('+', '')}123'; // Fallback if password not set
           
-          print('🔑 Generated temp password: $tempPassword');
-          developer.log('🔑 Generated temp password: $tempPassword', name: 'OnboardingBloc');
+          print('🔑 Using password: ${password.replaceAll(RegExp(r'.'), '*')}');
+          developer.log('🔑 Using password: ${password.replaceAll(RegExp(r'.'), '*')}', name: 'OnboardingBloc');
           
-          Map<String, dynamic> result;
+          // Always register as VENDOR_OWNER (business only)
+          print('🚀 Calling register-vendor-owner API...');
+          developer.log('🚀 Calling register-vendor-owner API...', name: 'OnboardingBloc');
           
-          // Call appropriate registration endpoint based on vendor type
-          if (vendorType == 'individual') {
-            print('🚀 Calling register-client API...');
-            developer.log('🚀 Calling register-client API...', name: 'OnboardingBloc');
-            // Register as CLIENT
-            result = await ApiService.registerClient(
-              name: name,
-              phoneNumber: phoneNumber,
-              password: tempPassword,
-              email: currentState.data.email,
-            );
-          } else {
-            print('🚀 Calling register-vendor-owner API...');
-            developer.log('🚀 Calling register-vendor-owner API...', name: 'OnboardingBloc');
-            // Register as VENDOR_OWNER
-            result = await ApiService.registerVendorOwner(
-              name: name,
-              phoneNumber: phoneNumber,
-              password: tempPassword,
-              email: currentState.data.email,
-            );
-          }
+          final result = await ApiService.registerVendorOwner(
+            name: name,
+            phoneNumber: phoneNumber,
+            password: password,
+            email: currentState.data.email,
+          );
           
           print('📥 API Response: $result');
-          developer.log('📥 API Response: $result', name: 'OnboardingBloc');
+          print('   Response Keys: ${result.keys.toList()}');
+          print('   Success: ${result['success']}');
+          print('   Error: ${result['error']}');
+          print('   Data: ${result['data']}');
+          developer.log(
+            '📥 API Response:\n'
+            '   Full Response: $result\n'
+            '   Response Keys: ${result.keys.toList()}\n'
+            '   Success: ${result['success']}\n'
+            '   Error: ${result['error']}\n'
+            '   Data: ${result['data']}',
+            name: 'OnboardingBloc',
+          );
           
           if (result['success'] == true) {
-            print('✅ Registration successful! Moving to OTP step...');
-            developer.log('✅ Registration successful! Moving to OTP step...', name: 'OnboardingBloc');
-            // Registration successful, OTP sent
-            emit(currentState.copyWith(currentStep: 1));
+            // Check if OTP is already verified
+            bool isOtpVerified = result['is_otp_verified'] ?? false;
+            
+            if (isOtpVerified) {
+              print('✅ User exists and OTP already verified!');
+              developer.log('✅ User exists and OTP already verified!', name: 'OnboardingBloc');
+              
+              // Login to get authentication token
+              print('🔑 Logging in to get authentication token...');
+              try {
+                final loginResult = await ApiService.login(
+                  phoneNumber: currentState.data.phoneNumber,
+                  password: currentState.data.password,
+                );
+                
+                if (loginResult['success'] == true) {
+                  print('✅ Login successful! Token saved. Going to Basic Info...');
+                  // OTP already verified and logged in, go directly to step 2 (Basic Info)
+                  emit(currentState.copyWith(currentStep: 2));
+                } else {
+                  print('❌ Login failed: ${loginResult['error']}');
+                  emit(OnboardingError(loginResult['error'] ?? 'Login failed'));
+                  emit(currentState); // Return to current state
+                }
+              } catch (e) {
+                print('❌ Login error: $e');
+                emit(OnboardingError('Login error: ${e.toString()}'));
+                emit(currentState);
+              }
+            } else {
+              print('✅ Registration successful! Moving to OTP step...');
+              developer.log('✅ Registration successful! Moving to OTP step...', name: 'OnboardingBloc');
+              // OTP not verified, go to step 1 (OTP verification)
+              emit(currentState.copyWith(currentStep: 1));
+            }
           } else {
             print('❌ Registration failed: ${result['error']}');
             developer.log('❌ Registration failed: ${result['error']}', name: 'OnboardingBloc');
@@ -170,14 +218,31 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         emit(const OnboardingLoading());
         
         try {
+          print('🔐 Step 1: Verifying OTP...');
           final result = await ApiService.verifyOtp(
             phoneNumber: currentState.data.phoneNumber,
             code: currentState.data.otp,
           );
           
           if (result['success'] == true) {
-            // OTP verified successfully
-            emit(currentState.copyWith(currentStep: 2));
+            print('✅ OTP verified successfully!');
+            
+            // IMPORTANT: Now login to get the authentication token
+            print('🔑 Logging in to get authentication token...');
+            final loginResult = await ApiService.login(
+              phoneNumber: currentState.data.phoneNumber,
+              password: currentState.data.password,
+            );
+            
+            if (loginResult['success'] == true) {
+              print('✅ Login successful! Token saved.');
+              // OTP verified and logged in successfully - proceed to next step
+              emit(currentState.copyWith(currentStep: 2));
+            } else {
+              print('❌ Login failed after OTP verification: ${loginResult['error']}');
+              emit(OnboardingError(loginResult['error'] ?? 'Login failed after OTP verification'));
+              emit(currentState); // Return to current state
+            }
           } else {
             // OTP verification failed - show error
             print('❌ OTP Error: ${result['error']}');
@@ -192,10 +257,21 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         return;
       }
 
-      // Check if it's the last step
-      if (currentState.isLastStep) {
-        emit(OnboardingCompleted(currentState.data));
+      // Check if we just completed the subscription step (step 6)
+      print('🔍 [ONBOARDING_BLOC] Step check:');
+      print('   Current Step: ${currentState.currentStep}');
+      print('   Total Steps: ${currentState.totalSteps}');
+      print('   Is Last Step: ${currentState.isLastStep}');
+      print('   Expected Last Step: ${currentState.totalSteps - 1}');
+      
+      if (currentState.currentStep == 6) {
+        print('🎯 [ONBOARDING_BLOC] Completed subscription step - triggering vendor creation');
+        add(const CompleteOnboarding());
+      } else if (currentState.isLastStep) {
+        print('🏁 [ONBOARDING_BLOC] Reached last step - triggering CompleteOnboarding event');
+        add(const CompleteOnboarding());
       } else {
+        print('➡️ [ONBOARDING_BLOC] Moving to next step: ${currentState.currentStep + 1}');
         // Move to next step (for other steps)
         emit(currentState.copyWith(
           currentStep: currentState.currentStep + 1,
@@ -264,6 +340,15 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
+  void _onUpdatePassword(UpdatePassword event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(password: event.password),
+      ));
+    }
+  }
+
   // Step 2: OTP Events
   void _onUpdateOTP(UpdateOTP event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
@@ -304,6 +389,24 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   }
 
   // Step 3: Basic Info Events
+  void _onUpdateFirstName(UpdateFirstName event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(firstName: event.firstName),
+      ));
+    }
+  }
+
+  void _onUpdateLastName(UpdateLastName event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(lastName: event.lastName),
+      ));
+    }
+  }
+
   void _onUpdateFullName(UpdateFullName event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
@@ -340,6 +443,15 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
+  void _onUpdateCoverPhoto(UpdateCoverPhoto event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(coverPhotoUrl: event.coverPhotoUrl),
+      ));
+    }
+  }
+
   void _onUpdateAddress(UpdateAddress event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
@@ -349,6 +461,14 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           city: event.city,
           region: event.region,
           zone: event.zone,
+          addressLine1: event.addressLine1,
+          addressLine2: event.addressLine2,
+          state: event.state,
+          subcity: event.subcity,
+          woreda: event.woreda,
+          kebele: event.kebele,
+          postalCode: event.postalCode,
+          country: event.country,
         ),
       ));
     }
@@ -400,12 +520,61 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
-  // Step 5: Payout Events
+  // Step 5: Subscription Events
+  void _onSelectSubscription(SelectSubscription event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(
+          selectedSubscriptionId: event.subscriptionId,
+          selectedSubscriptionName: event.subscriptionName,
+        ),
+      ));
+    }
+  }
+
+  void _onToggleTermsAgreement(ToggleTermsAgreement event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(
+          agreeTermsCheck: event.agreed,
+        ),
+      ));
+    }
+  }
+
+  // Shipping Address Event Handler
+  void _onUpdateShippingAddress(UpdateShippingAddress event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(
+          addressLine1: event.addressLine1,
+          addressLine2: event.addressLine2,
+          shippingCity: event.city,
+          state: event.state,
+          shippingRegion: event.region,
+          subcity: event.subcity,
+          woreda: event.woreda,
+          kebele: event.kebele,
+          postalCode: event.postalCode,
+          country: event.country,
+          latitude: event.latitude,
+          longitude: event.longitude,
+        ),
+      ));
+    }
+  }
+
+  // Step 6: Payout Event Handlers
   void _onUpdatePayoutMethod(UpdatePayoutMethod event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
-        data: currentState.data.copyWith(preferredPayoutMethod: event.payoutMethod),
+        data: currentState.data.copyWith(
+          preferredPayoutMethod: event.payoutMethod,
+        ),
       ));
     }
   }
@@ -415,8 +584,9 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
         data: currentState.data.copyWith(
-          bankAccountNumber: event.bankAccountNumber,
+          accountHolderName: event.accountHolderName,
           bankName: event.bankName,
+          bankAccountNumber: event.bankAccountNumber,
         ),
       ));
     }
@@ -426,32 +596,300 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
-        data: currentState.data.copyWith(mobileWalletNumber: event.mobileWalletNumber),
+        data: currentState.data.copyWith(
+          mobileWalletNumber: event.mobileWalletNumber,
+        ),
       ));
+    }
+  }
+
+  void _onUpdatePayoutCheckboxes(UpdatePayoutCheckboxes event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(
+          confirmDetailsCheck: event.confirmDetailsCheck,
+          agreeTermsCheck: event.agreeTermsCheck,
+          authorizePayoutCheck: event.authorizePayoutCheck,
+        ),
+      ));
+    }
+  }
+
+  void _onUpdateSubscription(UpdateSubscription event, Emitter<OnboardingState> emit) {
+    print('📦 [BLOC] UpdateSubscription event received');
+    print('📦 [BLOC] Subscription ID: ${event.subscriptionId}');
+    print('📦 [BLOC] Current state type: ${state.runtimeType}');
+    
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      print('📦 [BLOC] Current selected subscription: ${currentState.data.selectedSubscriptionId}');
+      
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(
+          selectedSubscriptionId: event.subscriptionId,
+        ),
+      ));
+      
+      print('✅ [BLOC] Subscription updated successfully to: ${event.subscriptionId}');
+    } else {
+      print('⚠️ [BLOC] State is not OnboardingInProgress, cannot update subscription');
     }
   }
 
   void _onCompleteOnboarding(
     CompleteOnboarding event,
     Emitter<OnboardingState> emit,
-  ) {
+  ) async {
+    print('🎯 [ONBOARDING_BLOC] ===== COMPLETE ONBOARDING EVENT RECEIVED =====');
+    print('🎯 [ONBOARDING_BLOC] Starting vendor creation process...');
+    
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
       
-      // Validate all steps are completed
-      bool allStepsCompleted = true;
-      for (int i = 0; i < currentState.totalSteps; i++) {
-        if (!currentState.data.isStepCompleted(i)) {
-          allStepsCompleted = false;
+      // Validate all previous steps are completed (don't check current step)
+      bool allPreviousStepsCompleted = true;
+      print('🔍 Validating steps...');
+      print('   Current Step: ${currentState.currentStep}');
+      print('   OTP Value: "${currentState.data.otp}" (length: ${currentState.data.otp.length})');
+      print('   Phone: ${currentState.data.phoneNumber}');
+      
+      for (int i = 0; i < currentState.currentStep; i++) {
+        bool stepCompleted = currentState.data.isStepCompleted(i);
+        print('   Step $i: ${stepCompleted ? "✅ Complete" : "❌ Incomplete"}');
+        if (!stepCompleted) {
+          print('❌ Step $i is not completed');
+          allPreviousStepsCompleted = false;
           break;
         }
       }
       
-      if (allStepsCompleted) {
-        emit(OnboardingCompleted(currentState.data));
-      } else {
-        emit(const OnboardingError('Please complete all steps'));
+      if (!allPreviousStepsCompleted) {
+        emit(const OnboardingError('Please complete all previous steps'));
+        return;
       }
+      
+      // Validate current step (Payout) is also completed
+      if (!currentState.data.isStepCompleted(currentState.currentStep)) {
+        emit(const OnboardingError('Please complete the payout information'));
+        return;
+      }
+
+      // Create business vendor (only business type supported)
+      print('🏢 [ONBOARDING_BLOC] Starting business vendor creation...');
+      print('🏢 [ONBOARDING_BLOC] Current step: ${currentState.currentStep}');
+      print('🏢 [ONBOARDING_BLOC] Selected subscription: ${currentState.data.selectedSubscriptionId}');
+      developer.log('🏢 Creating business vendor...', name: 'OnboardingBloc');
+      emit(const OnboardingLoading());
+        
+        try {
+          // Prepare data
+          final data = currentState.data;
+          
+          // Parse categories - support both single and multiple categories
+          List<int> categoryIds = [];
+          print('🏷️ [ONBOARDING_BLOC] Raw category data: "${data.category}"');
+          print('🏷️ [ONBOARDING_BLOC] Category isEmpty: ${data.category.isEmpty}');
+          
+          if (data.category.isNotEmpty) {
+            try {
+              List<String> categoryNames = [];
+              
+              // Parse category names from different formats
+              if (data.category.startsWith('[') && data.category.endsWith(']')) {
+                // Parse as JSON array
+                final List<dynamic> parsed = jsonDecode(data.category);
+                categoryNames = parsed.map((e) => e.toString()).toList();
+                print('✅ [ONBOARDING_BLOC] Parsed JSON category names: $categoryNames');
+              } else if (data.category.contains(',')) {
+                // Parse as comma-separated values
+                categoryNames = data.category.split(',').map((e) => e.trim()).toList();
+                print('✅ [ONBOARDING_BLOC] Parsed comma-separated category names: $categoryNames');
+              } else {
+                // Single category
+                categoryNames = [data.category.trim()];
+                print('✅ [ONBOARDING_BLOC] Single category name: $categoryNames');
+              }
+              
+              // Convert category names to IDs
+              // For now, use a simple mapping - in production, this should come from the categories API
+              final Map<String, int> categoryNameToId = {
+                'Electronics': 1,
+                'Clothing': 2,
+                'Food & Beverages': 3,
+                'Home & Garden': 4,
+                'Health & Beauty': 5,
+                'Sports & Recreation': 6,
+                'Books & Media': 7,
+                'Automotive': 8,
+                'Toys & Games': 9,
+                'Services': 10,
+              };
+              
+              for (String categoryName in categoryNames) {
+                if (categoryNameToId.containsKey(categoryName)) {
+                  categoryIds.add(categoryNameToId[categoryName]!);
+                } else {
+                  // Try to parse as direct ID if it's a number
+                  try {
+                    categoryIds.add(int.parse(categoryName));
+                  } catch (e) {
+                    print('⚠️ [ONBOARDING_BLOC] Unknown category name: $categoryName, using ID 1');
+                    categoryIds.add(1); // Default to category 1 for unknown names
+                  }
+                }
+              }
+              
+              print('✅ [ONBOARDING_BLOC] Final category IDs: $categoryIds');
+              
+            } catch (e) {
+              print('❌ [ONBOARDING_BLOC] Failed to parse category: ${data.category}, error: $e');
+              print('🔄 [ONBOARDING_BLOC] Using default category ID: 1');
+              categoryIds = [1]; // Fallback to default
+              developer.log('⚠️  Failed to parse category: ${data.category}', name: 'OnboardingBloc');
+            }
+          } else {
+            print('⚠️ [ONBOARDING_BLOC] No category selected, using default category ID: 1');
+            categoryIds = [1]; // Default to category 1 if none selected
+          }
+          
+          // Ensure we always have at least one category
+          if (categoryIds.isEmpty) {
+            print('🔄 [ONBOARDING_BLOC] Empty category list, adding default category ID: 1');
+            categoryIds = [1];
+          }
+          
+          // Remove duplicates
+          categoryIds = categoryIds.toSet().toList();
+          print('🏷️ [ONBOARDING_BLOC] Final unique category IDs: $categoryIds');
+          
+          // Prepare payment method details
+          final isBank = data.preferredPayoutMethod == 'bank';
+          final paymentMethodType = isBank ? 'bank' : 'wallet';
+          final accountNumber = isBank ? data.bankAccountNumber : data.mobileWalletNumber;
+          final accountName = isBank ? data.bankName : 'Telebirr'; // Wallet provider name
+          
+          print('📝 [ONBOARDING_BLOC] Business Vendor Creation Data:');
+          print('📝 [ONBOARDING_BLOC] Business Name: ${data.businessName}');
+          print('📝 [ONBOARDING_BLOC] Description: ${data.businessDescription}');
+          print('📝 [ONBOARDING_BLOC] Address Line 1: ${data.addressLine1}');
+          print('📝 [ONBOARDING_BLOC] Address Line 2: ${data.addressLine2}');
+          print('📝 [ONBOARDING_BLOC] City: ${data.shippingCity}');
+          print('📝 [ONBOARDING_BLOC] State: ${data.state}');
+          print('📝 [ONBOARDING_BLOC] Country: ${data.country}');
+          print('📝 [ONBOARDING_BLOC] Category IDs: $categoryIds');
+          print('📝 [ONBOARDING_BLOC] Payment Method Type: $paymentMethodType');
+          print('📝 [ONBOARDING_BLOC] Account Holder: ${data.accountHolderName}');
+          print('📝 [ONBOARDING_BLOC] Account Number: $accountNumber');
+          print('📝 [ONBOARDING_BLOC] Account Name: $accountName');
+          print('📝 [ONBOARDING_BLOC] Cover Photo URL: ${data.coverPhotoUrl}');
+          print('📝 [ONBOARDING_BLOC] Business License: ${data.businessLicenseNumber}');
+          print('📝 [ONBOARDING_BLOC] Subscription ID: ${data.selectedSubscriptionId}');
+          print('👤 [ONBOARDING_BLOC] User Info:');
+          print('   Full Name: ${data.fullName}');
+          print('   Email: ${data.email}');
+          print('   Phone: ${data.phoneNumber}');
+          print('🏠 [ONBOARDING_BLOC] Ethiopian Address Fields:');
+          print('   Region: ${data.shippingRegion}');
+          print('   Subcity: ${data.subcity}');
+          print('   Woreda: ${data.woreda}');
+          print('   Kebele: ${data.kebele}');
+          
+          print('🏢 [ONBOARDING_BLOC] ===== UNIFIED VENDOR REGISTRATION =====');
+          print('⏳ [ONBOARDING_BLOC] Calling ApiService.registerBusinessVendor (unified)...');
+          
+          // Unified registration: handles both payment and vendor creation
+          final result = await ApiService.registerBusinessVendor(
+            name: data.businessName,
+            description: data.businessDescription,
+            fullName: data.fullName.isNotEmpty ? data.fullName : 'Unknown User',
+            email: data.email.isNotEmpty ? data.email : 'user@example.com',
+            phoneNumber: data.phoneNumber,
+            addressLine1: data.addressLine1,
+            addressLine2: data.addressLine2.isNotEmpty ? data.addressLine2 : null,
+            city: data.shippingCity.isNotEmpty ? data.shippingCity : null,
+            state: data.state.isNotEmpty ? data.state : null,
+            region: data.shippingRegion.isNotEmpty ? data.shippingRegion : null,
+            subcity: data.subcity.isNotEmpty ? data.subcity : null,
+            woreda: data.woreda.isNotEmpty ? data.woreda : null,
+            kebele: data.kebele.isNotEmpty ? data.kebele : null,
+            postalCode: data.postalCode.isNotEmpty ? data.postalCode : null,
+            country: data.country,
+            categoryIds: categoryIds,
+            paymentMethodType: paymentMethodType,
+            accountHolderName: data.accountHolderName,
+            accountNumber: accountNumber,
+            accountName: accountName,
+            coverImagePath: data.coverPhotoUrl,
+            businessLicenseImagePath: data.businessLicenseNumber,
+            subscriptionId: data.selectedSubscriptionId ?? 1, // Default to subscription 1 if not selected
+            // Payment configuration - using defaults for unified registration
+            paymentAmount: 150.0, // Updated default amount
+            paymentMethod: 'manual', // Manual payment method
+            paymentProvider: 'bank_transfer', // Default provider
+            currency: 'ETB', // Ethiopian Birr
+          );
+          
+          print('📥 [ONBOARDING_BLOC] ===== API RESPONSE RECEIVED =====');
+          print('📥 [ONBOARDING_BLOC] Full Response: $result');
+          print('📥 [ONBOARDING_BLOC] Response Type: ${result.runtimeType}');
+          print('📥 [ONBOARDING_BLOC] Success: ${result['success']}');
+          print('📥 [ONBOARDING_BLOC] Keys: ${result.keys.toList()}');
+          developer.log('📥 Business Vendor Creation Response: $result', name: 'OnboardingBloc');
+          
+          if (result['success'] == true) {
+            print('✅ [ONBOARDING_BLOC] ===== VENDOR CREATION SUCCESSFUL =====');
+            print('✅ [ONBOARDING_BLOC] Vendor Data: ${result['vendor']}');
+            print('✅ [ONBOARDING_BLOC] Message: ${result['message']}');
+            print('✅ [ONBOARDING_BLOC] Application submitted for review!');
+            developer.log('✅ Business vendor created successfully!', name: 'OnboardingBloc');
+            
+            emit(OnboardingVendorSubmitted(
+              data: currentState.data,
+              apiResponse: result,
+              message: result['message'] ?? 'Application submitted for review',
+            ));
+          } else {
+            print('❌ [ONBOARDING_BLOC] ===== VENDOR CREATION FAILED =====');
+            print('❌ [ONBOARDING_BLOC] Error: ${result['error']}');
+            print('❌ [ONBOARDING_BLOC] Full Error Response: $result');
+            developer.log('❌ Business vendor creation failed: ${result['error']}', name: 'OnboardingBloc');
+            
+            // Check if error indicates user already exists
+            final errorMessage = result['error']?.toString().toLowerCase() ?? '';
+            if (errorMessage.contains('user already exists') || 
+                errorMessage.contains('email already exists') || 
+                errorMessage.contains('phone already exists') ||
+                errorMessage.contains('already registered') ||
+                errorMessage.contains('duplicate user') ||
+                errorMessage.contains('user exists')) {
+              print('🔄 [ONBOARDING_BLOC] User already exists - redirecting to login');
+              emit(OnboardingUserAlreadyExists(
+                data: currentState.data,
+                message: 'An account with this information already exists. Please login instead.',
+                phoneNumber: currentState.data.phoneNumber,
+                email: currentState.data.email,
+              ));
+            } else {
+              emit(OnboardingVendorSubmissionFailed(
+                data: currentState.data,
+                apiResponse: result,
+                error: result['error'] ?? 'Failed to create business vendor',
+              ));
+            }
+          }
+        } catch (e, stackTrace) {
+          print('💥 [ONBOARDING_BLOC] ===== EXCEPTION DURING VENDOR CREATION =====');
+          print('💥 [ONBOARDING_BLOC] Exception: $e');
+          print('💥 [ONBOARDING_BLOC] Stack Trace: $stackTrace');
+          developer.log('💥 Exception during business vendor creation: $e', name: 'OnboardingBloc', error: e, stackTrace: stackTrace);
+          
+          emit(OnboardingVendorSubmissionFailed(
+            data: currentState.data,
+            apiResponse: {'success': false, 'error': e.toString()},
+            error: 'Network error: ${e.toString()}',
+          ));
+        }
     }
   }
 }
