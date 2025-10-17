@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../shared/theme/theme_provider.dart';
 import '../../shared/theme/app_themes.dart';
-import '../onboarding/screens/onboarding_screen.dart';
+import '../onboarding/screens/onboarding_main_screen.dart';
 
 class ThemeSelectionScreen extends StatefulWidget {
   const ThemeSelectionScreen({super.key});
@@ -89,7 +89,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen>
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const OnboardingScreen(),
+              const OnboardingMainScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
               position: Tween<Offset>(

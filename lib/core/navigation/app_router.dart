@@ -6,7 +6,7 @@ import '../../features/products/screens/products_screen.dart';
 import '../../features/wallet/screens/wallet_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/sales/screens/sales_report_screen.dart';
-import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/onboarding/screens/onboarding_main_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
 import 'main_navigation.dart';
@@ -82,7 +82,7 @@ class AppRouter {
         name: 'onboarding',
         builder: (context, state) {
           final useMockData = state.uri.queryParameters['mock'] == 'true';
-          return OnboardingScreen(useMockData: useMockData);
+          return OnboardingMainScreen(useMockData: useMockData);
         },
       ),
       GoRoute(

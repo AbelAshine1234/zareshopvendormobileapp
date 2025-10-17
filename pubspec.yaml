@@ -56,6 +56,7 @@ dependencies:
   shared_preferences: ^2.2.2
   image_picker: ^1.0.4
   http: ^1.1.0
+  mime: ^1.0.4
   
   # Maps & Location
   google_maps_flutter: ^2.5.0

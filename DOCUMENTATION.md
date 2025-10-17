@@ -291,7 +291,7 @@ BlocListener<OnboardingBloc, OnboardingState>(
       Navigator.pushReplacementNamed(context, '/dashboard');
     }
   },
-  child: OnboardingScreen(),
+  child: OnboardingMainScreen(),
 )
 ```
 

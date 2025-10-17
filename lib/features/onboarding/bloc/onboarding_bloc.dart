@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:developer' as developer;
 import 'dart:convert';
 import '../models/onboarding_data.dart';
@@ -55,6 +56,20 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     
     // Step 7: Subscription
     on<UpdateSubscription>(_onUpdateSubscription);
+    
+    // Additional events for step files
+    on<UpdateBusinessCategory>(_onUpdateBusinessCategory);
+    on<UpdateAddressLine1>(_onUpdateAddressLine1);
+    on<UpdateAddressLine2>(_onUpdateAddressLine2);
+    on<UpdateCity>(_onUpdateCity);
+    on<UpdateState>(_onUpdateState);
+    on<UpdatePostalCode>(_onUpdatePostalCode);
+    on<UpdateBusinessLicense>(_onUpdateBusinessLicense);
+    on<UpdateCoverImage>(_onUpdateCoverImage);
+    // on<UpdateFaydaImage>(_onUpdateFaydaImage); // Removed for business vendors
+    on<UpdatePaymentMethod>(_onUpdatePaymentMethod);
+    on<UpdateAccountHolder>(_onUpdateAccountHolder);
+    on<UpdateAccountNumber>(_onUpdateAccountNumber);
   }
 
   void _onInitializeOnboarding(
@@ -94,11 +109,18 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     NextStep event,
     Emitter<OnboardingState> emit,
   ) async {
+    print('🎯 [ONBOARDING_BLOC] ===== NEXT STEP EVENT RECEIVED =====');
+    print('🎯 [ONBOARDING_BLOC] Current state type: ${state.runtimeType}');
+    
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
+      print('🎯 [ONBOARDING_BLOC] Current step: ${currentState.currentStep}');
+      print('🎯 [ONBOARDING_BLOC] Can proceed: ${currentState.canProceed}');
+      print('🎯 [ONBOARDING_BLOC] Is last step: ${currentState.isLastStep}');
       
       // Check if current step is completed
       if (!currentState.canProceed) {
+        print('❌ [ONBOARDING_BLOC] Cannot proceed - current step not completed');
         return;
       }
 
@@ -263,9 +285,16 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       print('   Total Steps: ${currentState.totalSteps}');
       print('   Is Last Step: ${currentState.isLastStep}');
       print('   Expected Last Step: ${currentState.totalSteps - 1}');
+      print('   Current Step Completed: ${currentState.data.isStepCompleted(currentState.currentStep)}');
+      
+      // Log step validation details
+      for (int i = 0; i < currentState.totalSteps; i++) {
+        bool stepCompleted = currentState.data.isStepCompleted(i);
+        print('   Step $i: ${stepCompleted ? "✅ Complete" : "❌ Incomplete"}');
+      }
       
       if (currentState.currentStep == 6) {
-        print('🎯 [ONBOARDING_BLOC] Completed subscription step - triggering vendor creation');
+        print('🎯 [ONBOARDING_BLOC] Completed subscription step (step 6) - triggering vendor creation');
         add(const CompleteOnboarding());
       } else if (currentState.isLastStep) {
         print('🏁 [ONBOARDING_BLOC] Reached last step - triggering CompleteOnboarding event');
@@ -534,13 +563,23 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   }
 
   void _onToggleTermsAgreement(ToggleTermsAgreement event, Emitter<OnboardingState> emit) {
+    print('📋 [BLOC] ToggleTermsAgreement event received');
+    print('📋 [BLOC] Agreed: ${event.agreed}');
+    print('📋 [BLOC] Current state type: ${state.runtimeType}');
+    
     if (state is OnboardingInProgress) {
       final currentState = state as OnboardingInProgress;
+      print('📋 [BLOC] Current agree terms: ${currentState.data.agreeTermsCheck}');
+      
       emit(currentState.copyWith(
         data: currentState.data.copyWith(
           agreeTermsCheck: event.agreed,
         ),
       ));
+      
+      print('✅ [BLOC] Terms agreement updated to: ${event.agreed}');
+    } else {
+      print('⚠️ [BLOC] State is not OnboardingInProgress, cannot update terms agreement');
     }
   }
 
@@ -764,10 +803,49 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           print('🏷️ [ONBOARDING_BLOC] Final unique category IDs: $categoryIds');
           
           // Prepare payment method details
-          final isBank = data.preferredPayoutMethod == 'bank';
+          print('💳 [ONBOARDING_BLOC] ===== PAYMENT METHOD DETAILS =====');
+          print('💳 [ONBOARDING_BLOC] Preferred Payout Method: "${data.preferredPayoutMethod}"');
+          print('💳 [ONBOARDING_BLOC] Bank Account Number: "${data.bankAccountNumber}"');
+          print('💳 [ONBOARDING_BLOC] Mobile Wallet Number: "${data.mobileWalletNumber}"');
+          print('💳 [ONBOARDING_BLOC] Account Holder Name: "${data.accountHolderName}"');
+          print('💳 [ONBOARDING_BLOC] Bank Name: "${data.bankName}"');
+          print('💳 [ONBOARDING_BLOC] Account Number (generic): "${data.accountNumber}"');
+          
+          final isBank = data.preferredPayoutMethod == 'bank_account';
           final paymentMethodType = isBank ? 'bank' : 'wallet';
-          final accountNumber = isBank ? data.bankAccountNumber : data.mobileWalletNumber;
-          final accountName = isBank ? data.bankName : 'Telebirr'; // Wallet provider name
+          
+          // Get account number from the appropriate field
+          String accountNumber = '';
+          if (isBank) {
+            accountNumber = data.bankAccountNumber.isNotEmpty 
+                ? data.bankAccountNumber 
+                : data.accountNumber; // Fallback to generic accountNumber
+          } else {
+            accountNumber = data.mobileWalletNumber.isNotEmpty 
+                ? data.mobileWalletNumber 
+                : data.accountNumber; // Fallback to generic accountNumber
+          }
+          
+          // Get account name (bank name or wallet provider)
+          String accountName = '';
+          if (isBank) {
+            accountName = data.bankName.isNotEmpty ? data.bankName : 'Bank';
+          } else {
+            // Determine wallet provider from payment method
+            if (data.preferredPayoutMethod == 'telebirr') {
+              accountName = 'Telebirr';
+            } else if (data.preferredPayoutMethod == 'cbe_birr') {
+              accountName = 'CBE Birr';
+            } else {
+              accountName = 'Mobile Wallet';
+            }
+          }
+          
+          print('💳 [ONBOARDING_BLOC] ===== PROCESSED PAYMENT DATA =====');
+          print('💳 [ONBOARDING_BLOC] Is Bank: $isBank');
+          print('💳 [ONBOARDING_BLOC] Payment Method Type: $paymentMethodType');
+          print('💳 [ONBOARDING_BLOC] Final Account Number: "$accountNumber"');
+          print('💳 [ONBOARDING_BLOC] Final Account Name: "$accountName"');
           
           print('📝 [ONBOARDING_BLOC] Business Vendor Creation Data:');
           print('📝 [ONBOARDING_BLOC] Business Name: ${data.businessName}');
@@ -778,12 +856,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           print('📝 [ONBOARDING_BLOC] State: ${data.state}');
           print('📝 [ONBOARDING_BLOC] Country: ${data.country}');
           print('📝 [ONBOARDING_BLOC] Category IDs: $categoryIds');
-          print('📝 [ONBOARDING_BLOC] Payment Method Type: $paymentMethodType');
-          print('📝 [ONBOARDING_BLOC] Account Holder: ${data.accountHolderName}');
-          print('📝 [ONBOARDING_BLOC] Account Number: $accountNumber');
-          print('📝 [ONBOARDING_BLOC] Account Name: $accountName');
-          print('📝 [ONBOARDING_BLOC] Cover Photo URL: ${data.coverPhotoUrl}');
-          print('📝 [ONBOARDING_BLOC] Business License: ${data.businessLicenseNumber}');
           print('📝 [ONBOARDING_BLOC] Subscription ID: ${data.selectedSubscriptionId}');
           print('👤 [ONBOARDING_BLOC] User Info:');
           print('   Full Name: ${data.fullName}');
@@ -794,6 +866,75 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           print('   Subcity: ${data.subcity}');
           print('   Woreda: ${data.woreda}');
           print('   Kebele: ${data.kebele}');
+          
+          // Get file paths from XFile objects
+          print('📄 [ONBOARDING_BLOC] ===== DOCUMENT FILES =====');
+          print('📄 [ONBOARDING_BLOC] Cover Image File: ${data.coverImageFile}');
+          print('📄 [ONBOARDING_BLOC] Cover Image Type: ${data.coverImageFile?.runtimeType}');
+          print('📄 [ONBOARDING_BLOC] Business License File: ${data.businessLicenseFile}');
+          print('📄 [ONBOARDING_BLOC] Business License Type: ${data.businessLicenseFile?.runtimeType}');
+          
+          // Validate files exist
+          if (data.coverImageFile == null || data.businessLicenseFile == null) {
+            print('❌ [ONBOARDING_BLOC] Missing required images!');
+            emit(OnboardingVendorSubmissionFailed(
+              data: currentState.data,
+              apiResponse: {'success': false, 'error': 'Missing required document images'},
+              error: 'Please upload both cover image and business license',
+            ));
+            return;
+          }
+          
+          // For web: Read bytes directly from XFile, For mobile: Use path
+          String coverImagePath = '';
+          String businessLicensePath = '';
+          
+          try {
+            if (kIsWeb) {
+              print('🌐 [ONBOARDING_BLOC] Web platform - reading bytes from XFile...');
+              // On web, we need to read bytes and convert to data URL
+              final coverBytes = await data.coverImageFile.readAsBytes();
+              final licenseBytes = await data.businessLicenseFile.readAsBytes();
+              
+              print('✅ [ONBOARDING_BLOC] Cover image bytes read: ${coverBytes.length} bytes');
+              print('✅ [ONBOARDING_BLOC] License image bytes read: ${licenseBytes.length} bytes');
+              
+              // Convert to base64 data URLs
+              final coverBase64 = base64Encode(coverBytes);
+              final licenseBase64 = base64Encode(licenseBytes);
+              
+              // Determine MIME type from file name or default to jpeg
+              String coverMime = 'image/jpeg';
+              String licenseMime = 'image/jpeg';
+              
+              if (data.coverImageFile.name.toLowerCase().endsWith('.png')) {
+                coverMime = 'image/png';
+              }
+              if (data.businessLicenseFile.name.toLowerCase().endsWith('.png')) {
+                licenseMime = 'image/png';
+              }
+              
+              coverImagePath = 'data:$coverMime;base64,$coverBase64';
+              businessLicensePath = 'data:$licenseMime;base64,$licenseBase64';
+              
+              print('✅ [ONBOARDING_BLOC] Cover data URL created (${coverImagePath.length} chars)');
+              print('✅ [ONBOARDING_BLOC] License data URL created (${businessLicensePath.length} chars)');
+            } else {
+              print('📱 [ONBOARDING_BLOC] Mobile platform - using file paths...');
+              coverImagePath = data.coverImageFile.path;
+              businessLicensePath = data.businessLicenseFile.path;
+              print('✅ [ONBOARDING_BLOC] Cover image path: $coverImagePath');
+              print('✅ [ONBOARDING_BLOC] Business license path: $businessLicensePath');
+            }
+          } catch (e) {
+            print('❌ [ONBOARDING_BLOC] Error processing image files: $e');
+            emit(OnboardingVendorSubmissionFailed(
+              data: currentState.data,
+              apiResponse: {'success': false, 'error': 'Failed to process images'},
+              error: 'Error reading image files: ${e.toString()}',
+            ));
+            return;
+          }
           
           print('🏢 [ONBOARDING_BLOC] ===== UNIFIED VENDOR REGISTRATION =====');
           print('⏳ [ONBOARDING_BLOC] Calling ApiService.registerBusinessVendor (unified)...');
@@ -820,8 +961,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
             accountHolderName: data.accountHolderName,
             accountNumber: accountNumber,
             accountName: accountName,
-            coverImagePath: data.coverPhotoUrl,
-            businessLicenseImagePath: data.businessLicenseNumber,
+            coverImagePath: coverImagePath,
+            businessLicenseImagePath: businessLicensePath,
             subscriptionId: data.selectedSubscriptionId ?? 1, // Default to subscription 1 if not selected
             // Payment configuration - using defaults for unified registration
             paymentAmount: 150.0, // Updated default amount
@@ -890,6 +1031,116 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
             error: 'Network error: ${e.toString()}',
           ));
         }
+    }
+  }
+
+  // Additional event handlers for step files
+  void _onUpdateBusinessCategory(UpdateBusinessCategory event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(category: event.categoryId.toString()),
+      ));
+    }
+  }
+
+  void _onUpdateAddressLine1(UpdateAddressLine1 event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(addressLine1: event.addressLine1),
+      ));
+    }
+  }
+
+  void _onUpdateAddressLine2(UpdateAddressLine2 event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(addressLine2: event.addressLine2),
+      ));
+    }
+  }
+
+  void _onUpdateCity(UpdateCity event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(city: event.city),
+      ));
+    }
+  }
+
+  void _onUpdateState(UpdateState event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(state: event.state),
+      ));
+    }
+  }
+
+  void _onUpdatePostalCode(UpdatePostalCode event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(postalCode: event.postalCode),
+      ));
+    }
+  }
+
+  void _onUpdateBusinessLicense(UpdateBusinessLicense event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(businessLicenseFile: event.file),
+      ));
+    }
+  }
+
+  void _onUpdateCoverImage(UpdateCoverImage event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(coverImageFile: event.file),
+      ));
+    }
+  }
+
+  // Fayda image not needed for business vendors
+  // void _onUpdateFaydaImage(UpdateFaydaImage event, Emitter<OnboardingState> emit) {
+  //   if (state is OnboardingInProgress) {
+  //     final currentState = state as OnboardingInProgress;
+  //     emit(currentState.copyWith(
+  //       data: currentState.data.copyWith(faydaImageFile: event.file),
+  //     ));
+  //   }
+  // }
+
+  void _onUpdatePaymentMethod(UpdatePaymentMethod event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(preferredPayoutMethod: event.paymentMethod),
+      ));
+    }
+  }
+
+  void _onUpdateAccountHolder(UpdateAccountHolder event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(accountHolderName: event.accountHolder),
+      ));
+    }
+  }
+
+  void _onUpdateAccountNumber(UpdateAccountNumber event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(accountNumber: event.accountNumber),
+      ));
     }
   }
 }

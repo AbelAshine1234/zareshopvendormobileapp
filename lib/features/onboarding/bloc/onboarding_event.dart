@@ -323,3 +323,88 @@ class UpdateSubscription extends OnboardingEvent {
 class CompleteOnboarding extends OnboardingEvent {
   const CompleteOnboarding();
 }
+
+// Additional events for step files
+class UpdateBusinessCategory extends OnboardingEvent {
+  final int categoryId;
+  const UpdateBusinessCategory(this.categoryId);
+  @override
+  List<Object?> get props => [categoryId];
+}
+
+class UpdateAddressLine1 extends OnboardingEvent {
+  final String addressLine1;
+  const UpdateAddressLine1(this.addressLine1);
+  @override
+  List<Object?> get props => [addressLine1];
+}
+
+class UpdateAddressLine2 extends OnboardingEvent {
+  final String addressLine2;
+  const UpdateAddressLine2(this.addressLine2);
+  @override
+  List<Object?> get props => [addressLine2];
+}
+
+class UpdateCity extends OnboardingEvent {
+  final String city;
+  const UpdateCity(this.city);
+  @override
+  List<Object?> get props => [city];
+}
+
+class UpdateState extends OnboardingEvent {
+  final String state;
+  const UpdateState(this.state);
+  @override
+  List<Object?> get props => [state];
+}
+
+class UpdatePostalCode extends OnboardingEvent {
+  final String postalCode;
+  const UpdatePostalCode(this.postalCode);
+  @override
+  List<Object?> get props => [postalCode];
+}
+
+class UpdateBusinessLicense extends OnboardingEvent {
+  final dynamic file;
+  const UpdateBusinessLicense(this.file);
+  @override
+  List<Object?> get props => [file];
+}
+
+class UpdateCoverImage extends OnboardingEvent {
+  final dynamic file;
+  const UpdateCoverImage(this.file);
+  @override
+  List<Object?> get props => [file];
+}
+
+class UpdateFaydaImage extends OnboardingEvent {
+  final dynamic file;
+  const UpdateFaydaImage(this.file);
+  @override
+  List<Object?> get props => [file];
+}
+
+class UpdatePaymentMethod extends OnboardingEvent {
+  final String paymentMethod;
+  const UpdatePaymentMethod(this.paymentMethod);
+  @override
+  List<Object?> get props => [paymentMethod];
+}
+
+class UpdateAccountHolder extends OnboardingEvent {
+  final String accountHolder;
+  const UpdateAccountHolder(this.accountHolder);
+  @override
+  List<Object?> get props => [accountHolder];
+}
+
+class UpdateAccountNumber extends OnboardingEvent {
+  final String accountNumber;
+  const UpdateAccountNumber(this.accountNumber);
+  @override
+  List<Object?> get props => [accountNumber];
+}

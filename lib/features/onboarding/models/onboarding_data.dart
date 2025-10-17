@@ -59,9 +59,15 @@ class OnboardingData extends Equatable {
   final String accountHolderName; // Account holder's full name
   final String bankName;
   final String bankAccountNumber;
+  final String accountNumber; // Generic account number field
   final String mobileWalletNumber;
   final bool confirmDetailsCheck;
   final bool authorizePayoutCheck;
+  
+  // File fields for document uploads
+  final dynamic businessLicenseFile;
+  final dynamic coverImageFile;
+  final dynamic faydaImageFile;
 
   const OnboardingData({
     this.phoneNumber = '',
@@ -108,9 +114,13 @@ class OnboardingData extends Equatable {
     this.accountHolderName = '',
     this.bankName = '',
     this.bankAccountNumber = '',
+    this.accountNumber = '',
     this.mobileWalletNumber = '',
     this.confirmDetailsCheck = false,
     this.authorizePayoutCheck = false,
+    this.businessLicenseFile,
+    this.coverImageFile,
+    this.faydaImageFile,
   });
 
   OnboardingData copyWith({
@@ -158,9 +168,13 @@ class OnboardingData extends Equatable {
     String? accountHolderName,
     String? bankName,
     String? bankAccountNumber,
+    String? accountNumber,
     String? mobileWalletNumber,
     bool? confirmDetailsCheck,
     bool? authorizePayoutCheck,
+    dynamic businessLicenseFile,
+    dynamic coverImageFile,
+    dynamic faydaImageFile,
   }) {
     return OnboardingData(
       phoneNumber: phoneNumber ?? this.phoneNumber,
@@ -207,9 +221,13 @@ class OnboardingData extends Equatable {
       accountHolderName: accountHolderName ?? this.accountHolderName,
       bankName: bankName ?? this.bankName,
       bankAccountNumber: bankAccountNumber ?? this.bankAccountNumber,
+      accountNumber: accountNumber ?? this.accountNumber,
       mobileWalletNumber: mobileWalletNumber ?? this.mobileWalletNumber,
       confirmDetailsCheck: confirmDetailsCheck ?? this.confirmDetailsCheck,
       authorizePayoutCheck: authorizePayoutCheck ?? this.authorizePayoutCheck,
+      businessLicenseFile: businessLicenseFile ?? this.businessLicenseFile,
+      coverImageFile: coverImageFile ?? this.coverImageFile,
+      faydaImageFile: faydaImageFile ?? this.faydaImageFile,
     );
   }
 
@@ -232,13 +250,13 @@ class OnboardingData extends Equatable {
       case 3: // Shipping Address
         return addressLine1.isNotEmpty && addressLine1.length >= 3;
       case 4: // Documents (Business only)
-        return coverPhotoUrl.isNotEmpty && businessLicenseNumber.isNotEmpty;
+        return businessLicenseFile != null && coverImageFile != null;
       case 5: // Payout Information
         // Check if payout method is selected and details are filled
-        final isBank = preferredPayoutMethod == 'bank';
+        final isBank = preferredPayoutMethod == 'bank_account';
         final hasPaymentData = isBank 
-            ? bankAccountNumber.isNotEmpty && bankName.isNotEmpty && accountHolderName.isNotEmpty
-            : mobileWalletNumber.isNotEmpty && accountHolderName.isNotEmpty;
+            ? accountNumber.isNotEmpty && accountHolderName.isNotEmpty
+            : accountNumber.isNotEmpty && accountHolderName.isNotEmpty;
         return hasPaymentData && confirmDetailsCheck && authorizePayoutCheck;
       case 6: // Subscription Selection
         return selectedSubscriptionId != null && agreeTermsCheck;
@@ -295,8 +313,12 @@ class OnboardingData extends Equatable {
         accountHolderName,
         bankName,
         bankAccountNumber,
+        accountNumber,
         mobileWalletNumber,
         confirmDetailsCheck,
         authorizePayoutCheck,
+        businessLicenseFile,
+        coverImageFile,
+        faydaImageFile,
       ];
 }
