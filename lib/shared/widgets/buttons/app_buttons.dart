@@ -84,29 +84,35 @@ class AppSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: height ?? AppTheme.buttonHeight,
-      child: OutlinedButton(
-        onPressed: enabled ? onPressed : null,
-        style: AppTheme.secondaryButtonStyle,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 20),
-              const SizedBox(width: AppTheme.spaceS),
-            ],
-            Text(
-              text,
-              style: AppTheme.buttonText.copyWith(
-                color: AppTheme.primaryGreen,
-              ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        return SizedBox(
+          width: width ?? double.infinity,
+          height: height ?? AppThemes.buttonHeight,
+          child: OutlinedButton(
+            onPressed: enabled ? onPressed : null,
+            style: AppThemes.secondaryButtonStyle(theme),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 20),
+                  const SizedBox(width: AppThemes.spaceS),
+                ],
+                Text(
+                  text,
+                  style: AppThemes.buttonText(theme).copyWith(
+                    color: theme.primary,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -131,29 +137,35 @@ class AppTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: height ?? AppTheme.buttonHeight,
-      child: TextButton(
-        onPressed: enabled ? onPressed : null,
-        style: AppTheme.textButtonStyle,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 18),
-              const SizedBox(width: AppTheme.spaceS),
-            ],
-            Text(
-              text,
-              style: AppTheme.buttonText.copyWith(
-                color: AppTheme.primaryGreen,
-              ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        return SizedBox(
+          width: width ?? double.infinity,
+          height: height ?? AppThemes.buttonHeight,
+          child: TextButton(
+            onPressed: enabled ? onPressed : null,
+            style: AppThemes.textButtonStyle(theme),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 18),
+                  const SizedBox(width: AppThemes.spaceS),
+                ],
+                Text(
+                  text,
+                  style: AppThemes.buttonText(theme).copyWith(
+                    color: theme.primary,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -176,14 +188,20 @@ class AppIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        icon,
-        color: color ?? AppTheme.primaryGreen,
-        size: size ?? 24,
-      ),
-      onPressed: onPressed,
-      tooltip: tooltip,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        return IconButton(
+          icon: Icon(
+            icon,
+            color: color ?? theme.primary,
+            size: size ?? 24,
+          ),
+          onPressed: onPressed,
+          tooltip: tooltip,
+        );
+      },
     );
   }
 }
@@ -204,25 +222,31 @@ class AppFloatingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppTheme.spaceM),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: AppTheme.cardShadow,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.largeBorderRadius),
-          topRight: Radius.circular(AppTheme.largeBorderRadius),
-        ),
-      ),
-      child: SafeArea(
-        child: AppPrimaryButton(
-          text: text,
-          onPressed: onPressed,
-          isLoading: isLoading,
-          icon: icon,
-        ),
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppThemes.spaceM),
+          decoration: BoxDecoration(
+            color: theme.surface,
+            boxShadow: theme.cardShadow,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(AppThemes.largeBorderRadius),
+              topRight: Radius.circular(AppThemes.largeBorderRadius),
+            ),
+          ),
+          child: SafeArea(
+            child: AppPrimaryButton(
+              text: text,
+              onPressed: onPressed,
+              isLoading: isLoading,
+              icon: icon,
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -258,7 +282,7 @@ class AppButtonGroup extends StatelessWidget {
           enabled: primaryEnabled,
         ),
         if (secondaryText != null) ...[
-          const SizedBox(height: AppTheme.spaceM),
+          const SizedBox(height: AppThemes.spaceM),
           AppTextButton(
             text: secondaryText!,
             onPressed: onSecondaryPressed,
@@ -285,29 +309,35 @@ class AppChipButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilterChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 16),
-            const SizedBox(width: AppTheme.spaceXS),
-          ],
-          Text(text),
-        ],
-      ),
-      selected: isSelected,
-      onSelected: onPressed != null ? (_) => onPressed!() : null,
-      backgroundColor: Colors.white,
-      selectedColor: AppTheme.lightGreen,
-      checkmarkColor: AppTheme.primaryGreen,
-      side: BorderSide(
-        color: isSelected ? AppTheme.primaryGreen : AppTheme.dividerColor,
-      ),
-      labelStyle: TextStyle(
-        color: isSelected ? AppTheme.primaryGreen : AppTheme.textSecondary,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        return FilterChip(
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16),
+                const SizedBox(width: AppThemes.spaceXS),
+              ],
+              Text(text),
+            ],
+          ),
+          selected: isSelected,
+          onSelected: onPressed != null ? (_) => onPressed!() : null,
+          backgroundColor: theme.surface,
+          selectedColor: theme.accent,
+          checkmarkColor: theme.primary,
+          side: BorderSide(
+            color: isSelected ? theme.primary : theme.accent,
+          ),
+          labelStyle: TextStyle(
+            color: isSelected ? theme.primary : theme.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        );
+      },
     );
   }
 }

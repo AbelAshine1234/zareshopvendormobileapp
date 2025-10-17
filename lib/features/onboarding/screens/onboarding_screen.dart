@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
@@ -13,6 +14,7 @@ import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/utils/validation_utils.dart';
+import '../../../shared/shared.dart';
 
 class OnboardingScreen extends StatelessWidget {
   final bool useMockData;
@@ -297,17 +299,23 @@ class _OnboardingViewState extends State<_OnboardingView>
     context.read<OnboardingBloc>().add(const ResendOTP());
     _startOTPTimer();
     
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final theme = themeProvider.currentTheme;
+    
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('OTP sent successfully'),
-        backgroundColor: Color(0xFF10B981),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: const Text('OTP sent successfully'),
+        backgroundColor: theme.success,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = themeProvider.currentTheme;
+    
     return BlocListener<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
         if (state is OnboardingCompleted) {
@@ -330,7 +338,7 @@ class _OnboardingViewState extends State<_OnboardingView>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.orange,
+              backgroundColor: theme.warning,
               duration: const Duration(seconds: 3),
               action: SnackBarAction(
                 label: 'Login',
@@ -356,7 +364,7 @@ class _OnboardingViewState extends State<_OnboardingView>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.red,
+              backgroundColor: theme.error,
               duration: const Duration(seconds: 4),
             ),
           );
@@ -370,7 +378,7 @@ class _OnboardingViewState extends State<_OnboardingView>
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.background,
         body: SafeArea(
           child: BlocBuilder<OnboardingBloc, OnboardingState>(
             builder: (context, state) {
@@ -378,14 +386,14 @@ class _OnboardingViewState extends State<_OnboardingView>
                 return Column(
                   children: [
                     // Compact Logo Header
-                    _buildCompactHeader(context),
+                    _buildCompactHeader(context, theme),
                     
                     // Main Content with Rain Drop Animation
                     Expanded(
                       child: SingleChildScrollView(
                         controller: _scrollController,
                         physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        padding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceL),
                         child: SlideTransition(
                           position: _contentSlideAnimation,
                           child: FadeTransition(
@@ -393,12 +401,12 @@ class _OnboardingViewState extends State<_OnboardingView>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 24),
-                                _buildWelcomeSection(),
-                                const SizedBox(height: 32),
-                                _buildProgressSection(state),
-                                const SizedBox(height: 32),
-                                _buildCurrentStepCard(context, state),
+                                const SizedBox(height: AppThemes.spaceL),
+                                _buildWelcomeSection(theme),
+                                const SizedBox(height: AppThemes.spaceXL),
+                                _buildProgressSection(state, theme),
+                                const SizedBox(height: AppThemes.spaceXL),
+                                _buildCurrentStepCard(context, state, theme),
                                 const SizedBox(height: 100),
                               ],
                             ),
@@ -408,7 +416,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                     ),
                     
                     // Modern Bottom Navigation
-                    _buildModernBottomNav(context, state),
+                    _buildModernBottomNav(context, state, theme),
                   ],
                 );
               }
@@ -429,9 +437,9 @@ class _OnboardingViewState extends State<_OnboardingView>
               }
               
               // Loading state
-              return const Center(
+              return Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                  valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
                 ),
               );
             },
@@ -441,21 +449,21 @@ class _OnboardingViewState extends State<_OnboardingView>
     );
   }
 
-  Widget _buildCompactHeader(BuildContext context) {
+  Widget _buildCompactHeader(BuildContext context, AppThemeData theme) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOutCubic,
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        vertical: _isHeaderCollapsed ? 8 : 32,
-        horizontal: 24,
+        vertical: _isHeaderCollapsed ? AppThemes.spaceS : AppThemes.spaceXL,
+        horizontal: AppThemes.spaceL,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.surface,
         boxShadow: _isHeaderCollapsed
             ? [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: (theme.isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -481,7 +489,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               style: TextStyle(
                 fontSize: _isHeaderCollapsed ? 16 : 28,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF10B981),
+                color: theme.primary,
                 letterSpacing: 2,
               ),
               child: const Text('ZARESHOP'),
@@ -494,7 +502,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                 ? const SizedBox.shrink()
                 : Column(
                     children: [
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppThemes.spaceM),
                       FadeTransition(
                         opacity: AlwaysStoppedAnimation(_isHeaderCollapsed ? 0.0 : 1.0),
                         child: Text(
@@ -502,7 +510,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
+                            color: theme.textSecondary,
                             letterSpacing: 2,
                           ),
                         ),
@@ -516,7 +524,7 @@ class _OnboardingViewState extends State<_OnboardingView>
   }
 
 
-  Widget _buildWelcomeSection() {
+  Widget _buildWelcomeSection(AppThemeData theme) {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 300),
       opacity: _isHeaderCollapsed ? 0.0 : 1.0,
@@ -528,32 +536,19 @@ class _OnboardingViewState extends State<_OnboardingView>
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Welcome to ZareShop Vendor!',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                      height: 1.3,
-                    ),
+                    style: AppThemes.displayLarge(theme),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppThemes.spaceM),
                   Text(
                     'Let\'s set up your shop in a few simple steps.',
-                    style: TextStyle(
-                      fontSize: 17,
-                      color: Colors.grey.shade700,
-                      height: 1.5,
-                    ),
+                    style: AppThemes.bodyLarge(theme),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppThemes.spaceM),
                   Text(
                     'You\'ll personalize your business profile, add your first products, and link payment options.',
-                    style: TextStyle(
-                      fontSize: 17,
-                      color: Colors.grey.shade700,
-                      height: 1.5,
-                    ),
+                    style: AppThemes.bodyLarge(theme),
                   ),
                 ],
               ),
@@ -561,7 +556,7 @@ class _OnboardingViewState extends State<_OnboardingView>
     );
   }
 
-  Widget _buildProgressSection(OnboardingInProgress state) {
+  Widget _buildProgressSection(OnboardingInProgress state, AppThemeData theme) {
     return Column(
       children: [
         Row(
@@ -569,11 +564,7 @@ class _OnboardingViewState extends State<_OnboardingView>
           children: [
             Text(
               'Step ${state.currentStep + 1} of ${state.totalSteps}',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
-              ),
+              style: AppThemes.titleLarge(theme),
             ),
             // Step dots with spring animation
             Row(
@@ -592,6 +583,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                         index: index,
                         isActive: isActive,
                         isCompleted: isCompleted,
+                        theme: theme,
                         onTap: isCompleted
                             ? () {
                                 context.read<OnboardingBloc>().add(GoToStep(index));
@@ -605,7 +597,7 @@ class _OnboardingViewState extends State<_OnboardingView>
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppThemes.spaceM),
         // Progress bar with overshoot effect
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
@@ -614,7 +606,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: theme.accent,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -628,13 +620,11 @@ class _OnboardingViewState extends State<_OnboardingView>
                     child: Container(
                       height: 8,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF22C55E)],
-                        ),
+                        gradient: theme.primaryGradient,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                            color: theme.primary.withValues(alpha: 0.4),
                             blurRadius: 4,
                             offset: const Offset(0, 1),
                           ),
@@ -653,7 +643,7 @@ class _OnboardingViewState extends State<_OnboardingView>
 
 
 
-  Widget _buildCurrentStepCard(BuildContext context, OnboardingInProgress state) {
+  Widget _buildCurrentStepCard(BuildContext context, OnboardingInProgress state, AppThemeData theme) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 600),
       switchInCurve: Curves.easeOutCubic,
@@ -703,28 +693,14 @@ class _OnboardingViewState extends State<_OnboardingView>
       },
       child: Container(
         key: ValueKey<int>(state.currentStep),
-        padding: const EdgeInsets.all(28),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade300,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: _getStepWidget(state.currentStep),
+        padding: const EdgeInsets.all(AppThemes.spaceXL),
+        decoration: AppThemes.cardDecoration(theme),
+        child: _getStepWidget(state.currentStep, theme),
       ),
     );
   }
 
-  Widget _getStepWidget(int step) {
+  Widget _getStepWidget(int step, AppThemeData theme) {
     // Fetch subscriptions when reaching step 6
     if (step == 6 && _subscriptions.isEmpty && !_loadingSubscriptions) {
       // Use WidgetsBinding to avoid calling setState during build
@@ -735,7 +711,7 @@ class _OnboardingViewState extends State<_OnboardingView>
     
     switch (step) {
       case 0:
-        return _buildPhoneNumberStep();
+        return _buildPhoneNumberStep(theme);
       case 1:
         return _buildOTPStep();
       case 2:
@@ -756,7 +732,7 @@ class _OnboardingViewState extends State<_OnboardingView>
   }
 
   // Step 0: Phone Number
-  Widget _buildPhoneNumberStep() {
+  Widget _buildPhoneNumberStep(AppThemeData theme) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state is! OnboardingInProgress) return const SizedBox.shrink();
@@ -764,22 +740,18 @@ class _OnboardingViewState extends State<_OnboardingView>
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Business Vendor Registration',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-              ),
+              style: AppThemes.headlineLarge(theme),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppThemes.spaceM),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppThemes.spaceM),
               decoration: BoxDecoration(
-                color: const Color(0xFF22C55E).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: theme.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppThemes.borderRadius),
                 border: Border.all(
-                  color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                  color: theme.success.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -788,8 +760,8 @@ class _OnboardingViewState extends State<_OnboardingView>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF22C55E),
-                      borderRadius: BorderRadius.circular(8),
+                      color: theme.success,
+                      borderRadius: BorderRadius.circular(AppThemes.spaceS),
                     ),
                     child: const Icon(
                       Icons.business,
@@ -797,26 +769,19 @@ class _OnboardingViewState extends State<_OnboardingView>
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  const SizedBox(width: AppThemes.spaceM),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Business Account',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
-                          ),
+                          style: AppThemes.titleMedium(theme),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: AppThemes.spaceXS),
                         Text(
                           'Register your business to start selling',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF6B7280),
-                          ),
+                          style: AppThemes.bodySmall(theme),
                         ),
                       ],
                     ),
@@ -824,20 +789,16 @@ class _OnboardingViewState extends State<_OnboardingView>
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            const SizedBox(height: AppThemes.spaceL),
+            Text(
               'Phone Number',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
-              ),
+              style: AppThemes.titleLarge(theme),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppThemes.spaceM),
             Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(AppThemes.borderRadius),
+                color: theme.surface,
               ),
               child: Row(
                 children: [
@@ -862,10 +823,8 @@ class _OnboardingViewState extends State<_OnboardingView>
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
-                                    ),
+                                  decoration: BoxDecoration(
+                                    gradient: theme.successGradient,
                                   ),
                                   child: const Center(
                                     child: Text(
@@ -882,13 +841,13 @@ class _OnboardingViewState extends State<_OnboardingView>
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        const SizedBox(width: AppThemes.spaceS),
+                        Text(
                           '+251',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF22C55E),
+                            color: theme.success,
                           ),
                         ),
                       ],
@@ -898,7 +857,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                   Container(
                     width: 1,
                     height: 40,
-                    color: const Color(0xFFE5E7EB),
+                    color: theme.accent,
                   ),
                   // Phone number input
                   Expanded(
@@ -913,44 +872,44 @@ class _OnboardingViewState extends State<_OnboardingView>
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(9),
                       ],
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: '912345678',
                         border: InputBorder.none,
                         counterText: '',
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceM, vertical: AppThemes.spaceM),
                         hintStyle: TextStyle(
-                          color: Color(0xFF9CA3AF),
+                          color: theme.textHint,
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF374151),
+                        color: theme.textPrimary,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppThemes.spaceM),
             if (_phoneError != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: AppThemes.spaceS),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
-                      color: Colors.red,
+                      color: theme.error,
                       size: 16,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppThemes.spaceXS),
                     Text(
                       _phoneError!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: Colors.red,
+                        color: theme.error,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -961,19 +920,15 @@ class _OnboardingViewState extends State<_OnboardingView>
               'We\'ll send a 6-digit OTP for verification.',
               style: TextStyle(
                 fontSize: 14,
-                color: _phoneError != null ? Colors.red.shade300 : const Color(0xFF6B7280),
+                color: _phoneError != null ? theme.error.withOpacity(0.7) : theme.textSecondary,
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            const SizedBox(height: AppThemes.spaceL),
+            Text(
               'Password',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
-              ),
+              style: AppThemes.titleLarge(theme),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppThemes.spaceM),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
@@ -1275,19 +1230,15 @@ class _OnboardingViewState extends State<_OnboardingView>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      ElevatedButton.icon(
+                      AppPrimaryButton(
+                        text: 'Pick Location',
+                        icon: Icons.location_on,
                         onPressed: () {
                           // TODO: Open Google Maps picker
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Google Maps picker coming soon!')),
                           );
                         },
-                        icon: const Icon(Icons.location_on),
-                        label: const Text('Pick Location'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF22C55E),
-                          foregroundColor: Colors.white,
-                        ),
                       ),
                     ],
                   ),
@@ -1850,15 +1801,14 @@ class _OnboardingViewState extends State<_OnboardingView>
                     color: Color(0xFF111827),
                   ),
                 ),
-                ElevatedButton(
+                AppSecondaryButton(
+                  text: 'Debug: Fetch',
                   onPressed: () {
                     print('🔧 [DEBUG] Manual subscription fetch triggered');
                     _fetchSubscriptions();
                   },
-                  child: const Text(
-                    'Debug: Fetch',
-                    style: TextStyle(fontSize: 12),
-                  ),
+                  width: 120,
+                  height: 32,
                 ),
               ],
             ),
@@ -1926,23 +1876,13 @@ class _OnboardingViewState extends State<_OnboardingView>
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
-                        ElevatedButton(
+                        AppPrimaryButton(
+                          text: 'Retry',
                           onPressed: () {
                             print('🔄 [SUBSCRIPTION_WIDGET] Retry button pressed');
                             _fetchSubscriptions();
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF22C55E),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text('Retry'),
+                          width: 120,
                         ),
                       ],
                     ),
@@ -3129,61 +3069,19 @@ class _OnboardingViewState extends State<_OnboardingView>
     );
   }
 
-  Widget _buildModernBottomNav(BuildContext context, OnboardingInProgress state) {
+  Widget _buildModernBottomNav(BuildContext context, OnboardingInProgress state, AppThemeData theme) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      color: Colors.white,
-      child: SizedBox(
-        width: double.infinity,
+      padding: const EdgeInsets.all(AppThemes.spaceL),
+      color: theme.surface,
+      child: AppPrimaryButton(
+        text: state.isLastStep ? 'Finish Setup' : 'Continue',
+        onPressed: state.canProceed
+            ? () {
+                context.read<OnboardingBloc>().add(const NextStep());
+              }
+            : null,
+        enabled: state.canProceed,
         height: 52,
-        child: ElevatedButton(
-          onPressed: state.canProceed
-              ? () {
-                  context.read<OnboardingBloc>().add(const NextStep());
-                }
-              : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF22C55E), // Zareshop green
-            disabledBackgroundColor: const Color(0xFFE5E7EB),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shadowColor: const Color(0xFF22C55E).withValues(alpha: 0.25),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(100), // Pill shape - fully rounded
-            ),
-          ).copyWith(
-            elevation: MaterialStateProperty.resolveWith<double>((states) {
-              if (states.contains(MaterialState.pressed)) {
-                return 0;
-              }
-              if (states.contains(MaterialState.hovered)) {
-                return 8;
-              }
-              return 4;
-            }),
-            backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-              if (states.contains(MaterialState.disabled)) {
-                return const Color(0xFFE5E7EB);
-              }
-              if (states.contains(MaterialState.pressed)) {
-                return const Color(0xFF15803D);
-              }
-              if (states.contains(MaterialState.hovered)) {
-                return const Color(0xFF16A34A);
-              }
-              return const Color(0xFF22C55E);
-            }),
-          ),
-          child: Text(
-            state.isLastStep ? 'Finish Setup' : 'Continue',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400, // Regular weight - lighter
-              color: state.canProceed ? Colors.white : const Color(0xFF9CA3AF),
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -3436,44 +3334,19 @@ class _OnboardingViewState extends State<_OnboardingView>
                         child: Column(
                           children: [
                             // Primary button
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Contact help functionality - could open help page or contact form
-                                  // For now, just show a snackbar
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Contact our support team at support@zareshop.com'),
-                                      backgroundColor: Color(0xFF10B981),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFF10B981),
-                                  padding: const EdgeInsets.symmetric(vertical: 18),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                            AppSecondaryButton(
+                              text: 'Contact Help',
+                              icon: Icons.support_agent,
+                              onPressed: () {
+                                // Contact help functionality - could open help page or contact form
+                                // For now, just show a snackbar
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Contact our support team at support@zareshop.com'),
+                                    backgroundColor: Color(0xFF10B981),
                                   ),
-                                  elevation: 8,
-                                  shadowColor: Colors.black.withOpacity(0.3),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.support_agent, size: 20),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Contact Help',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 12),
                             // Secondary button
@@ -3593,29 +3466,11 @@ class _OnboardingViewState extends State<_OnboardingView>
             child: Column(
               children: [
                 // Try Again Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<OnboardingBloc>().add(const InitializeOnboarding());
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFDC2626),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Try Again',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                AppPrimaryButton(
+                  text: 'Try Again',
+                  onPressed: () {
+                    context.read<OnboardingBloc>().add(const InitializeOnboarding());
+                  },
                 ),
                 const SizedBox(height: 12),
                 
@@ -3775,29 +3630,11 @@ class _OnboardingViewState extends State<_OnboardingView>
             child: Column(
               children: [
                 // Go to Login Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.go('/login');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFEA580C),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Go to Login',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                AppPrimaryButton(
+                  text: 'Go to Login',
+                  onPressed: () {
+                    context.go('/login');
+                  },
                 ),
                 const SizedBox(height: 12),
                 
@@ -3835,12 +3672,14 @@ class _DotIndicator extends StatefulWidget {
   final int index;
   final bool isActive;
   final bool isCompleted;
+  final AppThemeData theme;
   final VoidCallback? onTap;
 
   const _DotIndicator({
     required this.index,
     required this.isActive,
     required this.isCompleted,
+    required this.theme,
     this.onTap,
   });
 
@@ -3889,18 +3728,18 @@ class _DotIndicatorState extends State<_DotIndicator>
           return Transform.scale(
             scale: _scaleAnimation.value,
             child: Container(
-              margin: const EdgeInsets.only(left: 8),
+              margin: const EdgeInsets.only(left: AppThemes.spaceS),
               width: 10,
               height: 10,
               decoration: BoxDecoration(
                 color: widget.isCompleted || widget.isActive
-                    ? const Color(0xFF10B981)
-                    : Colors.grey.shade300,
+                    ? widget.theme.primary
+                    : widget.theme.accent,
                 shape: BoxShape.circle,
                 boxShadow: widget.isCompleted
                     ? [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                          color: widget.theme.primary.withValues(alpha: 0.4),
                           blurRadius: 4,
                           spreadRadius: 1,
                         ),

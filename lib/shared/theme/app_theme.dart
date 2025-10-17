@@ -300,7 +300,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(largeBorderRadius),

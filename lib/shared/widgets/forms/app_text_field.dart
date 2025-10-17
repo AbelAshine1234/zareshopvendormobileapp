@@ -290,20 +290,27 @@ class AppSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      style: AppTheme.bodyMedium,
-      decoration: AppTheme.inputDecoration(
-        hintText: hint,
-        prefixIcon: const Icon(Icons.search),
-        suffixIcon: onClear != null
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: onClear,
-              )
-            : null,
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        return TextField(
+          controller: controller,
+          onChanged: onChanged,
+          style: AppThemes.bodyMedium(theme),
+          decoration: AppThemes.inputDecoration(
+            theme,
+            hintText: hint,
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: onClear != null
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: onClear,
+                  )
+                : null,
+          ),
+        );
+      },
     );
   }
 }

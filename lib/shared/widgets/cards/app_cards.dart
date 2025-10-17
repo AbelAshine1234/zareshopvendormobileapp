@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_themes.dart';
+import '../../theme/theme_provider.dart';
+import '../buttons/app_buttons.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -21,24 +25,30 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget card = Container(
-      width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(AppTheme.spaceL),
-      margin: margin,
-      decoration: AppTheme.cardDecoration.copyWith(
-        color: color ?? AppTheme.backgroundSecondary,
-      ),
-      child: child,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        Widget card = Container(
+          width: double.infinity,
+          padding: padding ?? const EdgeInsets.all(AppThemes.spaceL),
+          margin: margin,
+          decoration: AppThemes.cardDecoration(theme).copyWith(
+            color: color ?? theme.surface,
+          ),
+          child: this.child,
+        );
+
+        if (onTap != null) {
+          return GestureDetector(
+            onTap: onTap,
+            child: card,
+          );
+        }
+
+        return card;
+      },
     );
-
-    if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: card,
-      );
-    }
-
-    return card;
   }
 }
 
@@ -365,7 +375,7 @@ class AppEmptyCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           if (actionText != null && onAction != null) ...[
-            const SizedBox(height: AppTheme.spaceL),
+            const SizedBox(height: AppThemes.spaceL),
             AppTextButton(
               text: actionText!,
               onPressed: onAction,
