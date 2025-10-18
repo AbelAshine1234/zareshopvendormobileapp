@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../shared/theme/app_theme.dart';
 import '../../../data/models/product_model.dart';
 import '../bloc/products_bloc.dart';
 import '../bloc/products_event.dart';

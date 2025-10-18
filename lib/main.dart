@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import 'shared/theme/theme_provider.dart';
 import 'core/constants/app_constants.dart';
 import 'core/utils/app_bloc_observer.dart';
-import 'features/splash/splash_screen.dart';
+import 'core/navigation/app_router.dart';
+import 'features/auth/bloc/auth_bloc.dart';
 
 void main() {
   // Set up BlocObserver for debugging
@@ -21,17 +22,24 @@ class ZareshopVendorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp(
-            title: AppConstants.appName,
-            debugShowCheckedModeBanner: false,
-            theme: themeProvider.themeData,
-            home: const SplashScreen(),
-          );
-        },
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc(),
+        ),
+      ],
+      child: ChangeNotifierProvider(
+        create: (context) => ThemeProvider(),
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return MaterialApp.router(
+              title: AppConstants.appName,
+              debugShowCheckedModeBanner: false,
+              theme: themeProvider.themeData,
+              routerConfig: AppRouter.router,
+            );
+          },
+        ),
       ),
     );
   }

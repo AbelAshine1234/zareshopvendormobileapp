@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../shared/theme/theme_provider.dart';
-import '../../shared/theme/app_themes.dart';
-import '../auth/screens/login_screen.dart';
-import '../../core/services/api_service.dart';
-import '../dashboard/screens/dashboard_screen.dart';
-import '../onboarding/screens/onboarding_main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,70 +11,18 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  bool _isCheckingAuth = true;
-  bool _isAuthenticated = false;
-
   @override
   void initState() {
     super.initState();
-    _checkAuthenticationStatus();
-  }
-
-  Future<void> _checkAuthenticationStatus() async {
-    try {
-      // Check if user has a valid token
-      final token = await ApiService.getToken();
-      
-      if (token != null) {
-        // Verify token is still valid by getting current user
-        final userResult = await ApiService.getCurrentUser();
-        
-        if (userResult['success'] == true) {
-          setState(() {
-            _isAuthenticated = true;
-            _isCheckingAuth = false;
-          });
-          
-          // Navigate to dashboard
-          if (mounted) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const DashboardScreen(),
-              ),
-            );
-          }
-          return;
-        }
-      }
-      
-      // No valid token or user data
-      setState(() {
-        _isAuthenticated = false;
-        _isCheckingAuth = false;
-      });
-    } catch (e) {
-      // Error checking auth, show login screen
-      setState(() {
-        _isAuthenticated = false;
-        _isCheckingAuth = false;
-      });
-    }
+    // No automatic authentication check - always show login/signup buttons
   }
 
   void _navigateToLogin() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
-      ),
-    );
+    context.go('/login');
   }
 
   void _navigateToSignup() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const OnboardingMainScreen(),
-      ),
-    );
+    context.go('/onboarding');
   }
 
   @override
@@ -150,75 +94,58 @@ class _SplashScreenState extends State<SplashScreen> {
                   
                   const SizedBox(height: 60),
                   
-                  // Action Buttons (only show when not checking auth)
-                  if (!_isCheckingAuth) ...[
-                    // Login Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _navigateToLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                  // Action Buttons (always show)
+                  // Login Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _navigateToLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      ),
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Sign Up Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: OutlinedButton(
-                        onPressed: _navigateToSignup,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: theme.primary,
-                          side: BorderSide(
-                            color: theme.primary,
-                            width: 1.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                   
-                  // Loading indicator (only show when checking auth)
-                  if (_isCheckingAuth) ...[
-                    const SizedBox(height: 40),
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          theme.primary,
+                  const SizedBox(height: 16),
+                  
+                  // Sign Up Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: _navigateToSignup,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.primary,
+                        side: BorderSide(
+                          color: theme.primary,
+                          width: 1.5,
                         ),
-                        strokeWidth: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Sign Up',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                   
                   const Spacer(),
                   

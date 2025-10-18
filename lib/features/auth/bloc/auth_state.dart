@@ -39,3 +39,15 @@ class ForgotPasswordOtpSent extends AuthState {
 class ForgotPasswordSuccess extends AuthState {
   const ForgotPasswordSuccess();
 }
+
+class AuthAuthenticated extends AuthState {
+  const AuthAuthenticated();
+}
+
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+
+class AuthChecking extends AuthState {
+  const AuthChecking();
+}

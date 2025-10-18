@@ -16,8 +16,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   ) async {
     emit(const DashboardLoading());
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      // Remove artificial delay - load data immediately
       final stats = _getMockDashboardStats();
       emit(DashboardLoaded(stats: stats));
     } catch (e) {
@@ -30,7 +29,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     Emitter<DashboardState> emit,
   ) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Remove artificial delay - refresh immediately
       final stats = _getMockDashboardStats();
       if (state is DashboardLoaded) {
         emit((state as DashboardLoaded).copyWith(stats: stats));

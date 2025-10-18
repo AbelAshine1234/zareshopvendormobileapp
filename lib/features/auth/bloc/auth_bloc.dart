@@ -13,6 +13,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ForgotPasswordRequested>(_onForgotPasswordRequested);
     on<ResetPasswordRequested>(_onResetPasswordRequested);
     on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
+    on<CheckAuthenticationStatus>(_onCheckAuthenticationStatus);
+    on<LogoutRequested>(_onLogoutRequested);
   }
 
   void _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
@@ -113,5 +115,42 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       TogglePasswordVisibility event, Emitter<AuthState> emit) {
     _isPasswordVisible = !_isPasswordVisible;
     emit(AuthInitial(isPasswordVisible: _isPasswordVisible));
+  }
+
+  void _onCheckAuthenticationStatus(
+      CheckAuthenticationStatus event, Emitter<AuthState> emit) async {
+    emit(const AuthChecking());
+    
+    try {
+      final token = await ApiService.getToken();
+      
+      if (token != null) {
+        // Verify token is still valid by getting current user
+        final userResult = await ApiService.getCurrentUser();
+        
+        if (userResult['success'] == true) {
+          emit(const AuthAuthenticated());
+        } else {
+          // Token is invalid, clear it
+          await ApiService.removeToken();
+          emit(const AuthUnauthenticated());
+        }
+      } else {
+        emit(const AuthUnauthenticated());
+      }
+    } catch (e) {
+      // Error checking auth, assume unauthenticated
+      emit(const AuthUnauthenticated());
+    }
+  }
+
+  void _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
+    try {
+      await ApiService.logout();
+      emit(const AuthUnauthenticated());
+    } catch (e) {
+      // Even if logout fails, assume unauthenticated
+      emit(const AuthUnauthenticated());
+    }
   }
 }

@@ -37,3 +37,11 @@ class ResetPasswordRequested extends AuthEvent {
 class TogglePasswordVisibility extends AuthEvent {
   const TogglePasswordVisibility();
 }
+
+class CheckAuthenticationStatus extends AuthEvent {
+  const CheckAuthenticationStatus();
+}
+
+class LogoutRequested extends AuthEvent {
+  const LogoutRequested();
+}

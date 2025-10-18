@@ -2,21 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../../shared/shared.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../../onboarding/screens/onboarding_main_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(),
-      child: const _LoginView(),
-    );
+    return const _LoginView();
   }
 }
 
@@ -27,12 +24,7 @@ class _LoginView extends StatefulWidget {
   State<_LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends State<_LoginView>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _contentController;
-  late Animation<double> _contentFadeAnimation;
-  late Animation<Offset> _contentSlideAnimation;
-
+class _LoginViewState extends State<_LoginView> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _phoneError;
@@ -40,35 +32,11 @@ class _LoginViewState extends State<_LoginView>
   @override
   void initState() {
     super.initState();
-
-    _contentController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-
-    _contentFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _contentController,
-        curve: Curves.easeOut,
-      ),
-    );
-
-    _contentSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _contentController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
-
-    _contentController.forward();
+    // Remove complex animations for better performance
   }
 
   @override
   void dispose() {
-    _contentController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -93,19 +61,10 @@ class _LoginViewState extends State<_LoginView>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
-          // Navigate to dashboard (implement later)
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login successful!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          // Navigate to dashboard
+          context.go('/');
         } else if (state is AuthSignupRequested) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const OnboardingMainScreen(),
-            ),
-          );
+          context.go('/onboarding');
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -130,25 +89,19 @@ class _LoginViewState extends State<_LoginView>
                     physics: const BouncingScrollPhysics(),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: SlideTransition(
-                        position: _contentSlideAnimation,
-                        child: FadeTransition(
-                          opacity: _contentFadeAnimation,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 60),
-                              _buildHeader(theme),
-                              const SizedBox(height: 48),
-                              _buildWelcomeText(theme),
-                              const SizedBox(height: 40),
-                              _buildLoginCard(theme),
-                              const SizedBox(height: 24),
-                              _buildSignupPrompt(theme),
-                              const SizedBox(height: 24),
-                            ],
-                          ),
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 60),
+                          _buildHeader(theme),
+                          const SizedBox(height: 48),
+                          _buildWelcomeText(theme),
+                          const SizedBox(height: 40),
+                          _buildLoginCard(theme),
+                          const SizedBox(height: 24),
+                          _buildSignupPrompt(theme),
+                          const SizedBox(height: 24),
+                        ],
                       ),
                     ),
                   ),
@@ -169,74 +122,54 @@ class _LoginViewState extends State<_LoginView>
   }
 
   Widget _buildHeader(AppThemeData theme) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 300),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: 0.8 + (0.2 * value),
-          child: Column(
-            children: [
-              Text(
-                'ZARESHOP',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: theme.primary,
-                  letterSpacing: 3,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'VENDOR PORTAL',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: theme.textSecondary,
-                  letterSpacing: 2,
-                ),
-              ),
-            ],
+    return Column(
+      children: [
+        Text(
+          'ZARESHOP',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            color: theme.primary,
+            letterSpacing: 3,
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'VENDOR PORTAL',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: theme.textSecondary,
+            letterSpacing: 2,
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildWelcomeText(AppThemeData theme) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 400),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value.clamp(0.0, 1.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome Back!',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: theme.textPrimary,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Login to manage your shop and grow your business.',
-                style: TextStyle(
-                  fontSize: 17,
-                  color: theme.textSecondary,
-                  height: 1.5,
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome Back!',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            color: theme.textPrimary,
+            height: 1.3,
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Login to manage your shop and grow your business.',
+          style: TextStyle(
+            fontSize: 17,
+            color: theme.textSecondary,
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 
@@ -247,16 +180,7 @@ class _LoginViewState extends State<_LoginView>
         final isPasswordVisible =
             state is AuthInitial ? state.isPasswordVisible : false;
 
-        return TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 500),
-          tween: Tween(begin: 0.0, end: 1.0),
-          curve: Curves.easeOut,
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, 30 * (1 - value)),
-              child: Opacity(
-                opacity: value.clamp(0.0, 1.0),
-                child: Container(
+        return Container(
                   padding: const EdgeInsets.all(28),
                   decoration: BoxDecoration(
                     color: theme.surface,
@@ -567,61 +491,47 @@ class _LoginViewState extends State<_LoginView>
                       ),
                     ],
                   ),
-                ),
-              ),
-            );
-          },
-        );
+                );
       },
     );
   }
 
   Widget _buildSignupPrompt(AppThemeData theme) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 400),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value.clamp(0.0, 1.0),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: theme.primary.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Don\'t have an account? ',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: theme.textSecondary,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    context.read<AuthBloc>().add(const SignupRequested());
-                  },
-                  child: Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: theme.primary,
-                    ),
-                  ),
-                ),
-              ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Don\'t have an account? ',
+            style: TextStyle(
+              fontSize: 15,
+              color: theme.textSecondary,
             ),
           ),
-        );
-      },
+          GestureDetector(
+            onTap: () {
+              context.read<AuthBloc>().add(const SignupRequested());
+            },
+            child: Text(
+              'Sign Up',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: theme.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

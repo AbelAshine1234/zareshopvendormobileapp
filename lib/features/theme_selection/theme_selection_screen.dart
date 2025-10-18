@@ -11,74 +11,19 @@ class ThemeSelectionScreen extends StatefulWidget {
   State<ThemeSelectionScreen> createState() => _ThemeSelectionScreenState();
 }
 
-class _ThemeSelectionScreenState extends State<ThemeSelectionScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _headerController;
-  late AnimationController _cardsController;
-  late AnimationController _buttonController;
-  
-  late Animation<double> _headerFade;
-  late Animation<Offset> _headerSlide;
-  late Animation<double> _cardsFade;
-  late Animation<double> _buttonScale;
-
+class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
   AppThemeType? _selectedTheme;
 
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
-    _startAnimations();
-  }
-
-  void _setupAnimations() {
-    _headerController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    
-    _cardsController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    
-    _buttonController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    
-    _headerFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _headerController, curve: Curves.easeOut),
-    );
-    
-    _headerSlide = Tween<Offset>(
-      begin: const Offset(0, -0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _headerController,
-      curve: Curves.easeOutBack,
-    ));
-    
-    _cardsFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _cardsController, curve: Curves.easeOut),
-    );
-    
-    _buttonScale = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _buttonController, curve: Curves.elasticOut),
-    );
-  }
-
-  void _startAnimations() async {
-    _headerController.forward();
-    await Future.delayed(const Duration(milliseconds: 300));
-    _cardsController.forward();
+    // Remove animations for better performance
   }
 
   void _onThemeSelected(AppThemeType themeType) {
     setState(() {
       _selectedTheme = themeType;
     });
-    _buttonController.forward();
     
     // Apply theme immediately for preview
     context.read<ThemeProvider>().setTheme(themeType);
@@ -87,30 +32,11 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen>
   void _continueToOnboarding() {
     if (_selectedTheme != null) {
       Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const OnboardingMainScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 500),
+        MaterialPageRoute(
+          builder: (context) => const OnboardingMainScreen(),
         ),
       );
     }
-  }
-
-  @override
-  void dispose() {
-    _headerController.dispose();
-    _cardsController.dispose();
-    _buttonController.dispose();
-    super.dispose();
   }
 
   @override
@@ -137,15 +63,8 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen>
                 child: Column(
                   children: [
                     // Header
-                    AnimatedBuilder(
-                      animation: _headerController,
-                      builder: (context, child) {
-                        return SlideTransition(
-                          position: _headerSlide,
-                          child: FadeTransition(
-                            opacity: _headerFade,
-                            child: Column(
-                              children: [
+                    Column(
+                      children: [
                                 const SizedBox(height: AppThemes.spaceXL),
                                 Icon(
                                   Icons.palette_outlined,
@@ -166,61 +85,31 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen>
                                 ),
                               ],
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                      ),
                     
                     const SizedBox(height: AppThemes.spaceXXL),
                     
                     // Theme Cards
                     Expanded(
-                      child: AnimatedBuilder(
-                        animation: _cardsController,
-                        builder: (context, child) {
-                          return FadeTransition(
-                            opacity: _cardsFade,
-                            child: ListView.builder(
+                      child: ListView.builder(
                               itemCount: AppThemes.allThemes.length,
                               itemBuilder: (context, index) {
                                 final themeData = AppThemes.allThemes[index];
                                 final themeType = AppThemeType.values[index];
                                 final isSelected = _selectedTheme == themeType;
                                 
-                                return TweenAnimationBuilder<double>(
-                                  duration: Duration(
-                                    milliseconds: 300 + (index * 100),
-                                  ),
-                                  tween: Tween(begin: 0.0, end: 1.0),
-                                  builder: (context, value, child) {
-                                    return Transform.translate(
-                                      offset: Offset(0, 50 * (1 - value)),
-                                      child: Opacity(
-                                        opacity: value,
-                                        child: _buildThemeCard(
-                                          themeData,
-                                          themeType,
-                                          isSelected,
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                return _buildThemeCard(
+                                  themeData,
+                                  themeType,
+                                  isSelected,
                                 );
                               },
                             ),
-                          );
-                        },
                       ),
-                    ),
                     
                     // Continue Button
                     if (_selectedTheme != null)
-                      AnimatedBuilder(
-                        animation: _buttonController,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _buttonScale.value,
-                            child: Container(
+                      Container(
                               width: double.infinity,
                               height: AppThemes.buttonHeight,
                               margin: const EdgeInsets.only(top: AppThemes.spaceL),
@@ -243,8 +132,6 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen>
                                 ),
                               ),
                             ),
-                          );
-                        },
                       ),
                   ],
                 ),

@@ -9,15 +9,19 @@ import '../../features/sales/screens/sales_report_screen.dart';
 import '../../features/onboarding/screens/onboarding_main_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/splash/splash_screen.dart';
+import '../widgets/auth_guard.dart';
 import 'main_navigation.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     routes: [
       ShellRoute(
         builder: (context, state, child) {
-          return MainNavigation(child: child);
+          return AuthGuard(
+            child: MainNavigation(child: child),
+          );
         },
         routes: [
           GoRoute(
@@ -57,7 +61,7 @@ class AppRouter {
           ),
         ],
       ),
-      // Routes outside the shell (full screen)
+      // Routes outside the shell (full screen) - Protected
       GoRoute(
         path: '/order/:id',
         name: 'orderDetail',
@@ -65,17 +69,21 @@ class AppRouter {
           final orderId = state.pathParameters['id']!;
           final customerName = state.uri.queryParameters['customerName'] ?? 'Unknown';
           final status = state.uri.queryParameters['status'] ?? 'pending';
-          return OrderDetailScreen(
-            orderId: orderId,
-            customerName: customerName,
-            status: status,
+          return AuthGuard(
+            child: OrderDetailScreen(
+              orderId: orderId,
+              customerName: customerName,
+              status: status,
+            ),
           );
         },
       ),
       GoRoute(
         path: '/sales-report',
         name: 'salesReport',
-        builder: (context, state) => const SalesReportScreen(),
+        builder: (context, state) => const AuthGuard(
+          child: SalesReportScreen(),
+        ),
       ),
       GoRoute(
         path: '/onboarding',
@@ -94,6 +102,11 @@ class AppRouter {
         path: '/forgot-password',
         name: 'forgotPassword',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
       ),
     ],
   );

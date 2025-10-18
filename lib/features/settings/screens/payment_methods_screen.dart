@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../shared/theme/app_theme.dart';
+import '../../../core/services/api_service.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
@@ -10,6 +11,7 @@ class PaymentMethodsScreen extends StatefulWidget {
 
 class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   bool _setAsDefault = false;
+  String? _userPhoneNumber;
 
   final List<Map<String, dynamic>> _paymentMethods = [
     {
@@ -27,6 +29,21 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       'isVerified': true,
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserPhoneNumber();
+  }
+
+  Future<void> _loadUserPhoneNumber() async {
+    final userData = await ApiService.getUserData();
+    if (userData != null && userData['phone_number'] != null) {
+      setState(() {
+        _userPhoneNumber = userData['phone_number'];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -359,15 +376,388 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   void _showAddPaymentMethodDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Payment Method'),
-        content: const Text('This feature will allow you to add new payment methods for receiving payouts.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+      builder: (context) => _AddPaymentMethodDialog(
+        userPhoneNumber: _userPhoneNumber,
+      ),
+    );
+  }
+}
+
+class _AddPaymentMethodDialog extends StatefulWidget {
+  final String? userPhoneNumber;
+
+  const _AddPaymentMethodDialog({
+    required this.userPhoneNumber,
+  });
+
+  @override
+  State<_AddPaymentMethodDialog> createState() => _AddPaymentMethodDialogState();
+}
+
+class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _accountHolderController = TextEditingController();
+  String _selectedPaymentMethod = 'telebirr';
+  bool _useRegistrationPhone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.userPhoneNumber != null) {
+      _phoneController.text = widget.userPhoneNumber!;
+    }
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _accountHolderController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add Payment Method'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Payment Method Selection
+            const Text(
+              'Payment Method',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Telebirr Option
+            _buildPaymentMethodOption(
+              'telebirr',
+              'Telebirr',
+              Icons.phone_android,
+              const Color(0xFF1976D2),
+            ),
+            const SizedBox(height: 8),
+            
+            // CBE Birr Option
+            _buildPaymentMethodOption(
+              'cbe_birr',
+              'CBE Birr',
+              Icons.account_balance,
+              const Color(0xFF2E7D32),
+            ),
+            const SizedBox(height: 8),
+            
+            // Bank Account Option
+            _buildPaymentMethodOption(
+              'bank_account',
+              'Bank Account',
+              Icons.account_balance_wallet,
+              const Color(0xFF7B1FA2),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Account Holder Name
+            const Text(
+              'Account Holder Name',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _accountHolderController,
+              decoration: const InputDecoration(
+                hintText: 'Enter account holder name',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Phone Number Section (for mobile wallets)
+            if (_selectedPaymentMethod == 'telebirr' || _selectedPaymentMethod == 'cbe_birr') ...[
+              const Text(
+                'Phone Number',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              
+              // Use Registration Phone Toggle
+              if (widget.userPhoneNumber != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppTheme.successColor.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: AppTheme.successColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Use Registration Phone?',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.successColor,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Use the same phone number from your registration',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.successColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: _useRegistrationPhone,
+                        onChanged: (value) {
+                          setState(() {
+                            _useRegistrationPhone = value;
+                            if (value) {
+                              _phoneController.text = widget.userPhoneNumber!;
+                            } else {
+                              _phoneController.clear();
+                            }
+                          });
+                        },
+                        activeColor: AppTheme.successColor,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              
+              // Phone Number Input with +251 constant
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Row(
+                  children: [
+                    // +251 constant prefix
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, top: 12, bottom: 12, right: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: Image.network(
+                                'https://flagcdn.com/w40/et.png',
+                                width: 24,
+                                height: 16,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'ET',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            '+251',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Divider
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.grey[300],
+                    ),
+                    // Phone number input
+                    Expanded(
+                      child: TextField(
+                        controller: _phoneController,
+                        enabled: !_useRegistrationPhone,
+                        keyboardType: TextInputType.number,
+                        maxLength: 9,
+                        decoration: const InputDecoration(
+                          hintText: '912345678',
+                          border: InputBorder.none,
+                          counterText: '',
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            
+            // Bank Account Number (for bank account)
+            if (_selectedPaymentMethod == 'bank_account') ...[
+              const Text(
+                'Bank Account Number',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  hintText: 'Enter bank account number',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            // TODO: Implement save payment method logic
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Payment method added successfully!'),
+                backgroundColor: AppTheme.successColor,
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.successColor,
           ),
-        ],
+          child: const Text(
+            'Add',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentMethodOption(
+    String method,
+    String title,
+    IconData icon,
+    Color color,
+  ) {
+    final bool isSelected = _selectedPaymentMethod == method;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPaymentMethod = method;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.1) : Colors.grey[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? color : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? color : Colors.black87,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: color,
+                size: 20,
+              ),
+          ],
+        ),
       ),
     );
   }

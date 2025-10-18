@@ -143,22 +143,53 @@ class _DocumentsStepState extends State<DocumentsStep> {
                 
                 // Image display or upload button
                 if (selectedFile != null) ...[
-                  // Show selected image
-                  Container(
-                    width: double.infinity,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: widget.theme.success,
-                        width: 2,
+                  // Show selected image with clickable area and pencil inside
+                  GestureDetector(
+                    onTap: () => _selectImage(documentType),
+                    child: Container(
+                      width: double.infinity,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: widget.theme.success,
+                          width: 2,
+                        ),
                       ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: kIsWeb
-                          ? Image.network(selectedFile.path, fit: BoxFit.cover)
-                          : Image.file(File(selectedFile.path), fit: BoxFit.cover),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: kIsWeb
+                                ? Image.network(selectedFile.path, fit: BoxFit.cover)
+                                : Image.file(File(selectedFile.path), fit: BoxFit.cover),
+                          ),
+                          // Pencil icon inside the image
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: widget.theme.primary,
+                                borderRadius: BorderRadius.circular(6),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: widget.theme.primary.withValues(alpha: 0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ] else ...[
@@ -209,35 +240,6 @@ class _DocumentsStepState extends State<DocumentsStep> {
               ],
             ),
           ),
-          
-          // Edit button in top right corner
-          if (selectedFile != null)
-            Positioned(
-              top: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: () => _selectImage(documentType),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: widget.theme.primary,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: widget.theme.primary.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );

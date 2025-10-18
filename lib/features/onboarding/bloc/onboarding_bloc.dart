@@ -725,82 +725,25 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           // Prepare data
           final data = currentState.data;
           
-          // Parse categories - support both single and multiple categories
-          List<int> categoryIds = [];
+          // Parse single category
+          int categoryId = 1; // Default category ID
           print('🏷️ [ONBOARDING_BLOC] Raw category data: "${data.category}"');
-          print('🏷️ [ONBOARDING_BLOC] Category isEmpty: ${data.category.isEmpty}');
           
           if (data.category.isNotEmpty) {
             try {
-              List<String> categoryNames = [];
-              
-              // Parse category names from different formats
-              if (data.category.startsWith('[') && data.category.endsWith(']')) {
-                // Parse as JSON array
-                final List<dynamic> parsed = jsonDecode(data.category);
-                categoryNames = parsed.map((e) => e.toString()).toList();
-                print('✅ [ONBOARDING_BLOC] Parsed JSON category names: $categoryNames');
-              } else if (data.category.contains(',')) {
-                // Parse as comma-separated values
-                categoryNames = data.category.split(',').map((e) => e.trim()).toList();
-                print('✅ [ONBOARDING_BLOC] Parsed comma-separated category names: $categoryNames');
-              } else {
-                // Single category
-                categoryNames = [data.category.trim()];
-                print('✅ [ONBOARDING_BLOC] Single category name: $categoryNames');
-              }
-              
-              // Convert category names to IDs
-              // For now, use a simple mapping - in production, this should come from the categories API
-              final Map<String, int> categoryNameToId = {
-                'Electronics': 1,
-                'Clothing': 2,
-                'Food & Beverages': 3,
-                'Home & Garden': 4,
-                'Health & Beauty': 5,
-                'Sports & Recreation': 6,
-                'Books & Media': 7,
-                'Automotive': 8,
-                'Toys & Games': 9,
-                'Services': 10,
-              };
-              
-              for (String categoryName in categoryNames) {
-                if (categoryNameToId.containsKey(categoryName)) {
-                  categoryIds.add(categoryNameToId[categoryName]!);
-                } else {
-                  // Try to parse as direct ID if it's a number
-                  try {
-                    categoryIds.add(int.parse(categoryName));
-                  } catch (e) {
-                    print('⚠️ [ONBOARDING_BLOC] Unknown category name: $categoryName, using ID 1');
-                    categoryIds.add(1); // Default to category 1 for unknown names
-                  }
-                }
-              }
-              
-              print('✅ [ONBOARDING_BLOC] Final category IDs: $categoryIds');
-              
+              // Try to parse as direct ID if it's a number
+              categoryId = int.parse(data.category);
+              print('✅ [ONBOARDING_BLOC] Parsed category ID: $categoryId');
             } catch (e) {
-              print('❌ [ONBOARDING_BLOC] Failed to parse category: ${data.category}, error: $e');
-              print('🔄 [ONBOARDING_BLOC] Using default category ID: 1');
-              categoryIds = [1]; // Fallback to default
-              developer.log('⚠️  Failed to parse category: ${data.category}', name: 'OnboardingBloc');
+              print('⚠️ [ONBOARDING_BLOC] Failed to parse category ID: ${data.category}, using default ID: 1');
+              categoryId = 1; // Fallback to default
             }
           } else {
             print('⚠️ [ONBOARDING_BLOC] No category selected, using default category ID: 1');
-            categoryIds = [1]; // Default to category 1 if none selected
+            categoryId = 1;
           }
           
-          // Ensure we always have at least one category
-          if (categoryIds.isEmpty) {
-            print('🔄 [ONBOARDING_BLOC] Empty category list, adding default category ID: 1');
-            categoryIds = [1];
-          }
-          
-          // Remove duplicates
-          categoryIds = categoryIds.toSet().toList();
-          print('🏷️ [ONBOARDING_BLOC] Final unique category IDs: $categoryIds');
+          print('✅ [ONBOARDING_BLOC] Final category ID: $categoryId');
           
           // Prepare payment method details
           print('💳 [ONBOARDING_BLOC] ===== PAYMENT METHOD DETAILS =====');
@@ -855,7 +798,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           print('📝 [ONBOARDING_BLOC] City: ${data.shippingCity}');
           print('📝 [ONBOARDING_BLOC] State: ${data.state}');
           print('📝 [ONBOARDING_BLOC] Country: ${data.country}');
-          print('📝 [ONBOARDING_BLOC] Category IDs: $categoryIds');
+          print('📝 [ONBOARDING_BLOC] Category ID: $categoryId');
           print('📝 [ONBOARDING_BLOC] Subscription ID: ${data.selectedSubscriptionId}');
           print('👤 [ONBOARDING_BLOC] User Info:');
           print('   Full Name: ${data.fullName}');
@@ -956,7 +899,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
             kebele: data.kebele.isNotEmpty ? data.kebele : null,
             postalCode: data.postalCode.isNotEmpty ? data.postalCode : null,
             country: data.country,
-            categoryIds: categoryIds,
+            categoryIds: [categoryId],
             paymentMethodType: paymentMethodType,
             accountHolderName: data.accountHolderName,
             accountNumber: accountNumber,

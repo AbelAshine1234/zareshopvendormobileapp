@@ -4,7 +4,7 @@ import '../../../shared/shared.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
-import '../widgets/common/category_multi_select.dart';
+import '../widgets/common/category_dropdown.dart';
 
 class BasicInfoStep extends StatefulWidget {
   final AppThemeData theme;
@@ -25,7 +25,7 @@ class BasicInfoStep extends StatefulWidget {
 class _BasicInfoStepState extends State<BasicInfoStep> {
   final TextEditingController _businessNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  List<Map<String, dynamic>> _selectedCategories = [];
+  Map<String, dynamic>? _selectedCategory;
 
   @override
   void dispose() {
@@ -73,7 +73,12 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
             ),
             const SizedBox(height: AppThemes.spaceL),
             
-            // Business Categories
+            // Business Category
+            Text(
+              'Business Category',
+              style: AppThemes.titleMedium(widget.theme),
+            ),
+            const SizedBox(height: AppThemes.spaceS),
             widget.loadingCategories
                 ? Container(
                     height: 56,
@@ -99,16 +104,16 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
                       ),
                     ),
                   )
-                : CategoryMultiSelect(
+                : CategoryDropdown(
                     categories: widget.categories,
-                    selectedCategories: _selectedCategories,
-                    onChanged: (categories) {
+                    selectedCategory: _selectedCategory,
+                    onChanged: (category) {
                       setState(() {
-                        _selectedCategories = categories;
+                        _selectedCategory = category;
                       });
-                      // Update BLoC with first category ID for compatibility
-                      if (categories.isNotEmpty) {
-                        context.read<OnboardingBloc>().add(UpdateBusinessCategory(categories.first['id']));
+                      // Update BLoC with category ID
+                      if (category != null) {
+                        context.read<OnboardingBloc>().add(UpdateBusinessCategory(category['id']));
                       }
                     },
                     theme: widget.theme,

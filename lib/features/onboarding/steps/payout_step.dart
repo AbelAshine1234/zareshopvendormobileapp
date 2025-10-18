@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
 import '../bloc/onboarding_bloc.dart';
@@ -258,24 +259,125 @@ class _PayoutStepState extends State<PayoutStep> {
               const SizedBox(height: AppThemes.spaceM),
             ],
             
-            TextField(
-              controller: _accountNumberController,
-              onChanged: (value) {
-                context.read<OnboardingBloc>().add(UpdateAccountNumber(value));
-              },
-              keyboardType: _selectedPaymentMethod == 'bank_account' 
-                  ? TextInputType.number
-                  : TextInputType.phone,
-              decoration: AppThemes.inputDecoration(
-                widget.theme,
-                hintText: _selectedPaymentMethod == 'bank_account'
-                    ? 'Enter bank account number'
-                    : (_selectedPaymentMethod == 'telebirr' || _selectedPaymentMethod == 'cbe_birr') && !_useRegistrationPhone 
-                        ? 'Enter phone number (+251...)'
-                        : 'Enter phone number',
+            // Phone number input with +251 constant for mobile wallets
+            if (_selectedPaymentMethod == 'telebirr' || _selectedPaymentMethod == 'cbe_birr') ...[
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppThemes.borderRadius),
+                  color: widget.theme.inputBackground,
+                  border: Border.all(
+                    color: widget.theme.inputBorder,
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Country code with flag
+                    Padding(
+                      padding: const EdgeInsets.only(left: AppThemes.spaceM, top: AppThemes.spaceM, bottom: AppThemes.spaceM, right: AppThemes.spaceM),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.network(
+                                'https://flagcdn.com/w40/et.png',
+                                width: 28,
+                                height: 20,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      gradient: widget.theme.successGradient,
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'ET',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppThemes.spaceS),
+                          Text(
+                            '+251',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: widget.theme.labelText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Divider
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: widget.theme.divider,
+                    ),
+                    // Phone number input
+                    Expanded(
+                      child: TextField(
+                        controller: _accountNumberController,
+                        onChanged: (value) {
+                          context.read<OnboardingBloc>().add(UpdateAccountNumber('+251$value'));
+                        },
+                        keyboardType: TextInputType.number,
+                        maxLength: 9,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(9),
+                        ],
+                        decoration: InputDecoration(
+                          hintText: '912345678',
+                          border: InputBorder.none,
+                          counterText: '',
+                          contentPadding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceM, vertical: AppThemes.spaceM),
+                          hintStyle: TextStyle(
+                            color: widget.theme.textHint,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: widget.theme.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              style: AppThemes.bodyMedium(widget.theme),
-            ),
+            ] else ...[
+              // Bank account number input
+              TextField(
+                controller: _accountNumberController,
+                onChanged: (value) {
+                  context.read<OnboardingBloc>().add(UpdateAccountNumber(value));
+                },
+                keyboardType: TextInputType.number,
+                decoration: AppThemes.inputDecoration(
+                  widget.theme,
+                  hintText: 'Enter bank account number',
+                ),
+                style: AppThemes.bodyMedium(widget.theme),
+              ),
+            ],
             
             const SizedBox(height: AppThemes.spaceL),
             
