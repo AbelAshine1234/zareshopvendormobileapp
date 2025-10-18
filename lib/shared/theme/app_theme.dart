@@ -13,6 +13,13 @@ class AppTheme {
   static const Color successGreen = Color(0xFF388E3C);
   static const Color emeraldGreen = Color(0xFF50C878);
   
+  // Additional color aliases for compatibility
+  static const Color successColor = successGreen;
+  static const Color primaryColor = primaryGreen;
+  static const Color errorColor = errorRed;
+  static const Color warningColor = warningOrange;
+  static const Color borderColor = dividerColor;
+  
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);
   static const Color textHint = Color(0xFF9E9E9E);

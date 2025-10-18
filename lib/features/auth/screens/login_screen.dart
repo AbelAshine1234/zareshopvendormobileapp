@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/shared.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../../onboarding/screens/onboarding_main_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -40,7 +42,7 @@ class _LoginViewState extends State<_LoginView>
     super.initState();
 
     _contentController = AnimationController(
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
@@ -52,12 +54,12 @@ class _LoginViewState extends State<_LoginView>
     );
 
     _contentSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, -1.5),
+      begin: const Offset(0, -0.3),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
         parent: _contentController,
-        curve: Curves.elasticOut,
+        curve: Curves.easeOutCubic,
       ),
     );
 
@@ -91,9 +93,19 @@ class _LoginViewState extends State<_LoginView>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
-          context.go('/');
+          // Navigate to dashboard (implement later)
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login successful!'),
+              backgroundColor: Colors.green,
+            ),
+          );
         } else if (state is AuthSignupRequested) {
-          context.go('/onboarding');
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const OnboardingMainScreen(),
+            ),
+          );
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -104,43 +116,61 @@ class _LoginViewState extends State<_LoginView>
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SlideTransition(
-                position: _contentSlideAnimation,
-                child: FadeTransition(
-                  opacity: _contentFadeAnimation,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 60),
-                      _buildHeader(),
-                      const SizedBox(height: 48),
-                      _buildWelcomeText(),
-                      const SizedBox(height: 40),
-                      _buildLoginCard(),
-                      const SizedBox(height: 24),
-                      _buildSignupPrompt(),
-                      const SizedBox(height: 24),
-                    ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          final theme = themeProvider.currentTheme;
+          
+          return Scaffold(
+            backgroundColor: theme.background,
+            body: Stack(
+              children: [
+                // Main content
+                SafeArea(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: SlideTransition(
+                        position: _contentSlideAnimation,
+                        child: FadeTransition(
+                          opacity: _contentFadeAnimation,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 60),
+                              _buildHeader(theme),
+                              const SizedBox(height: 48),
+                              _buildWelcomeText(theme),
+                              const SizedBox(height: 40),
+                              _buildLoginCard(theme),
+                              const SizedBox(height: 24),
+                              _buildSignupPrompt(theme),
+                              const SizedBox(height: 24),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                
+                // Theme selector button in top-right
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: const ThemeSelectorButton(),
+                ),
+              ],
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppThemeData theme) {
     return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 300),
       tween: Tween(begin: 0.0, end: 1.0),
       curve: Curves.easeOut,
       builder: (context, value, child) {
@@ -153,7 +183,7 @@ class _LoginViewState extends State<_LoginView>
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF10B981),
+                  color: theme.primary,
                   letterSpacing: 3,
                 ),
               ),
@@ -163,7 +193,7 @@ class _LoginViewState extends State<_LoginView>
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
+                  color: theme.textSecondary,
                   letterSpacing: 2,
                 ),
               ),
@@ -174,9 +204,9 @@ class _LoginViewState extends State<_LoginView>
     );
   }
 
-  Widget _buildWelcomeText() {
+  Widget _buildWelcomeText(AppThemeData theme) {
     return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 400),
       tween: Tween(begin: 0.0, end: 1.0),
       curve: Curves.easeOut,
       builder: (context, value, child) {
@@ -185,12 +215,12 @@ class _LoginViewState extends State<_LoginView>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Welcome Back!',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
+                  color: theme.textPrimary,
                   height: 1.3,
                 ),
               ),
@@ -199,7 +229,7 @@ class _LoginViewState extends State<_LoginView>
                 'Login to manage your shop and grow your business.',
                 style: TextStyle(
                   fontSize: 17,
-                  color: Colors.grey.shade700,
+                  color: theme.textSecondary,
                   height: 1.5,
                 ),
               ),
@@ -210,7 +240,7 @@ class _LoginViewState extends State<_LoginView>
     );
   }
 
-  Widget _buildLoginCard() {
+  Widget _buildLoginCard(AppThemeData theme) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
@@ -218,9 +248,9 @@ class _LoginViewState extends State<_LoginView>
             state is AuthInitial ? state.isPasswordVisible : false;
 
         return TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 1000),
+          duration: const Duration(milliseconds: 500),
           tween: Tween(begin: 0.0, end: 1.0),
-          curve: Curves.easeOutBack,
+          curve: Curves.easeOut,
           builder: (context, value, child) {
             return Transform.translate(
               offset: Offset(0, 30 * (1 - value)),
@@ -229,15 +259,15 @@ class _LoginViewState extends State<_LoginView>
                 child: Container(
                   padding: const EdgeInsets.all(28),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.grey.shade300,
+                      color: theme.divider,
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: theme.shadowColor,
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -246,33 +276,34 @@ class _LoginViewState extends State<_LoginView>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Login',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
+                          color: theme.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 24),
                       
                       // Phone Number Input
-                      const Text(
+                      Text(
                         'Phone Number',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF374151),
+                          color: theme.labelText,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: const Color(0xFFF9FAFB),
-                          border: _phoneError != null
-                              ? Border.all(color: Colors.red, width: 1)
-                              : null,
+                          color: theme.inputBackground,
+                          border: Border.all(
+                            color: _phoneError != null ? theme.error : theme.inputBorder,
+                            width: 1.5,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -298,13 +329,8 @@ class _LoginViewState extends State<_LoginView>
                                         errorBuilder:
                                             (context, error, stackTrace) {
                                           return Container(
-                                            decoration: const BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Color(0xFF22C55E),
-                                                  Color(0xFF16A34A)
-                                                ],
-                                              ),
+                                            decoration: BoxDecoration(
+                                              gradient: theme.successGradient,
                                             ),
                                             child: const Center(
                                               child: Text(
@@ -322,12 +348,12 @@ class _LoginViewState extends State<_LoginView>
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
+                                  Text(
                                     '+251',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xFF22C55E),
+                                      color: theme.labelText,
                                     ),
                                   ),
                                 ],
@@ -336,7 +362,7 @@ class _LoginViewState extends State<_LoginView>
                             Container(
                               width: 1,
                               height: 40,
-                              color: const Color(0xFFE5E7EB),
+                              color: theme.divider,
                             ),
                             Expanded(
                               child: TextField(
@@ -348,22 +374,22 @@ class _LoginViewState extends State<_LoginView>
                                   FilteringTextInputFormatter.digitsOnly,
                                   LengthLimitingTextInputFormatter(9),
                                 ],
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   hintText: '912345678',
                                   border: InputBorder.none,
                                   counterText: '',
-                                  contentPadding: EdgeInsets.symmetric(
+                                  contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 16),
                                   hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF),
+                                    color: theme.textHint,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w400,
-                                  color: Color(0xFF374151),
+                                  color: theme.textPrimary,
                                 ),
                               ),
                             ),
@@ -375,17 +401,17 @@ class _LoginViewState extends State<_LoginView>
                           padding: const EdgeInsets.only(top: 8),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.error_outline,
-                                color: Colors.red,
+                                color: theme.error,
                                 size: 16,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 _phoneError!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.red,
+                                  color: theme.error,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -396,19 +422,23 @@ class _LoginViewState extends State<_LoginView>
                       const SizedBox(height: 20),
 
                       // Password Input
-                      const Text(
+                      Text(
                         'Password',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF374151),
+                          color: theme.labelText,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: const Color(0xFFF9FAFB),
+                          color: theme.inputBackground,
+                          border: Border.all(
+                            color: theme.inputBorder,
+                            width: 1.5,
+                          ),
                         ),
                         child: TextField(
                           controller: _passwordController,
@@ -418,8 +448,8 @@ class _LoginViewState extends State<_LoginView>
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 16),
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF9CA3AF),
+                            hintStyle: TextStyle(
+                              color: theme.textHint,
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
                             ),
@@ -428,7 +458,7 @@ class _LoginViewState extends State<_LoginView>
                                 isPasswordVisible
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: const Color(0xFF6B7280),
+                                color: theme.textSecondary,
                               ),
                               onPressed: () {
                                 context
@@ -437,10 +467,10 @@ class _LoginViewState extends State<_LoginView>
                               },
                             ),
                           ),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF374151),
+                            color: theme.textPrimary,
                           ),
                         ),
                       ),
@@ -452,19 +482,25 @@ class _LoginViewState extends State<_LoginView>
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            context.push('/forgot-password');
+                            // TODO: Implement forgot password screen
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Forgot password feature coming soon'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
                           },
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
+                          child: Text(
                             'Forgot Password?',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF10B981),
+                              color: theme.linkText,
                             ),
                           ),
                         ),
@@ -501,14 +537,14 @@ class _LoginViewState extends State<_LoginView>
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: theme.buttonBackground,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             disabledBackgroundColor:
-                                const Color(0xFF10B981).withValues(alpha: 0.6),
+                                theme.buttonBackground.withValues(alpha: 0.6),
                           ),
                           child: isLoading
                               ? const SizedBox(
@@ -540,9 +576,9 @@ class _LoginViewState extends State<_LoginView>
     );
   }
 
-  Widget _buildSignupPrompt() {
+  Widget _buildSignupPrompt(AppThemeData theme) {
     return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 400),
       tween: Tween(begin: 0.0, end: 1.0),
       curve: Curves.easeOut,
       builder: (context, value, child) {
@@ -551,10 +587,10 @@ class _LoginViewState extends State<_LoginView>
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
+              color: theme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                color: theme.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -565,19 +601,19 @@ class _LoginViewState extends State<_LoginView>
                   'Don\'t have an account? ',
                   style: TextStyle(
                     fontSize: 15,
-                    color: Colors.grey.shade700,
+                    color: theme.textSecondary,
                   ),
                 ),
                 GestureDetector(
                   onTap: () {
                     context.read<AuthBloc>().add(const SignupRequested());
                   },
-                  child: const Text(
+                  child: Text(
                     'Sign Up',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF10B981),
+                      color: theme.primary,
                     ),
                   ),
                 ),

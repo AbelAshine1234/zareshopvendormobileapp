@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../shared/theme/app_theme.dart';
 import '../../../data/models/transaction_model.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';

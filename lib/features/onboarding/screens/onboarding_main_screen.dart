@@ -64,7 +64,7 @@ class _OnboardingViewState extends State<_OnboardingView>
     super.initState();
     
     _contentController = AnimationController(
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
@@ -76,12 +76,12 @@ class _OnboardingViewState extends State<_OnboardingView>
     );
 
     _contentSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, -1.5),
+      begin: const Offset(0, -0.3),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
         parent: _contentController,
-        curve: Curves.elasticOut,
+        curve: Curves.easeOutCubic,
       ),
     );
 
@@ -321,7 +321,9 @@ class _OnboardingViewState extends State<_OnboardingView>
       },
       child: Scaffold(
         backgroundColor: theme.background,
-        body: SafeArea(
+        body: Stack(
+          children: [
+            SafeArea(
           child: BlocBuilder<OnboardingBloc, OnboardingState>(
             builder: (context, state) {
               if (state is OnboardingInProgress) {
@@ -377,6 +379,17 @@ class _OnboardingViewState extends State<_OnboardingView>
               );
             },
           ),
+            ),
+            
+            // Theme selector button in top-right
+            Positioned(
+              top: 16,
+              right: 16,
+              child: SafeArea(
+                child: const ThemeSelectorButton(),
+              ),
+            ),
+          ],
         ),
       ),
     );

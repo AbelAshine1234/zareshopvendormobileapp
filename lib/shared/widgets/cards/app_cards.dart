@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../theme/app_theme.dart';
 import '../../theme/app_themes.dart';
 import '../../theme/theme_provider.dart';
 import '../buttons/app_buttons.dart';
@@ -70,50 +69,56 @@ class AppStepCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      padding: padding ?? const EdgeInsets.all(AppTheme.spaceL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final theme = themeProvider.currentTheme;
+        
+        return AppCard(
+          padding: padding ?? const EdgeInsets.all(AppThemes.spaceL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (icon != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(AppTheme.spaceM),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: AppTheme.primaryGreen,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: AppTheme.spaceM),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: AppTheme.titleMedium),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: AppTheme.spaceXS),
-                      Text(subtitle!, style: AppTheme.bodyMedium),
-                    ],
+              // Header
+              Row(
+                children: [
+                  if (icon != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppThemes.spaceM),
+                      decoration: BoxDecoration(
+                        color: theme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppThemes.borderRadius),
+                      ),
+                      child: Icon(
+                        icon,
+                        color: theme.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: AppThemes.spaceM),
                   ],
-                ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: AppThemes.titleMedium(theme)),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: AppThemes.spaceXS),
+                          Text(subtitle!, style: AppThemes.bodyMedium(theme)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
+              
+              const SizedBox(height: AppThemes.spaceL),
+              
+              // Content
+              child,
             ],
           ),
-          
-          const SizedBox(height: AppTheme.spaceL),
-          
-          // Content
-          child,
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -136,64 +141,69 @@ class AppInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = color ?? AppTheme.primaryGreen;
-    
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppTheme.spaceM),
-        decoration: BoxDecoration(
-          color: cardColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-          border: Border.all(color: cardColor.withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppTheme.spaceS),
-              decoration: BoxDecoration(
-                color: cardColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppTheme.spaceS),
-              ),
-              child: Icon(
-                icon,
-                size: 16,
-                color: cardColor,
-              ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final theme = themeProvider.currentTheme;
+        final cardColor = color ?? theme.primary;
+        
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(AppThemes.spaceM),
+            decoration: BoxDecoration(
+              color: cardColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppThemes.borderRadius),
+              border: Border.all(color: cardColor.withOpacity(0.3)),
             ),
-            const SizedBox(width: AppTheme.spaceM),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.w600,
-                      color: cardColor,
-                    ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppThemes.spaceS),
+                  decoration: BoxDecoration(
+                    color: cardColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppThemes.spaceS),
                   ),
-                  const SizedBox(height: AppTheme.spaceXS),
-                  Text(
-                    message,
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeSmall,
-                      color: cardColor.withOpacity(0.8),
-                    ),
+                  child: Icon(
+                    icon,
+                    size: 16,
+                    color: cardColor,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: AppThemes.spaceM),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: AppThemes.fontSizeMedium,
+                          fontWeight: FontWeight.w600,
+                          color: cardColor,
+                        ),
+                      ),
+                      const SizedBox(height: AppThemes.spaceXS),
+                      Text(
+                        message,
+                        style: TextStyle(
+                          fontSize: AppThemes.fontSizeSmall,
+                          color: cardColor.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (onTap != null)
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: cardColor.withOpacity(0.6),
+                  ),
+              ],
             ),
-            if (onTap != null)
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: cardColor.withOpacity(0.6),
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -212,67 +222,72 @@ class AppProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = (currentStep + 1) / totalSteps;
-    
-    return Container(
-      padding: const EdgeInsets.all(AppTheme.spaceM),
-      decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        border: Border.all(
-          color: AppTheme.primaryGreen.withOpacity(0.2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Progress Info
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final theme = themeProvider.currentTheme;
+        final progress = (currentStep + 1) / totalSteps;
+        
+        return Container(
+          padding: const EdgeInsets.all(AppThemes.spaceM),
+          decoration: BoxDecoration(
+            gradient: theme.cardGradient,
+            borderRadius: BorderRadius.circular(AppThemes.borderRadius),
+            border: Border.all(
+              color: theme.primary.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Step ${currentStep + 1} of $totalSteps',
-                style: AppTheme.labelMedium.copyWith(
-                  color: AppTheme.primaryGreen,
+              // Progress Info
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Step ${currentStep + 1} of $totalSteps',
+                    style: AppThemes.labelMedium(theme).copyWith(
+                      color: theme.primary,
+                    ),
+                  ),
+                  Text(
+                    '${(progress * 100).round()}%',
+                    style: AppThemes.labelMedium(theme).copyWith(
+                      color: theme.primary,
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: AppThemes.spaceS),
+              
+              // Progress Bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppThemes.spaceXS),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: theme.primary.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    theme.primary,
+                  ),
+                  minHeight: 6,
                 ),
               ),
-              Text(
-                '${(progress * 100).round()}%',
-                style: AppTheme.labelMedium.copyWith(
-                  color: AppTheme.primaryGreen,
+              
+              const SizedBox(height: AppThemes.spaceS),
+              
+              // Current Step Title
+              if (currentStep < stepTitles.length)
+                Text(
+                  stepTitles[currentStep],
+                  style: AppThemes.bodyMedium(theme).copyWith(
+                    color: theme.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
             ],
           ),
-          
-          const SizedBox(height: AppTheme.spaceS),
-          
-          // Progress Bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppTheme.spaceXS),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: AppTheme.primaryGreen.withOpacity(0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                AppTheme.primaryGreen,
-              ),
-              minHeight: 6,
-            ),
-          ),
-          
-          const SizedBox(height: AppTheme.spaceS),
-          
-          // Current Step Title
-          if (currentStep < stepTitles.length)
-            Text(
-              stepTitles[currentStep],
-              style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.textPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -295,40 +310,46 @@ class AppStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppTheme.spaceM),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppTheme.spaceM),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTheme.titleMedium.copyWith(color: color),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final theme = themeProvider.currentTheme;
+        
+        return AppCard(
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppThemes.spaceM),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppThemes.borderRadius),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: AppTheme.spaceXS),
-                  Text(subtitle!, style: AppTheme.bodyMedium),
-                ],
-              ],
-            ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppThemes.spaceM),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppThemes.titleMedium(theme).copyWith(color: color),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: AppThemes.spaceXS),
+                      Text(subtitle!, style: AppThemes.bodyMedium(theme)),
+                    ],
+                  ],
+                ),
+              ),
+              if (action != null) action!,
+            ],
           ),
-          if (action != null) action!,
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -351,39 +372,45 @@ class AppEmptyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 48,
-            color: AppTheme.textHint,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final theme = themeProvider.currentTheme;
+        
+        return AppCard(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 48,
+                color: theme.textHint,
+              ),
+              const SizedBox(height: AppThemes.spaceM),
+              Text(
+                title,
+                style: AppThemes.titleMedium(theme).copyWith(
+                  color: theme.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppThemes.spaceS),
+              Text(
+                message,
+                style: AppThemes.bodyMedium(theme),
+                textAlign: TextAlign.center,
+              ),
+              if (actionText != null && onAction != null) ...[
+                const SizedBox(height: AppThemes.spaceL),
+                AppTextButton(
+                  text: actionText!,
+                  onPressed: onAction,
+                  width: 200,
+                ),
+              ],
+            ],
           ),
-          const SizedBox(height: AppTheme.spaceM),
-          Text(
-            title,
-            style: AppTheme.titleMedium.copyWith(
-              color: AppTheme.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppTheme.spaceS),
-          Text(
-            message,
-            style: AppTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-          if (actionText != null && onAction != null) ...[
-            const SizedBox(height: AppThemes.spaceL),
-            AppTextButton(
-              text: actionText!,
-              onPressed: onAction,
-              width: 200,
-            ),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 }

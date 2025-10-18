@@ -40,10 +40,10 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
             Container(
               padding: const EdgeInsets.all(AppThemes.spaceM),
               decoration: BoxDecoration(
-                color: widget.theme.success.withValues(alpha: 0.1),
+                color: widget.theme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppThemes.borderRadius),
                 border: Border.all(
-                  color: widget.theme.success.withValues(alpha: 0.3),
+                  color: widget.theme.primary.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -52,12 +52,12 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                   Container(
                     padding: const EdgeInsets.all(AppThemes.spaceS),
                     decoration: BoxDecoration(
-                      color: widget.theme.success,
+                      color: widget.theme.primary,
                       borderRadius: BorderRadius.circular(AppThemes.spaceS),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.business,
-                      color: Colors.white,
+                      color: widget.theme.isDark ? widget.theme.textPrimary : Colors.white,
                       size: 24,
                     ),
                   ),
@@ -68,12 +68,17 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                       children: [
                         Text(
                           'Business Account',
-                          style: AppThemes.titleMedium(widget.theme),
+                          style: AppThemes.titleMedium(widget.theme).copyWith(
+                            color: widget.theme.labelText,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: AppThemes.spaceXS),
                         Text(
                           'Register your business to start selling',
-                          style: AppThemes.bodySmall(widget.theme),
+                          style: AppThemes.bodySmall(widget.theme).copyWith(
+                            color: widget.theme.subtext,
+                          ),
                         ),
                       ],
                     ),
@@ -90,7 +95,11 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppThemes.borderRadius),
-                color: widget.theme.surface,
+                color: widget.theme.inputBackground,
+                border: Border.all(
+                  color: widget.phoneError != null ? widget.theme.error : widget.theme.inputBorder,
+                  width: 1.5,
+                ),
               ),
               child: Row(
                 children: [
@@ -139,7 +148,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: widget.theme.success,
+                            color: widget.theme.labelText,
                           ),
                         ),
                       ],
@@ -149,7 +158,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                   Container(
                     width: 1,
                     height: 40,
-                    color: widget.theme.accent,
+                    color: widget.theme.divider,
                   ),
                   // Phone number input
                   Expanded(
@@ -224,7 +233,11 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppThemes.borderRadius),
-                color: widget.theme.surface,
+                color: widget.theme.inputBackground,
+                border: Border.all(
+                  color: widget.theme.inputBorder,
+                  width: 1.5,
+                ),
               ),
               child: TextField(
                 onChanged: (value) {

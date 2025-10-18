@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../theme/app_themes.dart';
+import '../../theme/theme_provider.dart';
 
 class AppLoadingIndicator extends StatelessWidget {
   final String? message;
@@ -13,25 +15,31 @@ class AppLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              color ?? AppTheme.primaryGreen,
-            ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  color ?? theme.primary,
+                ),
+              ),
+              if (message != null) ...[
+                const SizedBox(height: AppThemes.spaceM),
+                Text(
+                  message!,
+                  style: AppThemes.bodyMedium(theme),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ],
           ),
-          if (message != null) ...[
-            const SizedBox(height: AppTheme.spaceM),
-            Text(
-              message!,
-              style: AppTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -56,22 +64,22 @@ class AppDivider extends StatelessWidget {
           Expanded(
             child: Divider(
               height: height ?? 1,
-              color: color ?? AppTheme.dividerColor,
+              color: color ?? const Color(0xFFE0E0E0),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceM),
+            padding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceM),
             child: Text(
               text!,
-              style: AppTheme.bodySmall.copyWith(
-                color: AppTheme.textHint,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF757575)).copyWith(
+                color: const Color(0xFF9E9E9E),
               ),
             ),
           ),
           Expanded(
             child: Divider(
               height: height ?? 1,
-              color: color ?? AppTheme.dividerColor,
+              color: color ?? const Color(0xFFE0E0E0),
             ),
           ),
         ],
@@ -80,7 +88,7 @@ class AppDivider extends StatelessWidget {
 
     return Divider(
       height: height ?? 1,
-      color: color ?? AppTheme.dividerColor,
+      color: color ?? const Color(0xFFE0E0E0),
     );
   }
 }
@@ -103,12 +111,12 @@ class AppBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spaceS,
-        vertical: AppTheme.spaceXS,
+        horizontal: AppThemes.spaceS,
+        vertical: AppThemes.spaceXS,
       ),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppTheme.primaryGreen.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        color: backgroundColor ?? const Color(0xFF2E7D32).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppThemes.borderRadius),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -117,16 +125,16 @@ class AppBadge extends StatelessWidget {
             Icon(
               icon,
               size: 12,
-              color: textColor ?? AppTheme.primaryGreen,
+              color: textColor ?? const Color(0xFF2E7D32),
             ),
-            const SizedBox(width: AppTheme.spaceXS),
+            const SizedBox(width: AppThemes.spaceXS),
           ],
           Text(
             text,
             style: TextStyle(
-              fontSize: AppTheme.fontSizeSmall,
+              fontSize: AppThemes.fontSizeSmall,
               fontWeight: FontWeight.w600,
-              color: textColor ?? AppTheme.primaryGreen,
+              color: textColor ?? const Color(0xFF2E7D32),
             ),
           ),
         ],
@@ -164,30 +172,30 @@ class AppStepIndicator extends StatelessWidget {
                       height: 4,
                       decoration: BoxDecoration(
                         color: isCompleted || isCurrent
-                            ? AppTheme.primaryGreen
-                            : AppTheme.dividerColor,
+                            ? const Color(0xFF2E7D32)
+                            : const Color(0xFFE0E0E0),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
                   if (index < totalSteps - 1)
-                    const SizedBox(width: AppTheme.spaceXS),
+                    const SizedBox(width: AppThemes.spaceXS),
                 ],
               ),
             );
           }),
         ),
         if (stepLabels != null) ...[
-          const SizedBox(height: AppTheme.spaceS),
+          const SizedBox(height: AppThemes.spaceS),
           Row(
             children: List.generate(totalSteps, (index) {
               return Expanded(
                 child: Text(
                   stepLabels![index],
-                  style: AppTheme.bodySmall.copyWith(
+                  style: const TextStyle(fontSize: 12).copyWith(
                     color: index <= currentStep
-                        ? AppTheme.primaryGreen
-                        : AppTheme.textHint,
+                        ? const Color(0xFF2E7D32)
+                        : const Color(0xFF9E9E9E),
                     fontWeight: index == currentStep
                         ? FontWeight.w600
                         : FontWeight.normal,
@@ -222,7 +230,7 @@ class AppHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.spaceM),
+      padding: const EdgeInsets.all(AppThemes.spaceM),
       child: Row(
         children: [
           if (showBackButton) ...[
@@ -230,16 +238,16 @@ class AppHeader extends StatelessWidget {
               icon: const Icon(Icons.arrow_back),
               onPressed: onBack ?? () => Navigator.of(context).pop(),
             ),
-            const SizedBox(width: AppTheme.spaceS),
+            const SizedBox(width: AppThemes.spaceS),
           ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTheme.headlineMedium),
+                Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                 if (subtitle != null) ...[
-                  const SizedBox(height: AppTheme.spaceXS),
-                  Text(subtitle!, style: AppTheme.bodyMedium),
+                  const SizedBox(height: AppThemes.spaceXS),
+                  Text(subtitle!, style: const TextStyle(fontSize: 14, color: Color(0xFF757575))),
                 ],
               ],
             ),
@@ -269,8 +277,8 @@ class AppBottomSheet extends StatelessWidget {
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.largeBorderRadius),
-          topRight: Radius.circular(AppTheme.largeBorderRadius),
+          topLeft: Radius.circular(AppThemes.largeBorderRadius),
+          topRight: Radius.circular(AppThemes.largeBorderRadius),
         ),
       ),
       child: Column(
@@ -280,22 +288,22 @@ class AppBottomSheet extends StatelessWidget {
           Container(
             width: 40,
             height: 4,
-            margin: const EdgeInsets.only(top: AppTheme.spaceM),
+            margin: const EdgeInsets.only(top: AppThemes.spaceM),
             decoration: BoxDecoration(
-              color: AppTheme.dividerColor,
+              color: const Color(0xFFE0E0E0),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           
           // Header
           Padding(
-            padding: const EdgeInsets.all(AppTheme.spaceM),
+            padding: const EdgeInsets.all(AppThemes.spaceM),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     title,
-                    style: AppTheme.titleLarge,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                 ),
                 IconButton(
@@ -311,7 +319,7 @@ class AppBottomSheet extends StatelessWidget {
           // Content
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppTheme.spaceM),
+              padding: const EdgeInsets.all(AppThemes.spaceM),
               child: child,
             ),
           ),
@@ -320,10 +328,10 @@ class AppBottomSheet extends StatelessWidget {
           if (actions != null) ...[
             const AppDivider(),
             Padding(
-              padding: const EdgeInsets.all(AppTheme.spaceM),
+              padding: const EdgeInsets.all(AppThemes.spaceM),
               child: Row(
                 children: actions!
-                    .expand((widget) => [widget, const SizedBox(width: AppTheme.spaceS)])
+                    .expand((widget) => [widget, const SizedBox(width: AppThemes.spaceS)])
                     .take(actions!.length * 2 - 1)
                     .toList(),
               ),
@@ -331,7 +339,7 @@ class AppBottomSheet extends StatelessWidget {
           ],
           
           // Safe area bottom
-          const SizedBox(height: AppTheme.spaceM),
+          const SizedBox(height: AppThemes.spaceM),
         ],
       ),
     );
@@ -370,19 +378,19 @@ class AppSnackBar {
     
     switch (type) {
       case SnackBarType.success:
-        backgroundColor = AppTheme.successGreen;
+        backgroundColor = const Color(0xFF388E3C);
         icon = Icons.check_circle;
         break;
       case SnackBarType.error:
-        backgroundColor = AppTheme.errorRed;
+        backgroundColor = const Color(0xFFD32F2F);
         icon = Icons.error;
         break;
       case SnackBarType.warning:
-        backgroundColor = AppTheme.warningOrange;
+        backgroundColor = const Color(0xFFFF9800);
         icon = Icons.warning;
         break;
       case SnackBarType.info:
-        backgroundColor = AppTheme.infoBlue;
+        backgroundColor = const Color(0xFF1976D2);
         icon = Icons.info;
         break;
     }
@@ -392,7 +400,7 @@ class AppSnackBar {
         content: Row(
           children: [
             Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(width: AppTheme.spaceS),
+            const SizedBox(width: AppThemes.spaceS),
             Expanded(
               child: Text(
                 message,
@@ -412,7 +420,7 @@ class AppSnackBar {
             : null,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+          borderRadius: BorderRadius.circular(AppThemes.borderRadius),
         ),
       ),
     );

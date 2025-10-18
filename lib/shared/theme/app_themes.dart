@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 enum AppThemeType {
   coffee,
-  black,
-  white,
   green,
-  ocean,
+  basic,
+  mustard,
+  beige,
 }
 
 class AppThemeData {
@@ -25,6 +25,26 @@ class AppThemeData {
   final Color warning;
   final Color info;
   final bool isDark;
+  
+  // Button colors
+  final Color buttonBackground;
+  final Color buttonHover;
+  
+  // Input colors
+  final Color inputBackground;
+  final Color inputBorder;
+  final Color inputFocus;
+  
+  // Label colors
+  final Color labelText;
+  final Color subtext;
+  
+  // Interactive colors
+  final Color linkText;
+  
+  // UI elements
+  final Color divider;
+  final Color shadowColor;
 
   const AppThemeData({
     required this.name,
@@ -43,6 +63,16 @@ class AppThemeData {
     required this.warning,
     required this.info,
     required this.isDark,
+    required this.buttonBackground,
+    required this.buttonHover,
+    required this.inputBackground,
+    required this.inputBorder,
+    required this.inputFocus,
+    required this.labelText,
+    required this.subtext,
+    required this.linkText,
+    required this.divider,
+    required this.shadowColor,
   });
 
   // Gradients
@@ -70,7 +100,7 @@ class AppThemeData {
   // Shadows
   List<BoxShadow> get cardShadow => [
     BoxShadow(
-      color: (isDark ? Colors.black : Colors.grey).withOpacity(0.1),
+      color: shadowColor,
       blurRadius: 8,
       offset: const Offset(0, 2),
     ),
@@ -78,7 +108,7 @@ class AppThemeData {
 
   List<BoxShadow> get buttonShadow => [
     BoxShadow(
-      color: primary.withOpacity(0.3),
+      color: shadowColor,
       blurRadius: 8,
       offset: const Offset(0, 4),
     ),
@@ -118,18 +148,29 @@ class AppThemes {
   static const Duration fastAnimation = Duration(milliseconds: 300);
 
   // Theme Definitions
+  // 1️⃣ COFFEE – Restaurants / Cafés
   static const AppThemeData coffee = AppThemeData(
     name: 'Coffee',
     emoji: '☕️',
-    description: 'Warm, grounded, cozy — great for neutral UI',
-    primary: Color(0xFF4B2E05), // Deep Roast
-    secondary: Color(0xFFA47551), // Mocha
-    accent: Color(0xFFD7B89C), // Latte Cream
-    background: Color(0xFFF8F6F3),
-    surface: Color(0xFFFFFFFF),
-    textPrimary: Color(0xFF2C1810),
-    textSecondary: Color(0xFF6B4E3D),
-    textHint: Color(0xFF9B8A7A),
+    description: 'Restaurants / Cafés - Warm & Cozy',
+    background: Color(0xFFF9F5EF),
+    primary: Color(0xFF4B2E05),
+    secondary: Color(0xFFA47551),
+    accent: Color(0xFFD7B89C),
+    surface: Color(0xFFF3ECE2),
+    buttonBackground: Color(0xFFA47551),
+    buttonHover: Color(0xFF8C5E3C),
+    inputBackground: Color(0xFFF3ECE2),
+    inputBorder: Color(0xFF8C5E3C),
+    inputFocus: Color(0xFF4B2E05),
+    labelText: Color(0xFF2E1C0F),
+    textPrimary: Color(0xFF2E1C0F),
+    textSecondary: Color(0xFF7B5A45),
+    textHint: Color(0xFF7B5A45),
+    subtext: Color(0xFF7B5A45),
+    linkText: Color(0xFFD7B89C),
+    divider: Color(0xFFCFC0A8),
+    shadowColor: Color(0x1A4B2E05), // rgba(75,46,5,0.1)
     error: Color(0xFFD32F2F),
     success: Color(0xFF4B7C59),
     warning: Color(0xFFE65100),
@@ -137,56 +178,29 @@ class AppThemes {
     isDark: false,
   );
 
-  static const AppThemeData black = AppThemeData(
-    name: 'Black',
-    emoji: '⚫️',
-    description: 'Sleek, modern, perfect for dark mode',
-    primary: Color(0xFF000000), // Pure Black
-    secondary: Color(0xFF1C1C1C), // Charcoal
-    accent: Color(0xFFFFFFFF), // White Contrast
-    background: Color(0xFF121212),
-    surface: Color(0xFF1E1E1E),
-    textPrimary: Color(0xFFFFFFFF),
-    textSecondary: Color(0xFFB3B3B3),
-    textHint: Color(0xFF666666),
-    error: Color(0xFFFF5252),
-    success: Color(0xFF4CAF50),
-    warning: Color(0xFFFF9800),
-    info: Color(0xFF2196F3),
-    isDark: true,
-  );
-
-  static const AppThemeData white = AppThemeData(
-    name: 'White',
-    emoji: '⚪️',
-    description: 'Clean, minimal, and light-focused',
-    primary: Color(0xFFFFFFFF), // White
-    secondary: Color(0xFFF5F5F5), // Smoke
-    accent: Color(0xFFCFCFCF), // Light Gray
-    background: Color(0xFFFAFAFA),
-    surface: Color(0xFFFFFFFF),
-    textPrimary: Color(0xFF212121),
-    textSecondary: Color(0xFF757575),
-    textHint: Color(0xFF9E9E9E),
-    error: Color(0xFFD32F2F),
-    success: Color(0xFF388E3C),
-    warning: Color(0xFFFF9800),
-    info: Color(0xFF1976D2),
-    isDark: false,
-  );
-
+  // 2️⃣ GREEN – Organic / Wellness / Eco Businesses
   static const AppThemeData green = AppThemeData(
     name: 'Green',
     emoji: '🌿',
-    description: 'Fresh, organic, revitalizing',
-    primary: Color(0xFF145A32), // Forest
-    secondary: Color(0xFF27AE60), // Leaf
-    accent: Color(0xFFABEBC6), // Mint
-    background: Color(0xFFF0FDF4),
-    surface: Color(0xFFFFFFFF),
-    textPrimary: Color(0xFF0F2419),
-    textSecondary: Color(0xFF166534),
-    textHint: Color(0xFF4ADE80),
+    description: 'Organic / Wellness / Eco - Fresh & Natural',
+    background: Color(0xFFE6F2EB),
+    primary: Color(0xFF145A32),
+    secondary: Color(0xFF27AE60),
+    accent: Color(0xFFABEBC6),
+    surface: Color(0xFFDFF2E5),
+    buttonBackground: Color(0xFF27AE60),
+    buttonHover: Color(0xFF0F3D1A),
+    inputBackground: Color(0xFFDFF2E5),
+    inputBorder: Color(0xFF145A32),
+    inputFocus: Color(0xFF0F3D1A),
+    labelText: Color(0xFF0D2A16),
+    textPrimary: Color(0xFF0D2A16),
+    textSecondary: Color(0xFF4C8C5A),
+    textHint: Color(0xFF4C8C5A),
+    subtext: Color(0xFF4C8C5A),
+    linkText: Color(0xFFABEBC6),
+    divider: Color(0xFFC1E2CD),
+    shadowColor: Color(0x1A145A32), // rgba(20,90,50,0.1)
     error: Color(0xFFDC2626),
     success: Color(0xFF16A34A),
     warning: Color(0xFFEA580C),
@@ -194,32 +208,103 @@ class AppThemes {
     isDark: false,
   );
 
-  static const AppThemeData ocean = AppThemeData(
-    name: 'Ocean',
-    emoji: '🌊',
-    description: 'Cool, balanced, and modern',
-    primary: Color(0xFF003366), // Deep Sea
-    secondary: Color(0xFF0077B6), // Aqua
-    accent: Color(0xFF90E0EF), // Foam
-    background: Color(0xFFF0F9FF),
-    surface: Color(0xFFFFFFFF),
-    textPrimary: Color(0xFF0C1821),
-    textSecondary: Color(0xFF0369A1),
-    textHint: Color(0xFF0EA5E9),
-    error: Color(0xFFDC2626),
-    success: Color(0xFF059669),
-    warning: Color(0xFFD97706),
-    info: Color(0xFF0284C7),
+  // 3️⃣ BASIC / AMAZON-LIKE – Shops / Marketplaces / B2B Vendors
+  static const AppThemeData basic = AppThemeData(
+    name: 'Basic',
+    emoji: '📦',
+    description: 'Shops / Marketplaces - Professional & Clean',
+    background: Color(0xFFF5F7FA),
+    primary: Color(0xFF2C3E50),
+    secondary: Color(0xFF34495E),
+    accent: Color(0xFFFF9900),
+    surface: Color(0xFFECF0F1),
+    buttonBackground: Color(0xFFFF9900),
+    buttonHover: Color(0xFFE68A00),
+    inputBackground: Color(0xFFECF0F1),
+    inputBorder: Color(0xFFBDC3C7),
+    inputFocus: Color(0xFF2C3E50),
+    labelText: Color(0xFF1B2838),
+    textPrimary: Color(0xFF1B2838),
+    textSecondary: Color(0xFF7F8C8D),
+    textHint: Color(0xFF7F8C8D),
+    subtext: Color(0xFF7F8C8D),
+    linkText: Color(0xFFFF9900),
+    divider: Color(0xFFD6D9DC),
+    shadowColor: Color(0x1A2C3E50), // rgba(44,62,80,0.1)
+    error: Color(0xFFD32F2F),
+    success: Color(0xFF388E3C),
+    warning: Color(0xFFFF9800),
+    info: Color(0xFF1976D2),
+    isDark: false,
+  );
+
+  // 4️⃣ MUSTARD – Creative Startups / Marketing / Small Businesses
+  static const AppThemeData mustard = AppThemeData(
+    name: 'Mustard',
+    emoji: '🌟',
+    description: 'Creative / Marketing - Bold & Energetic',
+    background: Color(0xFFFFF4D9),
+    primary: Color(0xFFD9A441),
+    secondary: Color(0xFFF1C27D),
+    accent: Color(0xFFFBE8B3),
+    surface: Color(0xFFFFF8E5),
+    buttonBackground: Color(0xFFD9A441),
+    buttonHover: Color(0xFFB88432),
+    inputBackground: Color(0xFFFFF8E5),
+    inputBorder: Color(0xFFB88432),
+    inputFocus: Color(0xFFD9A441),
+    labelText: Color(0xFF6B4A1C),
+    textPrimary: Color(0xFF6B4A1C),
+    textSecondary: Color(0xFFA77B52),
+    textHint: Color(0xFFA77B52),
+    subtext: Color(0xFFA77B52),
+    linkText: Color(0xFFFBE8B3),
+    divider: Color(0xFFF3D8A3),
+    shadowColor: Color(0x1AD9A441), // rgba(217,164,65,0.1)
+    error: Color(0xFFD32F2F),
+    success: Color(0xFF388E3C),
+    warning: Color(0xFFFF9800),
+    info: Color(0xFF1976D2),
+    isDark: false,
+  );
+
+  // 5️⃣ BEIGE – Manufacturers / Industrial / Professional Services
+  static const AppThemeData beige = AppThemeData(
+    name: 'Beige',
+    emoji: '🏭',
+    description: 'Industrial / Professional - Elegant & Refined',
+    background: Color(0xFFF9F5EF),
+    primary: Color(0xFFD6C2A1),
+    secondary: Color(0xFFEAD9C3),
+    accent: Color(0xFFF5EFE6),
+    surface: Color(0xFFFDF8F0),
+    buttonBackground: Color(0xFFD6C2A1),
+    buttonHover: Color(0xFFBFA888),
+    inputBackground: Color(0xFFFDF8F0),
+    inputBorder: Color(0xFFCBB89E),
+    inputFocus: Color(0xFFD6C2A1),
+    labelText: Color(0xFF7B6652),
+    textPrimary: Color(0xFF7B6652),
+    textSecondary: Color(0xFFA69381),
+    textHint: Color(0xFFA69381),
+    subtext: Color(0xFFA69381),
+    linkText: Color(0xFFF5EFE6),
+    divider: Color(0xFFE3D9C8),
+    shadowColor: Color(0x1AD6C2A1), // rgba(214,194,161,0.1)
+    error: Color(0xFFD32F2F),
+    success: Color(0xFF388E3C),
+    warning: Color(0xFFFF9800),
+    info: Color(0xFF1976D2),
     isDark: false,
   );
 
   // Get all available themes
   static List<AppThemeData> get allThemes => [
     coffee,
-    black,
-    white,
     green,
-    ocean,
+    basic,
+    mustard,
+    beige,
   ];
 
   // Get theme by type
@@ -227,14 +312,14 @@ class AppThemes {
     switch (type) {
       case AppThemeType.coffee:
         return coffee;
-      case AppThemeType.black:
-        return black;
-      case AppThemeType.white:
-        return white;
       case AppThemeType.green:
         return green;
-      case AppThemeType.ocean:
-        return ocean;
+      case AppThemeType.basic:
+        return basic;
+      case AppThemeType.mustard:
+        return mustard;
+      case AppThemeType.beige:
+        return beige;
     }
   }
 
@@ -325,16 +410,28 @@ class AppThemes {
 
   // Button Styles
   static ButtonStyle primaryButtonStyle(AppThemeData theme) => ElevatedButton.styleFrom(
-    backgroundColor: theme.primary,
+    backgroundColor: theme.buttonBackground,
     foregroundColor: theme.isDark ? theme.textPrimary : Colors.white,
     elevation: 2,
-    shadowColor: theme.primary.withOpacity(0.3),
+    shadowColor: theme.shadowColor,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(buttonBorderRadius),
     ),
     padding: const EdgeInsets.symmetric(
       horizontal: spaceL,
       vertical: spaceM,
+    ),
+  ).copyWith(
+    overlayColor: MaterialStateProperty.resolveWith<Color?>(
+      (Set<MaterialState> states) {
+        if (states.contains(MaterialState.hovered)) {
+          return theme.buttonHover;
+        }
+        if (states.contains(MaterialState.pressed)) {
+          return theme.buttonHover;
+        }
+        return null;
+      },
     ),
   );
 
@@ -388,15 +485,15 @@ class AppThemes {
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: BorderSide(color: theme.accent),
+        borderSide: BorderSide(color: theme.inputBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: BorderSide(color: theme.accent),
+        borderSide: BorderSide(color: theme.inputBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: BorderSide(color: theme.primary, width: 2),
+        borderSide: BorderSide(color: theme.inputFocus, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadius),
@@ -407,7 +504,7 @@ class AppThemes {
         borderSide: BorderSide(color: theme.error, width: 2),
       ),
       filled: true,
-      fillColor: theme.surface,
+      fillColor: theme.inputBackground,
     );
   }
 
@@ -417,7 +514,7 @@ class AppThemes {
     borderRadius: BorderRadius.circular(largeBorderRadius),
     boxShadow: theme.cardShadow,
     border: Border.all(
-      color: theme.accent.withOpacity(0.5),
+      color: theme.divider,
       width: 0.5,
     ),
   );
