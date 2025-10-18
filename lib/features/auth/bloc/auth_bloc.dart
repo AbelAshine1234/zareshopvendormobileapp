@@ -119,26 +119,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   void _onCheckAuthenticationStatus(
       CheckAuthenticationStatus event, Emitter<AuthState> emit) async {
+    print('🔐 [AUTH_BLOC] CheckAuthenticationStatus event received');
     emit(const AuthChecking());
+    print('🔐 [AUTH_BLOC] Emitted AuthChecking state');
     
     try {
+      print('🔐 [AUTH_BLOC] Getting token from storage...');
       final token = await ApiService.getToken();
+      print('🔐 [AUTH_BLOC] Token result: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
       
       if (token != null) {
+        print('🔐 [AUTH_BLOC] Token found, verifying with server...');
         // Verify token is still valid by getting current user
         final userResult = await ApiService.getCurrentUser();
+        print('🔐 [AUTH_BLOC] User verification result: ${userResult['success']}');
         
         if (userResult['success'] == true) {
+          print('🔐 [AUTH_BLOC] Token is valid, emitting AuthAuthenticated');
           emit(const AuthAuthenticated());
         } else {
+          print('🔐 [AUTH_BLOC] Token is invalid, clearing and emitting AuthUnauthenticated');
           // Token is invalid, clear it
           await ApiService.removeToken();
           emit(const AuthUnauthenticated());
         }
       } else {
+        print('🔐 [AUTH_BLOC] No token found, emitting AuthUnauthenticated');
         emit(const AuthUnauthenticated());
       }
     } catch (e) {
+      print('🔐 [AUTH_BLOC] Error checking auth: $e, emitting AuthUnauthenticated');
       // Error checking auth, assume unauthenticated
       emit(const AuthUnauthenticated());
     }

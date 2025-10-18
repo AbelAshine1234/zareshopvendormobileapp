@@ -14,100 +14,40 @@ import '../widgets/auth_guard.dart';
 import 'main_navigation.dart';
 
 class AppRouter {
-  static final GoRouter router = GoRouter(
-    initialLocation: '/splash',
-    routes: [
-      ShellRoute(
-        builder: (context, state, child) {
-          return AuthGuard(
-            child: MainNavigation(child: child),
-          );
-        },
-        routes: [
-          GoRoute(
-            path: '/',
-            name: 'dashboard',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DashboardScreen(),
-            ),
-          ),
-          GoRoute(
-            path: '/orders',
-            name: 'orders',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: OrdersScreen(),
-            ),
-          ),
-          GoRoute(
-            path: '/products',
-            name: 'products',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ProductsScreen(),
-            ),
-          ),
-          GoRoute(
-            path: '/wallet',
-            name: 'wallet',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: WalletScreen(),
-            ),
-          ),
-          GoRoute(
-            path: '/profile',
-            name: 'profile',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ProfileScreen(),
-            ),
-          ),
-        ],
-      ),
-      // Routes outside the shell (full screen) - Protected
-      GoRoute(
-        path: '/order/:id',
-        name: 'orderDetail',
-        builder: (context, state) {
-          final orderId = state.pathParameters['id']!;
-          final customerName = state.uri.queryParameters['customerName'] ?? 'Unknown';
-          final status = state.uri.queryParameters['status'] ?? 'pending';
-          return AuthGuard(
-            child: OrderDetailScreen(
-              orderId: orderId,
-              customerName: customerName,
-              status: status,
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/sales-report',
-        name: 'salesReport',
-        builder: (context, state) => const AuthGuard(
-          child: SalesReportScreen(),
-        ),
-      ),
-      GoRoute(
-        path: '/onboarding',
-        name: 'onboarding',
-        builder: (context, state) {
-          final useMockData = state.uri.queryParameters['mock'] == 'true';
-          return OnboardingMainScreen(useMockData: useMockData);
-        },
-      ),
-      GoRoute(
-        path: '/login',
-        name: 'login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        name: 'forgotPassword',
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
+  static final GoRouter router = _createRouter();
+
+  static GoRouter _createRouter() {
+    print('🛣️ [ROUTER] Creating GoRouter with initial location: /splash');
+    final router = GoRouter(
+      initialLocation: '/splash',
+      debugLogDiagnostics: true, // Enable GoRouter debug logging
+      routes: [
+      // Splash route - should be first to avoid conflicts
       GoRoute(
         path: '/splash',
         name: 'splash',
-        builder: (context, state) => const SplashScreen(),
+        builder: (context, state) {
+          print('🎯 [ROUTER] /splash route accessed');
+          print('🎯 [ROUTER] Current location: ${state.uri}');
+          return const SplashScreen();
+        },
+      ),
+      // Simple test route
+      GoRoute(
+        path: '/test',
+        name: 'test',
+        builder: (context, state) {
+          print('🧪 [ROUTER] /test route accessed');
+          return const Scaffold(
+            body: Center(
+              child: Text('Test Route Working!'),
+            ),
+          );
+        },
       ),
     ],
   );
+    print('🛣️ [ROUTER] GoRouter created successfully');
+    return router;
+  }
 }
