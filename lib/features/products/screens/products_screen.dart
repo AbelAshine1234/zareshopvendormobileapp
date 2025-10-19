@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/theme/theme_provider.dart';
 import '../../../shared/theme/app_themes.dart';
+import '../../../core/services/localization_service.dart';
+import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../../../data/models/product_model.dart';
 import '../bloc/products_bloc.dart';
 import '../bloc/products_event.dart';

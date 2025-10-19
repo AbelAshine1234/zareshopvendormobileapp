@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -90,7 +91,7 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  subscription['name'] ?? 'Unknown Plan',
+                  subscription['name'] ?? 'onboarding.subscription.unknownPlan'.tr(),
                   style: AppThemes.titleLarge(widget.theme).copyWith(
                     color: isSelected ? widget.theme.primary : widget.theme.textPrimary,
                   ),
@@ -115,7 +116,7 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        isSelected ? 'Selected' : 'Select',
+                        isSelected ? 'onboarding.subscription.selected'.tr() : 'onboarding.subscription.select'.tr(),
                         style: AppThemes.bodySmall(widget.theme).copyWith(
                           color: isSelected ? Colors.white : widget.theme.textSecondary,
                           fontWeight: FontWeight.w600,
@@ -139,14 +140,16 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                 ),
                 const SizedBox(width: AppThemes.spaceXS),
                 Text(
-                  'ETB',
+                  'onboarding.subscription.currencyETB'.tr(),
                   style: AppThemes.bodyLarge(widget.theme).copyWith(
                     color: widget.theme.textSecondary,
                   ),
                 ),
                 const SizedBox(width: AppThemes.spaceXS),
                 Text(
-                  '/ ${subscription['duration'] ?? 'month'}',
+                  'onboarding.subscription.perDuration'.tr(params: {
+                    'duration': '${subscription['duration'] ?? 'month'}',
+                  }),
                   style: AppThemes.bodyMedium(widget.theme).copyWith(
                     color: widget.theme.textSecondary,
                   ),
@@ -155,7 +158,7 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
             ),
             const SizedBox(height: AppThemes.spaceL),
             Text(
-              'Features:',
+              'onboarding.subscription.features'.tr(),
               style: AppThemes.labelLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceS),
@@ -194,12 +197,12 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Choose Your Plan',
+              'onboarding.subscription.choosePlanTitle'.tr(),
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceS),
             Text(
-              'Select a subscription plan to get started',
+              'onboarding.subscription.choosePlanSubtitle'.tr(),
               style: AppThemes.bodyLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceXL),
@@ -213,7 +216,7 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                     ),
                     const SizedBox(height: AppThemes.spaceM),
                     Text(
-                      'Loading subscription plans...',
+                      'onboarding.subscription.loading'.tr(),
                       style: AppThemes.bodyMedium(widget.theme),
                     ),
                   ],
@@ -232,7 +235,7 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                     ),
                     const SizedBox(height: AppThemes.spaceM),
                     Text(
-                      'Failed to load subscription plans',
+                      'onboarding.subscription.loadFailed'.tr(),
                       style: AppThemes.titleMedium(widget.theme).copyWith(
                         color: widget.theme.error,
                       ),
@@ -240,13 +243,13 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                     ),
                     const SizedBox(height: AppThemes.spaceS),
                     Text(
-                      'Please check your internet connection and try again',
+                      'onboarding.subscription.checkInternet'.tr(),
                       style: AppThemes.bodyMedium(widget.theme),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppThemes.spaceM),
                     AppPrimaryButton(
-                      text: 'Retry',
+                      text: 'common.retry'.tr(),
                       onPressed: widget.onFetchSubscriptions,
                       width: 120,
                     ),
@@ -298,7 +301,7 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                   Expanded(
                     child: TermsAndConditionsLink(
                       theme: widget.theme,
-                      prefixText: 'I agree to the',
+                      prefixText: 'onboarding.subscription.agreeToPrefix'.tr(),
                     ),
                   ),
                 ],
@@ -330,14 +333,14 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Subscription Benefits',
+                          'onboarding.subscription.benefitsTitle'.tr(),
                           style: AppThemes.labelLarge(widget.theme).copyWith(
                             color: widget.theme.info,
                           ),
                         ),
                         const SizedBox(height: AppThemes.spaceXS),
                         Text(
-                          '• You can upgrade or downgrade your plan anytime\n• All plans include customer support\n• Payment is processed securely\n• Cancel anytime with no hidden fees',
+                          'onboarding.subscription.benefitsBullets'.tr(),
                           style: AppThemes.bodySmall(widget.theme).copyWith(
                             color: widget.theme.info,
                           ),

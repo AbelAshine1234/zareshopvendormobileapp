@@ -90,6 +90,10 @@ flutter:
   assets:
     - assets/images/
     - assets/logo/
+    - assets/localization/
+
+  # Enable localization
+  generate: true
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

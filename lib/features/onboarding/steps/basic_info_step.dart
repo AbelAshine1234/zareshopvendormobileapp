@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
-import '../widgets/common/multi_select_category_widget.dart';
+import './multi_select_category_widget.dart';
 
 class BasicInfoStep extends StatefulWidget {
   final AppThemeData theme;
@@ -44,19 +45,19 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Business Information',
+              'onboarding.basicInfo.title'.tr(),
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             Text(
-              'Tell us about your business to help customers find you.',
+              'onboarding.basicInfo.subtitle'.tr(),
               style: AppThemes.bodyLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceXL),
             
             // Business Name
             Text(
-              'Business Name',
+              'onboarding.basicInfo.businessName'.tr(),
               style: AppThemes.titleMedium(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceS),
@@ -67,7 +68,7 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
               },
               decoration: AppThemes.inputDecoration(
                 widget.theme,
-                hintText: 'Enter your business name',
+                hintText: 'onboarding.basicInfo.nameHint'.tr(),
               ),
               style: AppThemes.bodyMedium(widget.theme),
             ),
@@ -92,7 +93,7 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
                           ),
                           const SizedBox(width: AppThemes.spaceM),
                           Text(
-                            'Loading categories...',
+                            'common.loading'.tr(),
                             style: AppThemes.bodyMedium(widget.theme),
                           ),
                         ],
@@ -115,7 +116,7 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
             
             // Business Description
             Text(
-              'Business Description',
+              'onboarding.basicInfo.businessDescription'.tr(),
               style: AppThemes.titleMedium(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceS),
@@ -127,7 +128,7 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
               maxLines: 4,
               decoration: AppThemes.inputDecoration(
                 widget.theme,
-                hintText: 'Describe your business, products, and services...',
+                hintText: 'onboarding.basicInfo.descriptionHint'.tr(),
               ),
               style: AppThemes.bodyMedium(widget.theme),
             ),
@@ -153,7 +154,7 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
                   const SizedBox(width: AppThemes.spaceM),
                   Expanded(
                     child: Text(
-                      'A good description helps customers understand what you offer and builds trust.',
+                      'onboarding.basicInfo.helperDescription'.tr(),
                       style: AppThemes.bodySmall(widget.theme).copyWith(
                         color: widget.theme.textSecondary,
                       ),

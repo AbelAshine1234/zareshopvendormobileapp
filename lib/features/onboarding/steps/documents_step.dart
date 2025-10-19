@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -57,7 +58,13 @@ class _DocumentsStepState extends State<DocumentsStep> {
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${documentType == 'business_license' ? 'Business License' : 'Cover Image'} uploaded!'),
+            content: Text(
+              'onboarding.documents.uploaded'.tr(params: {
+                'name': documentType == 'business_license'
+                    ? 'onboarding.documents.businessLicense'.tr()
+                    : 'onboarding.documents.coverImage'.tr(),
+              }),
+            ),
             backgroundColor: widget.theme.success,
             duration: const Duration(seconds: 2),
           ),
@@ -66,7 +73,7 @@ class _DocumentsStepState extends State<DocumentsStep> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error selecting image: $e'),
+          content: Text('errors.fileError'.tr()),
           backgroundColor: widget.theme.error,
           duration: const Duration(seconds: 3),
         ),
@@ -232,7 +239,7 @@ class _DocumentsStepState extends State<DocumentsStep> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Tap to Upload',
+                            'onboarding.documents.tapToUpload'.tr(),
                             style: AppThemes.titleMedium(widget.theme).copyWith(
                               color: widget.theme.primary,
                               fontWeight: FontWeight.w500,
@@ -240,7 +247,7 @@ class _DocumentsStepState extends State<DocumentsStep> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Select from gallery',
+                            'onboarding.documents.selectFromGallery'.tr(),
                             style: AppThemes.bodySmall(widget.theme).copyWith(
                               color: widget.theme.textHint,
                             ),
@@ -268,20 +275,20 @@ class _DocumentsStepState extends State<DocumentsStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'KYC Verification',
+              'onboarding.documents.kycTitle'.tr(),
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: 8),
             Text(
-              'Upload the required documents for Know Your Customer (KYC) verification.',
+              'onboarding.documents.kycSubtitle'.tr(),
               style: AppThemes.bodyLarge(widget.theme),
             ),
             const SizedBox(height: 24),
             
             // Business License Section
             _buildImageUploadSection(
-              title: 'Business License *',
-              description: 'Upload your official business registration or license document for KYC verification',
+              title: 'onboarding.documents.businessLicenseRequired'.tr(),
+              description: 'onboarding.documents.businessLicenseDesc'.tr(),
               icon: Icons.business_center,
               documentType: 'business_license',
               selectedFile: _businessLicenseImage,
@@ -289,8 +296,8 @@ class _DocumentsStepState extends State<DocumentsStep> {
             
             // Cover Image Section
             _buildImageUploadSection(
-              title: 'Business Cover Image *',
-              description: 'Upload a cover image that represents your business for KYC verification',
+              title: 'onboarding.documents.coverImageRequired'.tr(),
+              description: 'onboarding.documents.coverImageDesc'.tr(),
               icon: Icons.image,
               documentType: 'cover',
               selectedFile: _coverImage,
@@ -312,14 +319,14 @@ class _DocumentsStepState extends State<DocumentsStep> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'KYC Document Guidelines',
+                            'onboarding.documents.guidelinesTitle'.tr(),
                             style: AppThemes.titleMedium(widget.theme).copyWith(
                               color: widget.theme.info,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '• Images should be clear and readable for verification\n• Accepted formats: JPG, PNG\n• Maximum file size: 5MB per image\n• Documents must be valid and unexpired',
+                            'onboarding.documents.guidelinesBullets'.tr(),
                             style: AppThemes.bodySmall(widget.theme).copyWith(
                               color: widget.theme.info,
                             ),

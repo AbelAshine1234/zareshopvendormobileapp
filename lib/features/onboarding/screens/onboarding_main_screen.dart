@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
+import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -90,6 +92,12 @@ class _OnboardingViewState extends State<_OnboardingView>
 
     _contentController.forward();
     _fetchCategories();
+
+    // Ensure latest localization assets (including newly added keys) are loaded
+    // when entering onboarding, so .tr() resolves without requiring full app restart.
+    LocalizationService.instance.loadLanguage(
+      LocalizationService.instance.currentLanguage,
+    );
   }
 
   @override
@@ -262,7 +270,7 @@ class _OnboardingViewState extends State<_OnboardingView>
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('OTP sent successfully'),
+        content: Text('onboarding.otp.sentSuccess'.tr()),
         backgroundColor: theme.success,
         duration: const Duration(seconds: 2),
       ),
@@ -274,7 +282,9 @@ class _OnboardingViewState extends State<_OnboardingView>
     final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = themeProvider.currentTheme;
     
-    return BlocListener<OnboardingBloc, OnboardingState>(
+    // Rebuild this screen whenever localization changes so .tr() strings update immediately
+    return Consumer<LocalizationService>(
+      builder: (context, localization, _) => BlocListener<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
         if (state is OnboardingCompleted) {
           context.go('/');
@@ -381,17 +391,25 @@ class _OnboardingViewState extends State<_OnboardingView>
           ),
             ),
             
-            // Theme selector button in top-right
+            // Theme selector and language switcher buttons in top-right
             Positioned(
               top: 16,
               right: 16,
               child: SafeArea(
-                child: const ThemeSelectorButton(),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    LanguageSwitcherButton(),
+                    SizedBox(width: 8),
+                    ThemeSelectorButton(),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -464,7 +482,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                     children: [
                       const SizedBox(height: AppThemes.spaceM),
                       Text(
-                        'VENDOR PORTAL',
+                        'onboarding.welcome.vendorPortal'.tr(),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -493,17 +511,17 @@ class _OnboardingViewState extends State<_OnboardingView>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome to ZareShop Vendor!',
+                    'onboarding.welcome.title'.tr(),
                     style: AppThemes.displayLarge(theme),
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   Text(
-                    'Let\'s set up your shop in a few simple steps.',
+                    'onboarding.welcome.subtitle'.tr(),
                     style: AppThemes.bodyLarge(theme),
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   Text(
-                    'You\'ll personalize your business profile, add your first products, and link payment options.',
+                    'onboarding.welcome.description'.tr(),
                     style: AppThemes.bodyLarge(theme),
                   ),
                 ],
@@ -519,7 +537,7 @@ class _OnboardingViewState extends State<_OnboardingView>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Step ${state.currentStep + 1} of ${state.totalSteps}',
+              '${'onboarding.progress.step'.tr()} ${(state.currentStep + 1)}',
               style: AppThemes.titleLarge(theme),
             ),
             Row(
@@ -618,7 +636,7 @@ class _OnboardingViewState extends State<_OnboardingView>
             Expanded(
               flex: 1,
               child: AppSecondaryButton(
-                text: 'Previous',
+                text: 'common.back'.tr(),
                 onPressed: () {
                   print('🎯 [ONBOARDING_MAIN] Previous button pressed');
                   print('🎯 [ONBOARDING_MAIN] Current step: ${state.currentStep}');
@@ -634,7 +652,9 @@ class _OnboardingViewState extends State<_OnboardingView>
           Expanded(
             flex: state.currentStep > 0 ? 2 : 1,
             child: AppPrimaryButton(
-              text: state.isLastStep ? 'Finish Setup' : 'Continue',
+              text: state.isLastStep
+                  ? 'onboarding.progress.finishSetup'.tr()
+                  : 'common.continue'.tr(),
               onPressed: state.canProceed
                   ? () {
                       print('🎯 [ONBOARDING_MAIN] Continue button pressed');
@@ -682,7 +702,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               
               // Success Title
               Text(
-                'Application Submitted!',
+                'onboarding.vendorSubmitted.title'.tr(),
                 style: AppThemes.displayLarge(theme).copyWith(
                   color: theme.success,
                   fontWeight: FontWeight.bold,
@@ -712,13 +732,13 @@ class _OnboardingViewState extends State<_OnboardingView>
                     ),
                     const SizedBox(height: AppThemes.spaceM),
                     Text(
-                      'Admin Review Required',
+                      'onboarding.vendorSubmitted.reviewTitle'.tr(),
                       style: AppThemes.titleLarge(theme),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppThemes.spaceS),
                     Text(
-                      'Your application is now under review by our admin team. This process typically takes 24-48 hours. You will receive an email notification once it\'s approved.',
+                      'onboarding.vendorSubmitted.reviewMessage'.tr(),
                       style: AppThemes.bodyMedium(theme),
                       textAlign: TextAlign.center,
                     ),
@@ -731,7 +751,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               Column(
                 children: [
                   AppPrimaryButton(
-                    text: 'Contact Help',
+                    text: 'onboarding.vendorSubmitted.contactHelp'.tr(),
                     icon: Icons.support_agent,
                     onPressed: () {
                       ContactHelpDialog.show(context, theme);
@@ -741,13 +761,13 @@ class _OnboardingViewState extends State<_OnboardingView>
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   AppSecondaryButton(
-                    text: 'Wait for Approval',
+                    text: 'onboarding.vendorSubmitted.waitForApproval'.tr(),
                     icon: Icons.hourglass_empty,
                     onPressed: () {
                       // Just show a message that they need to wait
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text('Please wait for admin approval. You will be notified via email.'),
+                          content: Text('onboarding.vendorSubmitted.reviewMessage'.tr()),
                           backgroundColor: theme.info,
                           duration: const Duration(seconds: 4),
                         ),
@@ -793,7 +813,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               
               // Title
               Text(
-                'Account Already Exists',
+                'onboarding.userExists.title'.tr(),
                 style: AppThemes.displayLarge(theme).copyWith(
                   color: theme.warning,
                   fontWeight: FontWeight.bold,
@@ -814,7 +834,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               Column(
                 children: [
                   AppPrimaryButton(
-                    text: 'Login Instead',
+                    text: 'onboarding.userExists.loginInstead'.tr(),
                     onPressed: () {
                       context.go('/login');
                     },
@@ -823,7 +843,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   AppSecondaryButton(
-                    text: 'Try Different Information',
+                    text: 'onboarding.userExists.tryDifferent'.tr(),
                     onPressed: () {
                       context.go('/onboarding');
                     },
@@ -867,7 +887,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               
               // Error Title
               Text(
-                'Submission Failed',
+                'onboarding.submissionFailed.title'.tr(),
                 style: AppThemes.displayLarge(theme).copyWith(
                   color: theme.error,
                   fontWeight: FontWeight.bold,
@@ -903,7 +923,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                     ),
                     const SizedBox(height: AppThemes.spaceM),
                     Text(
-                      'What to do next?',
+                      'onboarding.submissionFailed.whatNext'.tr(),
                       style: AppThemes.titleMedium(theme).copyWith(
                         color: theme.error,
                       ),
@@ -911,7 +931,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                     ),
                     const SizedBox(height: AppThemes.spaceS),
                     Text(
-                      'Please check your information and try again. If the problem persists, contact our support team.',
+                      'onboarding.submissionFailed.hint'.tr(),
                       style: AppThemes.bodyMedium(theme),
                       textAlign: TextAlign.center,
                     ),
@@ -924,7 +944,7 @@ class _OnboardingViewState extends State<_OnboardingView>
               Column(
                 children: [
                   AppPrimaryButton(
-                    text: 'Try Again',
+                    text: 'onboarding.submissionFailed.tryAgain'.tr(),
                     onPressed: () {
                       context.read<OnboardingBloc>().add(const RetryVendorSubmission());
                     },
@@ -933,7 +953,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   AppSecondaryButton(
-                    text: 'Contact Support',
+                    text: 'onboarding.submissionFailed.contactSupport'.tr(),
                     onPressed: () {
                       ContactHelpDialog.show(context, theme);
                     },

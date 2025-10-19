@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -33,7 +34,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Business Vendor Registration',
+              'onboarding.phoneNumber.title'.tr(),
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
@@ -67,7 +68,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Business Account',
+                          'onboarding.phoneNumber.subtitle'.tr(),
                           style: AppThemes.titleMedium(widget.theme).copyWith(
                             color: widget.theme.labelText,
                             fontWeight: FontWeight.w600,
@@ -75,7 +76,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                         ),
                         const SizedBox(height: AppThemes.spaceXS),
                         Text(
-                          'Register your business to start selling',
+                          'onboarding.phoneNumber.subtitle'.tr(),
                           style: AppThemes.bodySmall(widget.theme).copyWith(
                             color: widget.theme.subtext,
                           ),
@@ -88,7 +89,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
             ),
             const SizedBox(height: AppThemes.spaceL),
             Text(
-              'Phone Number',
+              'onboarding.phoneNumber.title'.tr(),
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
@@ -218,7 +219,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                 ),
               ),
             Text(
-              'We\'ll send a 6-digit OTP for verification.',
+              'onboarding.phoneNumber.infoText'.tr(),
               style: TextStyle(
                 fontSize: 14,
                 color: widget.phoneError != null ? widget.theme.error.withOpacity(0.7) : widget.theme.textSecondary,
@@ -226,7 +227,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
             ),
             const SizedBox(height: AppThemes.spaceL),
             Text(
-              'Password',
+              'onboarding.phoneNumber.passwordLabel'.tr(),
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
@@ -245,7 +246,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
                 },
                 obscureText: true,
                 decoration: InputDecoration(
-                  hintText: 'Enter your password',
+                  hintText: 'onboarding.phoneNumber.passwordHint'.tr(),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceM, vertical: AppThemes.spaceM),
                   hintStyle: TextStyle(

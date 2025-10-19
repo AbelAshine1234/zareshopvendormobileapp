@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
+import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -47,9 +49,9 @@ class _LoginViewState extends State<_LoginView> {
       if (value.isEmpty) {
         _phoneError = null;
       } else if (value.length != 9) {
-        _phoneError = 'Phone number must be 9 digits';
+        _phoneError = 'validation.phone'.tr();
       } else if (!value.startsWith('9')) {
-        _phoneError = 'Phone number must start with 9';
+        _phoneError = 'validation.phone'.tr();
       } else {
         _phoneError = null;
       }
@@ -75,30 +77,31 @@ class _LoginViewState extends State<_LoginView> {
           );
         }
       },
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+      child: Consumer2<ThemeProvider, LocalizationService>(
+        builder: (context, themeProvider, localization, child) {
           final theme = themeProvider.currentTheme;
           
           return Scaffold(
             backgroundColor: theme.background,
             body: Stack(
               children: [
-                // Main content
                 SafeArea(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 60),
-                          _buildHeader(theme),
-                          const SizedBox(height: 48),
-                          _buildWelcomeText(theme),
-                          const SizedBox(height: 40),
-                          _buildLoginCard(theme),
                           const SizedBox(height: 24),
+                          // Top bar space
+                          const SizedBox(height: 48),
+                          _buildHeader(theme),
+                          const SizedBox(height: 10),
+                          _buildWelcomeText(theme),
+                          const SizedBox(height: 20),
+                          _buildLoginCard(theme),
+                          const SizedBox(height: 16),
                           _buildSignupPrompt(theme),
                           const SizedBox(height: 24),
                         ],
@@ -106,12 +109,38 @@ class _LoginViewState extends State<_LoginView> {
                     ),
                   ),
                 ),
-                
-                // Theme selector button in top-right
                 Positioned(
-                  top: 16,
-                  right: 16,
-                  child: const ThemeSelectorButton(),
+                  top: 12,
+                  left: 12,
+                  child: IconButton(
+                    onPressed: () {
+                      context.go('/splash');
+                    },
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
+                      color: theme.textPrimary,
+                      size: 18,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: theme.surface,
+                      foregroundColor: theme.textPrimary,
+                      padding: const EdgeInsets.all(8),
+                      side: BorderSide(color: theme.divider, width: 1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      LanguageSwitcherButton(),
+                      SizedBox(width: 8),
+                      ThemeSelectorButton(),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -123,55 +152,26 @@ class _LoginViewState extends State<_LoginView> {
 
   Widget _buildHeader(AppThemeData theme) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row with back button and title
-        Row(
-          children: [
-            // Back button
-            IconButton(
-              onPressed: () {
-                print('🔙 [LOGIN] Back button pressed, navigating to splash');
-                context.go('/splash');
-              },
-              icon: Icon(
-                Icons.arrow_back_ios,
-                color: theme.textPrimary,
-                size: 20,
-              ),
-              style: IconButton.styleFrom(
-                backgroundColor: theme.surface,
-                foregroundColor: theme.textPrimary,
-                padding: const EdgeInsets.all(8),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Title
-            Expanded(
-              child: Column(
-                children: [
-                  Text(
-                    'ZARESHOP',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: theme.primary,
-                      letterSpacing: 3,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'VENDOR PORTAL',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: theme.textSecondary,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        Text(
+          'ZARESHOP',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: theme.primary,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'VENDOR PORTAL',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: theme.textSecondary,
+            letterSpacing: 0.8,
+          ),
         ),
       ],
     );
@@ -182,21 +182,21 @@ class _LoginViewState extends State<_LoginView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome Back!',
+          'auth.login.welcome'.tr(),
           style: TextStyle(
-            fontSize: 32,
+            fontSize: 26,
             fontWeight: FontWeight.w700,
             color: theme.textPrimary,
-            height: 1.3,
+            height: 1.25,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
-          'Login to manage your shop and grow your business.',
+          'auth.login.subtitle'.tr(),
           style: TextStyle(
-            fontSize: 17,
+            fontSize: 15,
             color: theme.textSecondary,
-            height: 1.5,
+            height: 1.4,
           ),
         ),
       ],
@@ -211,38 +211,31 @@ class _LoginViewState extends State<_LoginView> {
             state is AuthInitial ? state.isPasswordVisible : false;
 
         return Container(
-                  padding: const EdgeInsets.all(28),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: theme.surface,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: theme.divider,
                       width: 1,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.shadowColor,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Login',
+                        'auth.login.title'.tr(),
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                           color: theme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       
                       // Phone Number Input
                       Text(
-                        'Phone Number',
+                        'auth.login.phoneNumber'.tr(),
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -329,7 +322,7 @@ class _LoginViewState extends State<_LoginView> {
                                   LengthLimitingTextInputFormatter(9),
                                 ],
                                 decoration: InputDecoration(
-                                  hintText: '912345678',
+                                  hintText: 'auth.login.phoneHint'.tr(),
                                   border: InputBorder.none,
                                   counterText: '',
                                   contentPadding: const EdgeInsets.symmetric(
@@ -373,11 +366,11 @@ class _LoginViewState extends State<_LoginView> {
                           ),
                         ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
                       // Password Input
                       Text(
-                        'Password',
+                        'auth.login.password'.tr(),
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -398,7 +391,7 @@ class _LoginViewState extends State<_LoginView> {
                           controller: _passwordController,
                           obscureText: !isPasswordVisible,
                           decoration: InputDecoration(
-                            hintText: 'Enter your password',
+                            hintText: 'auth.login.passwordHint'.tr(),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 16),
@@ -429,7 +422,7 @@ class _LoginViewState extends State<_LoginView> {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Forgot Password Link
                       Align(
@@ -445,7 +438,7 @@ class _LoginViewState extends State<_LoginView> {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'Forgot Password?',
+                            'auth.login.forgotPassword'.tr(),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -455,12 +448,12 @@ class _LoginViewState extends State<_LoginView> {
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
                       // Login Button
                       SizedBox(
                         width: double.infinity,
-                        height: 56,
+                        height: 52,
                         child: ElevatedButton(
                           onPressed: isLoading
                               ? null
@@ -477,9 +470,8 @@ class _LoginViewState extends State<_LoginView> {
                                         );
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Please fill all fields correctly'),
+                                      SnackBar(
+                                        content: Text('auth.login.fillFields'.tr()),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
@@ -505,13 +497,13 @@ class _LoginViewState extends State<_LoginView> {
                                         Colors.white),
                                   ),
                                 )
-                              : const Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                      : Text(
+                          'auth.login.loginButton'.tr(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         ),
                       ),
                     ],
@@ -536,7 +528,7 @@ class _LoginViewState extends State<_LoginView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Don\'t have an account? ',
+            'auth.login.noAccount'.tr(),
             style: TextStyle(
               fontSize: 15,
               color: theme.textSecondary,
@@ -547,7 +539,7 @@ class _LoginViewState extends State<_LoginView> {
               context.read<AuthBloc>().add(const SignupRequested());
             },
             child: Text(
-              'Sign Up',
+              'auth.login.signUp'.tr(),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,

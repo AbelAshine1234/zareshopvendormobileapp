@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../../../shared/theme/theme_provider.dart';
 import '../../../shared/theme/app_themes.dart';
 import '../../../shared/widgets/theme_selector/theme_selector_button.dart';
+import '../../../shared/widgets/language_selector/language_switcher_button.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -69,7 +71,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
       if (value.isEmpty) {
         _passwordError = null;
       } else if (value.length < 6) {
-        _passwordError = 'Password must be at least 6 characters';
+        _passwordError = 'auth.verifyOtp.passwordError'.tr();
       } else {
         _passwordError = null;
       }
@@ -81,7 +83,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
       if (value.isEmpty) {
         _confirmPasswordError = null;
       } else if (value != _newPasswordController.text) {
-        _confirmPasswordError = 'Passwords do not match';
+        _confirmPasswordError = 'auth.verifyOtp.passwordMismatch'.tr();
       } else {
         _confirmPasswordError = null;
       }
@@ -94,8 +96,8 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
       listener: (context, state) {
         if (state is ForgotPasswordSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password reset successful!'),
+            SnackBar(
+              content: Text('auth.verifyOtp.resetSuccess'.tr()),
               backgroundColor: Colors.green,
             ),
           );
@@ -110,8 +112,8 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
           );
         }
       },
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+      child: Consumer2<ThemeProvider, LocalizationService>(
+        builder: (context, themeProvider, localization, child) {
           final theme = themeProvider.currentTheme;
           
           return Scaffold(
@@ -127,9 +129,15 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 40),
-                          _buildHeader(theme),
-                          const SizedBox(height: 48),
-                          _buildDescription(theme),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 96, left: 56),
+                            child: _buildHeader(theme),
+                          ),
+                          const SizedBox(height: 56),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 96, left: 56),
+                            child: _buildDescription(theme),
+                          ),
                           const SizedBox(height: 40),
                           _buildOtpVerificationCard(theme),
                           const SizedBox(height: 24),
@@ -138,12 +146,46 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                     ),
                   ),
                 ),
-                // Theme selector button in top-right
+                // Left-aligned back button at same vertical line as top-right buttons (on top of content)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: IconButton(
+                    onPressed: () {
+                      print('🔙 [FORGOT_PASSWORD_OTP] Back button pressed');
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/forgot-password');
+                      }
+                    },
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: theme.textPrimary,
+                      size: 20,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: theme.surface,
+                      foregroundColor: theme.textPrimary,
+                      padding: const EdgeInsets.all(8),
+                      side: BorderSide(
+                        color: theme.border,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+                // Theme selector and language switcher buttons in top-right
                 Positioned(
                   top: 16,
                   right: 16,
-                  child: SafeArea(
-                    child: const ThemeSelectorButton(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      LanguageSwitcherButton(),
+                      SizedBox(width: 8),
+                      ThemeSelectorButton(),
+                    ],
                   ),
                 ),
               ],
@@ -160,49 +202,37 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
         // Header row with back button and title
         Row(
           children: [
-            // Back button
-            IconButton(
-              onPressed: () {
-                print('🔙 [FORGOT_PASSWORD_OTP] Back button pressed, navigating to forgot password');
-                context.go('/forgot-password');
-              },
-              icon: Icon(
-                Icons.arrow_back_ios,
-                color: theme.textPrimary,
-                size: 20,
-              ),
-              style: IconButton.styleFrom(
-                backgroundColor: theme.surface,
-                foregroundColor: theme.textPrimary,
-                padding: const EdgeInsets.all(8),
-                side: BorderSide(
-                  color: theme.border,
-                  width: 1,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Title
+            const SizedBox(width: 0),
+            // Title (left-aligned, pushed further down)
             Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Verify OTP',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: theme.primary,
-                      letterSpacing: 1,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32),
+                    child: Text(
+                      'auth.verifyOtp.title'.tr(),
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: theme.primary,
+                        letterSpacing: 1,
+                      ),
+                      textAlign: TextAlign.start,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Enter the code sent to ${widget.phoneNumber}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: theme.textSecondary,
-                      letterSpacing: 0.5,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'auth.verifyOtp.subtitle'.tr(params: {'phoneNumber': widget.phoneNumber}),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: theme.textSecondary,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.start,
                     ),
                   ),
                 ],
@@ -219,7 +249,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Enter Verification Code',
+          'auth.verifyOtp.description'.tr(),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -229,7 +259,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
         ),
         const SizedBox(height: 12),
         Text(
-          'We\'ve sent a 6-digit verification code to your phone number. Enter it below to reset your password.',
+          'auth.verifyOtp.descriptionText'.tr(),
           style: TextStyle(
             fontSize: 16,
             color: theme.textSecondary,
@@ -244,6 +274,12 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
+        final screenWidth = MediaQuery.of(context).size.width;
+        final horizontalPadding = 28.0; // matches container padding
+        final gap = 10.0; // Wrap spacing
+        final available = screenWidth - (24 * 2) - (horizontalPadding * 2); // page horizontal padding + card padding
+        final computedWidth = (available - gap * 5) / 6;
+        final boxWidth = computedWidth.clamp(44.0, 56.0);
 
         return Container(
           padding: const EdgeInsets.all(28),
@@ -257,102 +293,96 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
             boxShadow: [
               BoxShadow(
                 color: theme.shadow,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Top label and inputs
               Text(
-                'Reset Password',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: theme.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // OTP Input
-              Text(
-                'Verification Code',
+                'auth.verifyOtp.verificationCode'.tr(),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: theme.textSecondary,
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (index) {
-                  return SizedBox(
-                    width: 45,
-                    height: 55,
-                    child: TextField(
-                      controller: _otpControllers[index],
-                      focusNode: _otpFocusNodes[index],
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      maxLength: 1,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (value.isNotEmpty) {
-                          if (index < 5) {
-                            _otpFocusNodes[index + 1].requestFocus();
+              const SizedBox(height: 10),
+              
+              Center(
+                child: Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: List.generate(6, (index) {
+                    return SizedBox(
+                      width: boxWidth,
+                      height: 56,
+                      child: TextField(
+                        controller: _otpControllers[index],
+                        focusNode: _otpFocusNodes[index],
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        maxLength: 1,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        onChanged: (value) {
+                          if (value.isNotEmpty) {
+                            if (index < 5) {
+                              _otpFocusNodes[index + 1].requestFocus();
+                            } else {
+                              _otpFocusNodes[index].unfocus();
+                            }
                           } else {
-                            _otpFocusNodes[index].unfocus();
+                            if (index > 0) {
+                              _otpFocusNodes[index - 1].requestFocus();
+                            }
                           }
-                        } else {
-                          if (index > 0) {
-                            _otpFocusNodes[index - 1].requestFocus();
-                          }
-                        }
-                      },
-                      decoration: InputDecoration(
-                        counterText: '',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: theme.border,
-                            width: 1.5,
+                        },
+                        decoration: InputDecoration(
+                          counterText: '',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: theme.border,
+                              width: 1.5,
+                            ),
                           ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: theme.border,
-                            width: 1.5,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: theme.border,
+                              width: 1.5,
+                            ),
                           ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: theme.primary,
-                            width: 2,
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: theme.primary,
+                              width: 2,
+                            ),
                           ),
+                          filled: true,
+                          fillColor: theme.background,
                         ),
-                        filled: true,
-                        fillColor: theme.background,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: theme.textPrimary,
+                        ),
                       ),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textPrimary,
-                      ),
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
               const SizedBox(height: 24),
 
               // New Password Input
               Text(
-                'New Password',
+                'auth.verifyOtp.newPassword'.tr(),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -374,7 +404,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                   onChanged: _validatePassword,
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
-                    hintText: 'Enter new password',
+                    hintText: 'auth.verifyOtp.newPasswordHint'.tr(),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 16),
@@ -426,11 +456,11 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                   ),
                 ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Confirm Password Input
               Text(
-                'Confirm Password',
+                'auth.verifyOtp.confirmPassword'.tr(),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -452,7 +482,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                   onChanged: _validateConfirmPassword,
                   obscureText: !_isConfirmPasswordVisible,
                   decoration: InputDecoration(
-                    hintText: 'Confirm new password',
+                    hintText: 'auth.verifyOtp.confirmPasswordHint'.tr(),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 16),
@@ -504,12 +534,12 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                   ),
                 ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // Reset Password Button
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: isLoading
                       ? null
@@ -528,8 +558,8 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                                 );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please fill all fields correctly'),
+                              SnackBar(
+                                content: Text('auth.verifyOtp.fillFields'.tr()),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -540,7 +570,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     disabledBackgroundColor: theme.primary.withValues(alpha: 0.6),
                   ),
@@ -554,9 +584,9 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                                 Colors.white),
                           ),
                         )
-                      : const Text(
-                          'Reset Password',
-                          style: TextStyle(
+                      : Text(
+                          'auth.verifyOtp.resetPassword'.tr(),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -564,8 +594,9 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                 ),
               ),
 
-              const SizedBox(height: 16),
-
+              const SizedBox(height: 20),
+              Divider(color: theme.border),
+              const SizedBox(height: 12),
               // Resend OTP Button
               Center(
                 child: TextButton(
@@ -579,7 +610,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                               );
                         },
                   child: Text(
-                    'Resend Code',
+                    'auth.verifyOtp.resendCode'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

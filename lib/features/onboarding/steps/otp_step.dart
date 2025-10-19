@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -59,17 +60,17 @@ class _OTPStepState extends State<OTPStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Verify Your Phone Number',
+              'onboarding.otp.title'.tr(),
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             Text(
-              'We\'ve sent a 6-digit verification code to your phone number.',
+              'onboarding.otp.subtitle'.tr(),
               style: AppThemes.bodyLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceXL),
             Text(
-              'Enter Verification Code',
+              'onboarding.otp.verificationCode'.tr(),
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
@@ -117,11 +118,11 @@ class _OTPStepState extends State<OTPStep> {
             Center(
               child: widget.otpCountdown > 0
                   ? Text(
-                      'Resend code in ${widget.otpCountdown}s',
+                      'onboarding.otp.resendIn'.tr(params: { 'seconds': '${widget.otpCountdown}' }),
                       style: AppThemes.bodyMedium(widget.theme),
                     )
                   : AppTextButton(
-                      text: 'Resend Code',
+                      text: 'onboarding.otp.resendCode'.tr(),
                       onPressed: widget.onResendOTP,
                     ),
             ),
@@ -145,7 +146,7 @@ class _OTPStepState extends State<OTPStep> {
                   const SizedBox(width: AppThemes.spaceM),
                   Expanded(
                     child: Text(
-                      'Didn\'t receive the code? Check your SMS messages or try resending.',
+                      'onboarding.otp.didntReceive'.tr(),
                       style: AppThemes.bodySmall(widget.theme).copyWith(
                         color: widget.theme.info,
                       ),

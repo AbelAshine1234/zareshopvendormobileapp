@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -23,12 +24,12 @@ class AdminApprovalStep extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ready to Submit',
+              'onboarding.adminApproval.readyTitle'.tr(),
               style: AppThemes.headlineLarge(theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             Text(
-              'Review your information and submit your application for admin approval.',
+              'onboarding.adminApproval.reviewIntro'.tr(),
               style: AppThemes.bodyLarge(theme),
             ),
             const SizedBox(height: AppThemes.spaceXL),
@@ -68,7 +69,7 @@ class AdminApprovalStep extends StatelessWidget {
                   ),
                   const SizedBox(height: AppThemes.spaceL),
                   Text(
-                    'Awaiting Admin Approval',
+                    'onboarding.adminApproval.awaitingTitle'.tr(),
                     style: AppThemes.headlineMedium(theme).copyWith(
                       color: theme.primary,
                     ),
@@ -76,7 +77,7 @@ class AdminApprovalStep extends StatelessWidget {
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   Text(
-                    'Your application will be reviewed by our admin team within 24-48 hours. You\'ll receive a notification once approved.',
+                    'onboarding.adminApproval.awaitingDesc'.tr(),
                     style: AppThemes.bodyMedium(theme),
                     textAlign: TextAlign.center,
                   ),
@@ -102,7 +103,7 @@ class AdminApprovalStep extends StatelessWidget {
                       ),
                       const SizedBox(width: AppThemes.spaceM),
                       Text(
-                        'What Happens Next?',
+                        'onboarding.adminApproval.whatNext'.tr(),
                         style: AppThemes.titleLarge(theme).copyWith(
                           color: theme.success,
                         ),
@@ -112,26 +113,26 @@ class AdminApprovalStep extends StatelessWidget {
                   const SizedBox(height: AppThemes.spaceM),
                   _buildTimelineItem(
                     icon: Icons.upload_file,
-                    title: 'Application Submitted',
-                    description: 'Your vendor application has been submitted successfully',
+                    title: 'onboarding.adminApproval.timelineSubmittedTitle'.tr(),
+                    description: 'onboarding.adminApproval.timelineSubmittedDesc'.tr(),
                     isCompleted: true,
                   ),
                   _buildTimelineItem(
                     icon: Icons.admin_panel_settings,
-                    title: 'Admin Review',
-                    description: 'Our team will review your documents and business information',
+                    title: 'onboarding.adminApproval.timelineReviewTitle'.tr(),
+                    description: 'onboarding.adminApproval.timelineReviewDesc'.tr(),
                     isCompleted: false,
                   ),
                   _buildTimelineItem(
                     icon: Icons.notifications_active,
-                    title: 'Approval Notification',
-                    description: 'You\'ll receive an email and app notification when approved',
+                    title: 'onboarding.adminApproval.timelineNotifyTitle'.tr(),
+                    description: 'onboarding.adminApproval.timelineNotifyDesc'.tr(),
                     isCompleted: false,
                   ),
                   _buildTimelineItem(
                     icon: Icons.store,
-                    title: 'Start Selling',
-                    description: 'Begin adding products and managing your store',
+                    title: 'onboarding.adminApproval.timelineStartTitle'.tr(),
+                    description: 'onboarding.adminApproval.timelineStartDesc'.tr(),
                     isCompleted: false,
                     isLast: true,
                   ),
@@ -146,7 +147,7 @@ class AdminApprovalStep extends StatelessWidget {
               children: [
                 Expanded(
                   child: AppSecondaryButton(
-                    text: 'Contact Help',
+                    text: 'onboarding.vendorSubmitted.contactHelp'.tr(),
                     icon: Icons.support_agent,
                     onPressed: () {
                       ContactHelpDialog.show(context, theme);
@@ -156,7 +157,7 @@ class AdminApprovalStep extends StatelessWidget {
                 const SizedBox(width: AppThemes.spaceM),
                 Expanded(
                   child: AppPrimaryButton(
-                    text: 'Submit Application',
+                    text: 'onboarding.adminApproval.submitApplication'.tr(),
                     onPressed: () {
                       context.read<OnboardingBloc>().add(const CompleteOnboarding());
                     },

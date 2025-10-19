@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_themes.dart';
+import '../../../core/services/localization_service.dart';
 
 class TermsAndConditionsDialog extends StatelessWidget {
   final AppThemeData theme;
@@ -13,7 +14,7 @@ class TermsAndConditionsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        'Terms and Conditions',
+        'onboarding.terms.title'.tr(),
         style: AppThemes.titleLarge(theme),
       ),
       content: SingleChildScrollView(
@@ -22,46 +23,46 @@ class TermsAndConditionsDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Subscription Terms',
+              'onboarding.terms.subscriptionTerms'.tr(),
               style: AppThemes.titleMedium(theme).copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppThemes.spaceS),
             Text(
-              'By subscribing to our service, you agree to the following terms:',
+              'onboarding.terms.agreeLine'.tr(),
               style: AppThemes.bodyMedium(theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             
             _buildTermsSection(
-              '1. Subscription Plans',
-              '• You can upgrade or downgrade your plan at any time\n• Changes take effect at the next billing cycle\n• Prorated charges may apply for upgrades',
+              'onboarding.terms.section1.title'.tr(),
+              'onboarding.terms.section1.content'.tr(),
             ),
             
             _buildTermsSection(
-              '2. Payment Terms',
-              '• All payments are processed securely\n• Billing occurs automatically on your subscription date\n• Failed payments may result in service suspension',
+              'onboarding.terms.section2.title'.tr(),
+              'onboarding.terms.section2.content'.tr(),
             ),
             
             _buildTermsSection(
-              '3. Cancellation Policy',
-              '• You can cancel your subscription at any time\n• No cancellation fees apply\n• Access continues until the end of your billing period',
+              'onboarding.terms.section3.title'.tr(),
+              'onboarding.terms.section3.content'.tr(),
             ),
             
             _buildTermsSection(
-              '4. Service Availability',
-              '• We strive for 99.9% uptime\n• Scheduled maintenance will be announced in advance\n• We are not liable for temporary service interruptions',
+              'onboarding.terms.section4.title'.tr(),
+              'onboarding.terms.section4.content'.tr(),
             ),
             
             _buildTermsSection(
-              '5. Data and Privacy',
-              '• Your data is protected according to our Privacy Policy\n• We do not sell your personal information\n• You retain ownership of your business data',
+              'onboarding.terms.section5.title'.tr(),
+              'onboarding.terms.section5.content'.tr(),
             ),
             
             const SizedBox(height: AppThemes.spaceM),
             Text(
-              'By checking the agreement box, you acknowledge that you have read, understood, and agree to be bound by these terms and conditions.',
+              'onboarding.terms.footer'.tr(),
               style: AppThemes.bodySmall(theme).copyWith(
                 fontStyle: FontStyle.italic,
                 color: theme.textSecondary,
@@ -74,7 +75,7 @@ class TermsAndConditionsDialog extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Close',
+            'common.close'.tr(),
             style: TextStyle(color: theme.primary),
           ),
         ),

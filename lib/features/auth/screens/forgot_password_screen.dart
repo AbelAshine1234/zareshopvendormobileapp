@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../../../shared/theme/theme_provider.dart';
 import '../../../shared/theme/app_themes.dart';
 import '../../../shared/widgets/theme_selector/theme_selector_button.dart';
+import '../../../shared/widgets/language_selector/language_switcher_button.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -54,9 +56,9 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
       if (value.isEmpty) {
         _phoneError = null;
       } else if (value.length != 9) {
-        _phoneError = 'Phone number must be 9 digits';
+        _phoneError = 'auth.forgotPassword.phoneError'.tr();
       } else if (!value.startsWith('9')) {
-        _phoneError = 'Phone number must start with 9';
+        _phoneError = 'auth.forgotPassword.phoneErrorStart'.tr();
       } else {
         _phoneError = null;
       }
@@ -70,7 +72,9 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
         if (state is ForgotPasswordOtpSent) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('OTP sent to ${state.phoneNumber}'),
+              content: Text('auth.forgotPassword.otpSent'.tr(params: {
+                'phoneNumber': state.phoneNumber,
+              })),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 3),
             ),
@@ -79,8 +83,8 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           context.go('/forgot-password-otp', extra: state.phoneNumber);
         } else if (state is ForgotPasswordSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password reset successful!'),
+            SnackBar(
+              content: Text('auth.verifyOtp.resetSuccess'.tr()),
               backgroundColor: Colors.green,
             ),
           );
@@ -95,8 +99,8 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           );
         }
       },
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+      child: Consumer2<ThemeProvider, LocalizationService>(
+        builder: (context, themeProvider, localization, child) {
           final theme = themeProvider.currentTheme;
           
           return Scaffold(
@@ -112,9 +116,15 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 40),
-                          _buildHeader(theme),
-                          const SizedBox(height: 48),
-                          _buildDescription(theme),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 96, left: 56),
+                            child: _buildHeader(theme),
+                          ),
+                          const SizedBox(height: 56),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 96, left: 56),
+                            child: _buildDescription(theme),
+                          ),
                           const SizedBox(height: 40),
                           _buildForgotPasswordCard(theme),
                           const SizedBox(height: 24),
@@ -123,12 +133,38 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                     ),
                   ),
                 ),
-                // Theme selector button in top-right
+                // Left-aligned back button at same vertical line as top-right buttons (on top of content)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: IconButton(
+                    onPressed: () {
+                      print('🔙 [FORGOT_PASSWORD] Back button pressed, navigating to login');
+                      context.go('/login');
+                    },
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: theme.textPrimary,
+                      size: 20,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: theme.surface,
+                      foregroundColor: theme.textPrimary,
+                      padding: const EdgeInsets.all(8),
+                    ),
+                  ),
+                ),
+                // Theme selector and language switcher buttons in top-right
                 Positioned(
                   top: 16,
                   right: 16,
-                  child: SafeArea(
-                    child: const ThemeSelectorButton(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      LanguageSwitcherButton(),
+                      SizedBox(width: 8),
+                      ThemeSelectorButton(),
+                    ],
                   ),
                 ),
               ],
@@ -145,45 +181,37 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
         // Header row with back button and title
         Row(
           children: [
-            // Back button
-            IconButton(
-              onPressed: () {
-                print('🔙 [FORGOT_PASSWORD] Back button pressed, navigating to login');
-                context.go('/login');
-              },
-              icon: Icon(
-                Icons.arrow_back_ios,
-                color: theme.textPrimary,
-                size: 20,
-              ),
-              style: IconButton.styleFrom(
-                backgroundColor: theme.surface,
-                foregroundColor: theme.textPrimary,
-                padding: const EdgeInsets.all(8),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Title
+            const SizedBox(width: 0),
+            // Title (left-aligned, pushed further down)
             Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Reset Password',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: theme.primary,
-                      letterSpacing: 1,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32),
+                    child: Text(
+                    'auth.forgotPassword.title'.tr(),
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: theme.primary,
+                        letterSpacing: 1,
+                      ),
+                      textAlign: TextAlign.start,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Enter your phone number to receive reset instructions',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: theme.textSecondary,
-                      letterSpacing: 0.5,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'auth.forgotPassword.subtitle'.tr(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: theme.textSecondary,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.start,
                     ),
                   ),
                 ],
@@ -200,7 +228,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Forgot your password?',
+          'auth.forgotPassword.description'.tr(),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -210,7 +238,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Don\'t worry! Enter your phone number and we\'ll send you a verification code to reset your password.',
+          'auth.forgotPassword.descriptionText'.tr(),
           style: TextStyle(
             fontSize: 16,
             color: theme.textSecondary,
@@ -247,7 +275,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Reset Password',
+                'auth.forgotPassword.title'.tr(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -258,7 +286,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
               
               // Phone Number Input
               Text(
-                'Phone Number',
+                'auth.forgotPassword.phoneNumber'.tr(),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -344,7 +372,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                           LengthLimitingTextInputFormatter(9),
                         ],
                         decoration: InputDecoration(
-                          hintText: '912345678',
+                          hintText: 'auth.forgotPassword.phoneHint'.tr(),
                           border: InputBorder.none,
                           counterText: '',
                           contentPadding: const EdgeInsets.symmetric(
@@ -407,8 +435,8 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                                 );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please enter a valid phone number'),
+                              SnackBar(
+                                content: Text('auth.forgotPassword.invalidPhone'.tr()),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -433,9 +461,9 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                                 Colors.white),
                           ),
                         )
-                      : const Text(
-                          'Send Reset Code',
-                          style: TextStyle(
+                      : Text(
+                          'auth.forgotPassword.sendCode'.tr(),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -42,12 +43,12 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Shipping Address',
+              'onboarding.shippingAddress.title'.tr(),
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             Text(
-              'Where should we deliver orders and send important documents?',
+              'onboarding.shippingAddress.subtitle'.tr(),
               style: AppThemes.bodyLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceXL),
@@ -68,14 +69,14 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                       ),
                       const SizedBox(width: AppThemes.spaceM),
                       Text(
-                        'Location',
+                        'onboarding.shippingAddress.location'.tr(),
                         style: AppThemes.titleMedium(widget.theme),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   Text(
-                    'Tap to select location on map',
+                    'onboarding.shippingAddress.tapToSelectOnMap'.tr(),
                     style: TextStyle(
                       fontSize: 14,
                       color: widget.theme.textSecondary,
@@ -83,12 +84,11 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                   ),
                   const SizedBox(height: AppThemes.spaceS),
                   AppPrimaryButton(
-                    text: 'Pick Location',
+                    text: 'onboarding.shippingAddress.pickLocation'.tr(),
                     icon: Icons.location_on,
                     onPressed: () {
-                      // TODO: Open Google Maps picker
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Google Maps picker coming soon!')),
+                        SnackBar(content: Text('common.comingSoon'.tr())),
                       );
                     },
                   ),
@@ -98,7 +98,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
             
             const SizedBox(height: AppThemes.spaceL),
             Text(
-              'Address Details',
+              'onboarding.shippingAddress.addressDetails'.tr(),
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
@@ -111,7 +111,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'City',
+                        'onboarding.shippingAddress.city'.tr(),
                         style: AppThemes.titleMedium(widget.theme),
                       ),
                       const SizedBox(height: AppThemes.spaceS),
@@ -122,7 +122,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                         },
                         decoration: AppThemes.inputDecoration(
                           widget.theme,
-                          hintText: 'e.g., Addis Ababa',
+                          hintText: 'onboarding.shippingAddress.cityHint'.tr(),
                         ),
                         style: AppThemes.bodyMedium(widget.theme),
                       ),
@@ -135,7 +135,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Subcity',
+                        'onboarding.shippingAddress.subcity'.tr(),
                         style: AppThemes.titleMedium(widget.theme),
                       ),
                       const SizedBox(height: AppThemes.spaceS),
@@ -146,7 +146,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                         },
                         decoration: AppThemes.inputDecoration(
                           widget.theme,
-                          hintText: 'e.g., Bole',
+                          hintText: 'onboarding.shippingAddress.subcityHint'.tr(),
                         ),
                         style: AppThemes.bodyMedium(widget.theme),
                       ),
@@ -165,7 +165,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Woreda',
+                        'onboarding.shippingAddress.woreda'.tr(),
                         style: AppThemes.titleMedium(widget.theme),
                       ),
                       const SizedBox(height: AppThemes.spaceS),
@@ -176,7 +176,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                         },
                         decoration: AppThemes.inputDecoration(
                           widget.theme,
-                          hintText: 'e.g., 01',
+                          hintText: 'onboarding.shippingAddress.woredaHint'.tr(),
                         ),
                         style: AppThemes.bodyMedium(widget.theme),
                       ),
@@ -189,7 +189,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'State/Region',
+                        'onboarding.shippingAddress.region'.tr(),
                         style: AppThemes.titleMedium(widget.theme),
                       ),
                       const SizedBox(height: AppThemes.spaceS),
@@ -200,7 +200,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                         },
                         decoration: AppThemes.inputDecoration(
                           widget.theme,
-                          hintText: 'e.g., Addis Ababa',
+                          hintText: 'onboarding.shippingAddress.regionHint'.tr(),
                         ),
                         style: AppThemes.bodyMedium(widget.theme),
                       ),

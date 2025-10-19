@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_themes.dart';
+import '../../../core/services/localization_service.dart';
 
 class ContactHelpDialog extends StatelessWidget {
   final AppThemeData theme;
@@ -13,7 +14,7 @@ class ContactHelpDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        'Contact Support',
+        'help.title'.tr(),
         style: AppThemes.titleLarge(theme),
       ),
       content: SingleChildScrollView(
@@ -22,7 +23,7 @@ class ContactHelpDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Need help? We\'re here to assist you!',
+              'help.subtitle'.tr(),
               style: AppThemes.bodyLarge(theme),
             ),
             const SizedBox(height: AppThemes.spaceL),
@@ -30,8 +31,8 @@ class ContactHelpDialog extends StatelessWidget {
             // Inbox to Admin
             _buildContactOption(
               context,
-              'Send Message to Admin',
-              'You will be notified by phone number',
+              'help.sendMessage'.tr(),
+              'help.notifyByPhone'.tr(),
               Icons.inbox,
               theme.primary,
               () => _showInboxDialog(context),
@@ -42,7 +43,7 @@ class ContactHelpDialog extends StatelessWidget {
             // Phone Number
             _buildContactOption(
               context,
-              'Call ZareShop',
+              'help.callUs'.tr(),
               '+251 11 123 4567',
               Icons.phone,
               theme.success,
@@ -54,7 +55,7 @@ class ContactHelpDialog extends StatelessWidget {
             // Email
             _buildContactOption(
               context,
-              'Email Support',
+              'help.email'.tr(),
               'support@zareshop.com',
               Icons.email,
               theme.info,
@@ -83,7 +84,7 @@ class ContactHelpDialog extends StatelessWidget {
                   const SizedBox(width: AppThemes.spaceM),
                   Expanded(
                     child: Text(
-                      'We will respond within 4 hours. Our support team is available Monday to Friday, 9 AM to 6 PM EAT',
+                      'help.responseSla'.tr(),
                       style: AppThemes.bodySmall(theme).copyWith(
                         color: theme.info,
                       ),
@@ -99,7 +100,7 @@ class ContactHelpDialog extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Close',
+            'common.close'.tr(),
             style: TextStyle(color: theme.primary),
           ),
         ),

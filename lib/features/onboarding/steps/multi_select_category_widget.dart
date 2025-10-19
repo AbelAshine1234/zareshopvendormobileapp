@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/shared.dart';
+import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 
 class MultiSelectCategoryWidget extends StatefulWidget {
   final List<Map<String, dynamic>> categories;
@@ -25,10 +26,9 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Selected categories display
         if (widget.selectedCategories.isNotEmpty) ...[
             Text(
-              'Selected Categories (${widget.selectedCategories.length})',
+              '${'onboarding.basicInfo.selectedCategories'.tr()} (${widget.selectedCategories.length})',
               style: AppThemes.titleMedium(widget.theme),
             ),
           const SizedBox(height: AppThemes.spaceS),
@@ -38,7 +38,7 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
             children: widget.selectedCategories.map((categoryId) {
               final category = widget.categories.firstWhere(
                 (cat) => cat['id'].toString() == categoryId,
-                orElse: () => {'name': 'Unknown', 'icon': Icons.category, 'color': widget.theme.primary},
+                orElse: () => {'name': 'onboarding.basicInfo.unknown'.tr(), 'icon': Icons.category, 'color': widget.theme.primary},
               );
               return Container(
                 padding: const EdgeInsets.symmetric(
@@ -60,7 +60,7 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
                     ),
                     const SizedBox(width: AppThemes.spaceS),
                     Text(
-                      category['name'] ?? 'Unknown',
+                      category['name'] ?? 'onboarding.basicInfo.unknown'.tr(),
                       style: AppThemes.bodySmall(widget.theme).copyWith(
                         color: widget.theme.primary,
                         fontWeight: FontWeight.w500,
@@ -86,10 +86,8 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
           ),
           const SizedBox(height: AppThemes.spaceM),
         ],
-        
-        // Categories grid
         Text(
-          'Select Categories',
+          'onboarding.basicInfo.selectCategories'.tr(),
           style: AppThemes.titleMedium(widget.theme),
         ),
         const SizedBox(height: AppThemes.spaceS),
@@ -107,7 +105,6 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
             final category = widget.categories[index];
             final categoryId = category['id'].toString();
             final isSelected = widget.selectedCategories.contains(categoryId);
-            
             return GestureDetector(
               onTap: () {
                 final updatedCategories = List<String>.from(widget.selectedCategories);
@@ -145,7 +142,7 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
                       const SizedBox(width: AppThemes.spaceS),
                       Expanded(
                         child: Text(
-                          category['name'] ?? 'Unknown',
+                          category['name'] ?? 'onboarding.basicInfo.unknown'.tr(),
                           style: AppThemes.bodySmall(widget.theme).copyWith(
                             color: isSelected 
                                 ? widget.theme.primary
@@ -170,13 +167,11 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
             );
           },
         ),
-        
-        // Helper text
         if (widget.selectedCategories.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: AppThemes.spaceS),
             child: Text(
-              'Select at least one category for your business',
+              'onboarding.basicInfo.selectAtLeastOne'.tr(),
               style: AppThemes.bodySmall(widget.theme).copyWith(
                 color: widget.theme.textHint,
                 fontStyle: FontStyle.italic,
@@ -187,3 +182,5 @@ class _MultiSelectCategoryWidgetState extends State<MultiSelectCategoryWidget> {
     );
   }
 }
+
+

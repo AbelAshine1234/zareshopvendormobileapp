@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -114,27 +115,27 @@ class _PayoutStepState extends State<PayoutStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Payment Method',
+              'onboarding.payout.title'.tr(),
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             Text(
-              'Choose how you\'d like to receive payments from customers.',
+              'onboarding.payout.subtitle'.tr(),
               style: AppThemes.bodyLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceXL),
             
             // Payment Method Selection
             Text(
-              'Select Payment Method',
+              'paymentMethods.methodLabel'.tr(),
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             
             _buildPaymentMethodCard(
               method: 'telebirr',
-              title: 'Telebirr',
-              description: 'Mobile wallet payment system',
+              title: 'paymentMethods.telebirr'.tr(),
+              description: 'paymentMethods.telebirrDesc'.tr(),
               icon: Icons.phone_android,
               color: const Color(0xFF1976D2),
             ),
@@ -142,8 +143,8 @@ class _PayoutStepState extends State<PayoutStep> {
             
             _buildPaymentMethodCard(
               method: 'cbe_birr',
-              title: 'CBE Birr',
-              description: 'Commercial Bank of Ethiopia mobile banking',
+              title: 'paymentMethods.cbeBirr'.tr(),
+              description: 'paymentMethods.cbeBirrDesc'.tr(),
               icon: Icons.account_balance,
               color: const Color(0xFF2E7D32),
             ),
@@ -151,8 +152,8 @@ class _PayoutStepState extends State<PayoutStep> {
             
             _buildPaymentMethodCard(
               method: 'bank_account',
-              title: 'Bank Account',
-              description: 'Traditional bank account transfer',
+              title: 'paymentMethods.bankAccount'.tr(),
+              description: 'paymentMethods.bankTransferDesc'.tr(),
               icon: Icons.account_balance_wallet,
               color: const Color(0xFF7B1FA2),
             ),
@@ -161,14 +162,14 @@ class _PayoutStepState extends State<PayoutStep> {
             
             // Account Details
             Text(
-              'Account Details',
+              'onboarding.payout.accountDetails'.tr(),
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
             
             // Account Holder Name
             Text(
-              'Account Holder Name',
+              'paymentMethods.accountHolderName'.tr(),
               style: AppThemes.titleMedium(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceS),
@@ -179,7 +180,7 @@ class _PayoutStepState extends State<PayoutStep> {
               },
               decoration: AppThemes.inputDecoration(
                 widget.theme,
-                hintText: 'Enter account holder name',
+                hintText: 'paymentMethods.accountHolderNameHint'.tr(),
               ),
               style: AppThemes.bodyMedium(widget.theme),
             ),
@@ -188,8 +189,8 @@ class _PayoutStepState extends State<PayoutStep> {
             // Account Number
             Text(
               _selectedPaymentMethod == 'bank_account' 
-                  ? 'Bank Account Number'
-                  : 'Phone Number',
+                  ? 'paymentMethods.bankAccountNumber'.tr()
+                  : 'paymentMethods.phoneNumber'.tr(),
               style: AppThemes.titleMedium(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceS),
@@ -218,14 +219,14 @@ class _PayoutStepState extends State<PayoutStep> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Use Registration Number?',
+                            'paymentMethods.useRegistrationPhone'.tr(),
                             style: AppThemes.titleMedium(widget.theme).copyWith(
                               color: widget.theme.primary,
                             ),
                           ),
                           const SizedBox(height: AppThemes.spaceXS),
                           Text(
-                            'You can use the same phone number from your registration',
+                            'paymentMethods.useRegistrationPhoneDesc'.tr(),
                             style: AppThemes.bodySmall(widget.theme).copyWith(
                               color: widget.theme.primary,
                             ),
@@ -358,7 +359,7 @@ class _PayoutStepState extends State<PayoutStep> {
                           LengthLimitingTextInputFormatter(9),
                         ],
                         decoration: InputDecoration(
-                          hintText: '912345678',
+                          hintText: 'onboarding.phoneNumber.phoneHint'.tr(),
                           border: InputBorder.none,
                           counterText: '',
                           contentPadding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceM, vertical: AppThemes.spaceM),
@@ -388,7 +389,7 @@ class _PayoutStepState extends State<PayoutStep> {
                 keyboardType: TextInputType.number,
                 decoration: AppThemes.inputDecoration(
                   widget.theme,
-                  hintText: 'Enter bank account number',
+                  hintText: 'paymentMethods.bankAccountNumberHint'.tr(),
                 ),
                 style: AppThemes.bodyMedium(widget.theme),
               ),
@@ -398,7 +399,7 @@ class _PayoutStepState extends State<PayoutStep> {
             
             // Agreement Checkboxes
             Text(
-              'Payment Agreement',
+              'onboarding.payout.paymentAgreement'.tr(),
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
@@ -421,7 +422,7 @@ class _PayoutStepState extends State<PayoutStep> {
                 ),
                 Expanded(
                   child: Text(
-                    'I confirm that the payment details provided are accurate and belong to me',
+                    'onboarding.payout.confirmDetails'.tr(),
                     style: AppThemes.bodyMedium(widget.theme),
                   ),
                 ),
@@ -447,7 +448,7 @@ class _PayoutStepState extends State<PayoutStep> {
                 ),
                 Expanded(
                   child: Text(
-                    'I authorize ZareShop to process payments to the account details provided',
+                    'onboarding.payout.authorizePayout'.tr(),
                     style: AppThemes.bodyMedium(widget.theme),
                   ),
                 ),
@@ -479,14 +480,14 @@ class _PayoutStepState extends State<PayoutStep> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Secure & Protected',
+                          'onboarding.payout.secureTitle'.tr(),
                           style: AppThemes.labelLarge(widget.theme).copyWith(
                             color: widget.theme.success,
                           ),
                         ),
                         const SizedBox(height: AppThemes.spaceXS),
                         Text(
-                          'Your payment information is encrypted and securely stored. We never share your financial details with third parties.',
+                          'onboarding.payout.secureDesc'.tr(),
                           style: AppThemes.bodySmall(widget.theme).copyWith(
                             color: widget.theme.success,
                           ),

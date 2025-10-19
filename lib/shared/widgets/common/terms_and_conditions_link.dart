@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_themes.dart';
 import '../dialogs/terms_and_conditions_dialog.dart';
+import '../../../core/services/localization_service.dart';
 
 class TermsAndConditionsLink extends StatelessWidget {
   final AppThemeData theme;
@@ -41,7 +42,7 @@ class TermsAndConditionsLink extends StatelessWidget {
             child: GestureDetector(
               onTap: () => TermsAndConditionsDialog.show(context, theme),
               child: Text(
-                'subscription terms and conditions',
+                'onboarding.subscription.termsLink'.tr(),
                 style: defaultLinkStyle,
               ),
             ),

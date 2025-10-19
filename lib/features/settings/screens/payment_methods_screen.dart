@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/theme/theme_provider.dart';
 import '../../../shared/theme/app_themes.dart';
+import '../../../core/services/localization_service.dart';
+import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../../../core/services/api_service.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
@@ -58,8 +60,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Payment Methods',
+        title: Text(
+          'paymentMethods.title'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -228,8 +230,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Set as default payment method',
+          Text(
+            'paymentMethods.setDefault'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -267,8 +269,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             ),
             elevation: 0,
           ),
-          child: const Text(
-            'Add Payment Method',
+          child: Text(
+            'paymentMethods.add'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -284,7 +286,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
-        'Add a new payment method to receive payouts.',
+        'paymentMethods.addDesc'.tr(),
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 14,
@@ -301,7 +303,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Add Payment Method',
+            'paymentMethods.add'.tr(),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -312,17 +314,17 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         const SizedBox(height: 16),
         _buildPaymentOption(
           icon: Icons.account_balance,
-          title: 'Bank Transfer',
+          title: 'paymentMethods.bankTransfer'.tr(),
           onTap: () => _showAddPaymentMethodDialog(),
         ),
         _buildPaymentOption(
           icon: Icons.phone_android,
-          title: 'Mobile Wallet',
+          title: 'paymentMethods.mobileWallet'.tr(),
           onTap: () => _showAddPaymentMethodDialog(),
         ),
         _buildPaymentOption(
           icon: Icons.credit_card,
-          title: 'Debit/Credit Card',
+          title: 'paymentMethods.debitCreditCard'.tr(),
           onTap: () => _showAddPaymentMethodDialog(),
         ),
       ],
@@ -420,15 +422,15 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add Payment Method'),
+      title: Text('paymentMethods.dialogTitle'.tr()),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Payment Method Selection
-            const Text(
-              'Payment Method',
+            Text(
+              'paymentMethods.methodLabel'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -440,7 +442,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             // Telebirr Option
             _buildPaymentMethodOption(
               'telebirr',
-              'Telebirr',
+              'paymentMethods.telebirr'.tr(),
               Icons.phone_android,
               const Color(0xFF1976D2),
             ),
@@ -449,7 +451,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             // CBE Birr Option
             _buildPaymentMethodOption(
               'cbe_birr',
-              'CBE Birr',
+              'paymentMethods.cbeBirr'.tr(),
               Icons.account_balance,
               const Color(0xFF2E7D32),
             ),
@@ -458,7 +460,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             // Bank Account Option
             _buildPaymentMethodOption(
               'bank_account',
-              'Bank Account',
+              'paymentMethods.bankAccount'.tr(),
               Icons.account_balance_wallet,
               const Color(0xFF7B1FA2),
             ),
@@ -466,8 +468,8 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             const SizedBox(height: 20),
             
             // Account Holder Name
-            const Text(
-              'Account Holder Name',
+            Text(
+              'paymentMethods.accountHolderName'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -477,8 +479,8 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             const SizedBox(height: 8),
             TextField(
               controller: _accountHolderController,
-              decoration: const InputDecoration(
-                hintText: 'Enter account holder name',
+              decoration: InputDecoration(
+                hintText: 'paymentMethods.accountHolderNameHint'.tr(),
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
@@ -488,8 +490,8 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             
             // Phone Number Section (for mobile wallets)
             if (_selectedPaymentMethod == 'telebirr' || _selectedPaymentMethod == 'cbe_birr') ...[
-              const Text(
-                'Phone Number',
+              Text(
+                'paymentMethods.phoneNumber'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -522,7 +524,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Use Registration Phone?',
+                              'paymentMethods.useRegistrationPhone'.tr(),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -531,7 +533,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Use the same phone number from your registration',
+                              'paymentMethods.useRegistrationPhoneDesc'.tr(),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.successColor,
@@ -634,8 +636,8 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                         enabled: !_useRegistrationPhone,
                         keyboardType: TextInputType.number,
                         maxLength: 9,
-                        decoration: const InputDecoration(
-                          hintText: '912345678',
+                    decoration: InputDecoration(
+                      hintText: 'onboarding.phoneNumber.phoneHint'.tr(),
                           border: InputBorder.none,
                           counterText: '',
                           contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -654,8 +656,8 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             
             // Bank Account Number (for bank account)
             if (_selectedPaymentMethod == 'bank_account') ...[
-              const Text(
-                'Bank Account Number',
+              Text(
+                'paymentMethods.bankAccountNumber'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -665,8 +667,8 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
               const SizedBox(height: 8),
               TextField(
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: 'Enter bank account number',
+                decoration: InputDecoration(
+                  hintText: 'paymentMethods.bankAccountNumberHint'.tr(),
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
@@ -678,15 +680,15 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('paymentMethods.cancel'.tr()),
         ),
         ElevatedButton(
           onPressed: () {
             // TODO: Implement save payment method logic
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Payment method added successfully!'),
+              SnackBar(
+                content: Text('paymentMethods.addSuccess'.tr()),
                 backgroundColor: AppTheme.successColor,
               ),
             );
@@ -694,8 +696,8 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.successColor,
           ),
-          child: const Text(
-            'Add',
+          child: Text(
+            'paymentMethods.confirmAdd'.tr(),
             style: TextStyle(color: Colors.white),
           ),
         ),

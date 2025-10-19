@@ -5,14 +5,22 @@ import 'shared/theme/theme_provider.dart';
 import 'core/constants/app_constants.dart';
 import 'core/utils/app_bloc_observer.dart';
 import 'core/navigation/simple_router.dart';
+import 'core/services/localization_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 
-void main() {
+void main() async {
+  // Initialize Flutter binding
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize localization service
+  await LocalizationService.instance.loadLanguage('en');
+  
   // Set up BlocObserver for debugging
   Bloc.observer = AppBlocObserver();
   
   print('🚀 [MAIN] App Starting...');
   print('🔍 [MAIN] BlocObserver Registered: ${Bloc.observer.runtimeType}');
+  print('🌐 [MAIN] Localization initialized with language: ${LocalizationService.instance.currentLanguage}');
   print('🚀 [MAIN] Initial route should be: /splash');
   
   runApp(const ZareshopVendorApp());
@@ -29,11 +37,15 @@ class ZareshopVendorApp extends StatelessWidget {
           create: (context) => AuthBloc(),
         ),
       ],
-      child: ChangeNotifierProvider(
-        create: (context) => ThemeProvider(),
-        child: Consumer<ThemeProvider>(
-          builder: (context, themeProvider, child) {
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider.value(value: LocalizationService.instance),
+        ],
+        child: Consumer2<ThemeProvider, LocalizationService>(
+          builder: (context, themeProvider, localization, child) {
             print('🎨 [MAIN] Building MaterialApp.router with theme: ${themeProvider.currentTheme.runtimeType}');
+            print('🌐 [MAIN] Current language: ${localization.currentLanguage}');
             print('🎨 [MAIN] Router config: ${SimpleRouter.router.runtimeType}');
             return MaterialApp.router(
               title: AppConstants.appName,
