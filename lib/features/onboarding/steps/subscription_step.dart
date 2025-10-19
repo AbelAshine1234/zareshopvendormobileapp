@@ -296,23 +296,9 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                     activeColor: widget.theme.primary,
                   ),
                   Expanded(
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'I agree to the ',
-                            style: AppThemes.bodyMedium(widget.theme),
-                          ),
-                          TextSpan(
-                            text: 'subscription terms and conditions',
-                            style: AppThemes.bodyMedium(widget.theme).copyWith(
-                              color: widget.theme.primary,
-                              decoration: TextDecoration.underline,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: TermsAndConditionsLink(
+                      theme: widget.theme,
+                      prefixText: 'I agree to the',
                     ),
                   ),
                 ],

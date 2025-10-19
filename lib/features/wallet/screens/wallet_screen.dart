@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/theme/theme_provider.dart';
+import '../../../shared/theme/app_themes.dart';
 import '../../../data/models/transaction_model.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';

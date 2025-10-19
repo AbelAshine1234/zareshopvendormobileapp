@@ -95,7 +95,21 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                               itemCount: AppThemes.allThemes.length,
                               itemBuilder: (context, index) {
                                 final themeData = AppThemes.allThemes[index];
-                                final themeType = AppThemeType.values[index];
+                                // Map theme data to theme type
+                                AppThemeType themeType;
+                                switch (index) {
+                                  case 0:
+                                    themeType = AppThemeType.coffee;
+                                    break;
+                                  case 1:
+                                    themeType = AppThemeType.green;
+                                    break;
+                                  case 2:
+                                    themeType = AppThemeType.basic;
+                                    break;
+                                  default:
+                                    themeType = AppThemeType.basic;
+                                }
                                 final isSelected = _selectedTheme == themeType;
                                 
                                 return _buildThemeCard(

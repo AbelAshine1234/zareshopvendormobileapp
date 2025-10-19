@@ -331,6 +331,11 @@ class CompleteOnboarding extends OnboardingEvent {
   const CompleteOnboarding();
 }
 
+/// Event to retry vendor submission after failure
+class RetryVendorSubmission extends OnboardingEvent {
+  const RetryVendorSubmission();
+}
+
 // Additional events for step files
 class UpdateBusinessCategory extends OnboardingEvent {
   final int categoryId;
@@ -365,6 +370,27 @@ class UpdateState extends OnboardingEvent {
   const UpdateState(this.state);
   @override
   List<Object?> get props => [state];
+}
+
+class UpdateSubcity extends OnboardingEvent {
+  final String subcity;
+  const UpdateSubcity(this.subcity);
+  @override
+  List<Object?> get props => [subcity];
+}
+
+class UpdateKebele extends OnboardingEvent {
+  final String kebele;
+  const UpdateKebele(this.kebele);
+  @override
+  List<Object?> get props => [kebele];
+}
+
+class UpdateWoreda extends OnboardingEvent {
+  final String woreda;
+  const UpdateWoreda(this.woreda);
+  @override
+  List<Object?> get props => [woreda];
 }
 
 class UpdatePostalCode extends OnboardingEvent {

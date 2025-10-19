@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/theme/theme_provider.dart';
+import '../../../shared/theme/app_themes.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
@@ -86,37 +88,42 @@ class DashboardView extends StatelessWidget {
 
   // Header with logo and profile
   Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTheme.successColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.store, color: Colors.white, size: 24),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Zareshop Vendor',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: theme.success,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.store, color: Colors.white, size: 24),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Zareshop Vendor',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: theme.textPrimary,
+                  ),
+                ),
+              ),
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: theme.divider,
+                child: Icon(Icons.person, color: theme.textSecondary, size: 24),
+              ),
+            ],
           ),
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.grey[300],
-            child: Icon(Icons.person, color: Colors.grey[600], size: 24),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -140,61 +147,66 @@ class DashboardView extends StatelessWidget {
 
   // Summary Cards (2x2 grid)
   Widget _buildSummaryCards(BuildContext context, DashboardLoaded state) {
-    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
-    return Column(
-      children: [
-        Row(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
+        return Column(
           children: [
-            Expanded(
-              child: _buildStatCard(
-                title: "Today's Sales",
-                value: currencyFormat.format(state.stats.dailySales),
-                icon: Icons.trending_up,
-                iconColor: AppTheme.successColor,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                title: 'Orders Pending',
-                value: state.stats.pendingOrders.toString(),
-                icon: Icons.pending_actions_outlined,
-                iconColor: Colors.orange,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                title: 'Orders Completed',
-                value: state.stats.fulfilledOrders.toString(),
-                icon: Icons.check_circle_outline,
-                iconColor: AppTheme.successColor,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const WalletScreen()),
-                  );
-                },
-                child: _buildStatCard(
-                  title: 'Wallet Balance',
-                  value: 'ETB 7,530',
-                  icon: Icons.account_balance_wallet_outlined,
-                  iconColor: AppTheme.primaryColor,
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    title: "Today's Sales",
+                    value: currencyFormat.format(state.stats.dailySales),
+                    icon: Icons.trending_up,
+                    iconColor: theme.success,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Orders Pending',
+                    value: state.stats.pendingOrders.toString(),
+                    icon: Icons.pending_actions_outlined,
+                    iconColor: theme.warning,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Orders Completed',
+                    value: state.stats.fulfilledOrders.toString(),
+                    icon: Icons.check_circle_outline,
+                    iconColor: theme.success,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const WalletScreen()),
+                      );
+                    },
+                    child: _buildStatCard(
+                      title: 'Wallet Balance',
+                      value: 'ETB 7,530',
+                      icon: Icons.account_balance_wallet_outlined,
+                      iconColor: theme.primary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -247,82 +259,87 @@ class DashboardView extends StatelessWidget {
 
   // Quick Actions
   Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: _buildActionButton(
-                label: 'Add Product',
-                icon: Icons.add,
-                isActive: true,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AddProductScreen()),
-                  );
-                },
+            Text(
+              'Quick Actions',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: theme.textPrimary,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                label: 'View Orders',
-                icon: Icons.shopping_bag_outlined,
-                isActive: false,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const OrdersScreen()),
-                  );
-                },
-              ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    label: 'Add Product',
+                    icon: Icons.add,
+                    isActive: true,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AddProductScreen()),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildActionButton(
+                    label: 'View Orders',
+                    icon: Icons.shopping_bag_outlined,
+                    isActive: false,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OrdersScreen()),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    label: 'Sales Report',
+                    icon: Icons.bar_chart,
+                    isActive: false,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SalesReportScreen()),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildActionButton(
+                    label: 'Settings',
+                    icon: Icons.settings_outlined,
+                    isActive: false,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionButton(
-                label: 'Sales Report',
-                icon: Icons.bar_chart,
-                isActive: false,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SalesReportScreen()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                label: 'Settings',
-                icon: Icons.settings_outlined,
-                isActive: false,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -332,178 +349,193 @@ class DashboardView extends StatelessWidget {
     required bool isActive,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-        decoration: BoxDecoration(
-          color: isActive ? AppTheme.successColor : Colors.white,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        return InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isActive ? AppTheme.successColor : Colors.grey[300]!,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? Colors.white : Colors.black87,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : Colors.black87,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: isActive ? theme.success : theme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isActive ? theme.success : theme.divider,
+                width: 1.5,
               ),
             ),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: isActive ? Colors.white : theme.textPrimary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isActive ? Colors.white : theme.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   // Recent Orders (list)
   Widget _buildRecentOrders(BuildContext context) {
-    // Mock recent orders
-    final recentOrders = [
-      {
-        'id': '1072',
-        'customer': 'Meseret Alemu',
-        'status': 'pending',
-      },
-      {
-        'id': '1071',
-        'customer': 'Fikadu Teshome',
-        'status': 'processing',
-      },
-      {
-        'id': '1070',
-        'customer': 'Amanuel Belay',
-        'status': 'delivered',
-      },
-    ];
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        // Mock recent orders
+        final recentOrders = [
+          {
+            'id': '1072',
+            'customer': 'Meseret Alemu',
+            'status': 'pending',
+          },
+          {
+            'id': '1071',
+            'customer': 'Fikadu Teshome',
+            'status': 'processing',
+          },
+          {
+            'id': '1070',
+            'customer': 'Amanuel Belay',
+            'status': 'delivered',
+          },
+        ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Recent Orders',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...recentOrders.map((order) => _buildOrderItem(context, order)).toList(),
-      ],
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Recent Orders',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: theme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...recentOrders.map((order) => _buildOrderItem(context, order)).toList(),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildOrderItem(BuildContext context, Map<String, String> order) {
-    Color statusColor;
-    Color statusBgColor;
-    String statusText;
-    
-    switch (order['status']) {
-      case 'pending':
-        statusColor = Colors.orange[700]!;
-        statusBgColor = Colors.orange[50]!;
-        statusText = 'Pending';
-        break;
-      case 'processing':
-        statusColor = Colors.blue[700]!;
-        statusBgColor = Colors.blue[50]!;
-        statusText = 'Processing';
-        break;
-      case 'delivered':
-        statusColor = AppTheme.successColor;
-        statusBgColor = AppTheme.successColor.withOpacity(0.1);
-        statusText = 'Delivered';
-        break;
-      default:
-        statusColor = Colors.grey[700]!;
-        statusBgColor = Colors.grey[100]!;
-        statusText = 'Unknown';
-    }
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final theme = themeProvider.currentTheme;
+        Color statusColor;
+        Color statusBgColor;
+        String statusText;
+        
+        switch (order['status']) {
+          case 'pending':
+            statusColor = theme.warning;
+            statusBgColor = theme.warning.withOpacity(0.1);
+            statusText = 'Pending';
+            break;
+          case 'processing':
+            statusColor = theme.info;
+            statusBgColor = theme.info.withOpacity(0.1);
+            statusText = 'Processing';
+            break;
+          case 'delivered':
+            statusColor = theme.success;
+            statusBgColor = theme.success.withOpacity(0.1);
+            statusText = 'Delivered';
+            break;
+          default:
+            statusColor = theme.textSecondary;
+            statusBgColor = theme.divider;
+            statusText = 'Unknown';
+        }
 
-    return GestureDetector(
-      onTap: () {
-        context.push(
-          '/order/${order['id']}?customerName=${order['customer']}&status=${order['status']}',
+        return GestureDetector(
+          onTap: () {
+            context.push(
+              '/order/${order['id']}?customerName=${order['customer']}&status=${order['status']}',
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: theme.divider),
+            ),
+            child: Row(
+              children: [
+                // Product Image
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: theme.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: theme.divider),
+                  ),
+                  child: Icon(Icons.shopping_bag_outlined, size: 24, color: theme.textSecondary),
+                ),
+                const SizedBox(width: 12),
+                // Order Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Order #${order['id']}',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: theme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        order['customer']!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: theme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Status Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: statusBgColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    statusText,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey[200]!),
-        ),
-        child: Row(
-          children: [
-            // Product Image
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: Icon(Icons.shopping_bag_outlined, size: 24, color: Colors.grey[600]),
-            ),
-            const SizedBox(width: 12),
-            // Order Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Order #${order['id']}',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    order['customer']!,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Status Badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: statusBgColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                statusText,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: statusColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

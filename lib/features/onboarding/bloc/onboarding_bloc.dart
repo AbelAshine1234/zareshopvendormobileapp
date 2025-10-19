@@ -14,6 +14,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<PreviousStep>(_onPreviousStep);
     on<GoToStep>(_onGoToStep);
     on<CompleteOnboarding>(_onCompleteOnboarding);
+    on<RetryVendorSubmission>(_onRetryVendorSubmission);
     
     // Step 1: Phone Number & Vendor Type
     on<UpdatePhoneNumber>(_onUpdatePhoneNumber);
@@ -64,6 +65,9 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<UpdateAddressLine2>(_onUpdateAddressLine2);
     on<UpdateCity>(_onUpdateCity);
     on<UpdateState>(_onUpdateState);
+    on<UpdateSubcity>(_onUpdateSubcity);
+    on<UpdateKebele>(_onUpdateKebele);
+    on<UpdateWoreda>(_onUpdateWoreda);
     on<UpdatePostalCode>(_onUpdatePostalCode);
     on<UpdateBusinessLicense>(_onUpdateBusinessLicense);
     on<UpdateCoverImage>(_onUpdateCoverImage);
@@ -1008,6 +1012,24 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
+  void _onRetryVendorSubmission(
+    RetryVendorSubmission event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    print('🔄 [ONBOARDING_BLOC] ===== RETRY VENDOR SUBMISSION =====');
+    print('🔄 [ONBOARDING_BLOC] Retrying vendor creation...');
+    
+    if (state is OnboardingVendorSubmissionFailed) {
+      final failedState = state as OnboardingVendorSubmissionFailed;
+      
+      // Go back to the previous step (payout step) to allow user to review and retry
+      emit(OnboardingInProgress(
+        currentStep: 5, // Payout step
+        data: failedState.data,
+      ));
+    }
+  }
+
   // Additional event handlers for step files
   void _onUpdateBusinessCategory(UpdateBusinessCategory event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
@@ -1050,6 +1072,33 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       final currentState = state as OnboardingInProgress;
       emit(currentState.copyWith(
         data: currentState.data.copyWith(state: event.state),
+      ));
+    }
+  }
+
+  void _onUpdateSubcity(UpdateSubcity event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(subcity: event.subcity),
+      ));
+    }
+  }
+
+  void _onUpdateKebele(UpdateKebele event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(kebele: event.kebele),
+      ));
+    }
+  }
+
+  void _onUpdateWoreda(UpdateWoreda event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(woreda: event.woreda),
       ));
     }
   }

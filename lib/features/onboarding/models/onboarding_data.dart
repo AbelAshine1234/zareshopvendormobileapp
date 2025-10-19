@@ -252,7 +252,7 @@ class OnboardingData extends Equatable {
             businessDescription.isNotEmpty &&
             (category.isNotEmpty || categories.isNotEmpty);
       case 3: // Shipping Address
-        return addressLine1.isNotEmpty && addressLine1.length >= 3;
+        return city.isNotEmpty && subcity.isNotEmpty && woreda.isNotEmpty && state.isNotEmpty;
       case 4: // Documents (Business only)
         return businessLicenseFile != null && coverImageFile != null;
       case 5: // Payout Information

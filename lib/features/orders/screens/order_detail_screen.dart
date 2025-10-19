@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/theme/theme_provider.dart';
+import '../../../shared/theme/app_themes.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;

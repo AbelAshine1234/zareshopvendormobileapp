@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/theme/theme_provider.dart';
+import '../../../shared/theme/app_themes.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});

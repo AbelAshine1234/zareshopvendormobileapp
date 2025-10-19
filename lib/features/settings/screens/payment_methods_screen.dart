@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/theme/theme_provider.dart';
+import '../../../shared/theme/app_themes.dart';
 import '../../../core/services/api_service.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {

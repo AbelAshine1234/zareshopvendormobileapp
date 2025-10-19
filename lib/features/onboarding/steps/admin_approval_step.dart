@@ -149,13 +149,7 @@ class AdminApprovalStep extends StatelessWidget {
                     text: 'Contact Help',
                     icon: Icons.support_agent,
                     onPressed: () {
-                      // Contact help functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Contact our support team at support@zareshop.com'),
-                          backgroundColor: theme.success,
-                        ),
-                      );
+                      ContactHelpDialog.show(context, theme);
                     },
                   ),
                 ),

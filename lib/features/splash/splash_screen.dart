@@ -65,8 +65,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   void _navigateToSignup() {
-    print('🎯 [SPLASH_SCREEN] Sign up button pressed, navigating to /signup');
-    context.go('/signup');
+    print('🎯 [SPLASH_SCREEN] Sign up button pressed, navigating to /onboarding');
+    context.go('/onboarding');
   }
 
   String _getThemeLogoPath(AppThemeType themeType) {
@@ -74,9 +74,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       AppThemeType.coffee => 'assets/logo/logo-coffe.png',
       AppThemeType.green => 'assets/logo/logo-green.png',
       AppThemeType.basic => 'assets/logo/logo-basic.png',
-      AppThemeType.mustard => 'assets/logo/logo-mustard.png',
-      AppThemeType.beige => 'assets/logo/logo-beige.png',
-      _ => 'assets/logo/logo-basic.png', // Fallback to basic
     };
     print('🎯 [SPLASH_SCREEN] Selected logo path: $path for theme: $themeType');
     return path;
@@ -351,20 +348,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     'Basic',
                                     AppThemeType.basic,
                                     '⚪',
-                                  ),
-                                  _buildThemeButton(
-                                    context,
-                                    themeProvider,
-                                    'Mustard',
-                                    AppThemeType.mustard,
-                                    '🟡',
-                                  ),
-                                  _buildThemeButton(
-                                    context,
-                                    themeProvider,
-                                    'Beige',
-                                    AppThemeType.beige,
-                                    '🟤',
                                   ),
                                 ],
                               ),

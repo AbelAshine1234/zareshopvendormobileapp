@@ -164,8 +164,18 @@ class _DocumentsStepState extends State<DocumentsStep> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: kIsWeb
-                                ? Image.network(selectedFile.path, fit: BoxFit.contain)
-                                : Image.file(File(selectedFile.path), fit: BoxFit.contain),
+                                ? Image.network(
+                                    selectedFile.path, 
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  )
+                                : Image.file(
+                                    File(selectedFile.path), 
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
                           ),
                           // Pencil icon inside the image
                           Positioned(

@@ -18,19 +18,17 @@ class ShippingAddressStep extends StatefulWidget {
 }
 
 class _ShippingAddressStepState extends State<ShippingAddressStep> {
-  final TextEditingController _addressLine1Controller = TextEditingController();
-  final TextEditingController _addressLine2Controller = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _subcityController = TextEditingController();
+  final TextEditingController _woredaController = TextEditingController();
   final TextEditingController _stateController = TextEditingController();
-  final TextEditingController _postalCodeController = TextEditingController();
 
   @override
   void dispose() {
-    _addressLine1Controller.dispose();
-    _addressLine2Controller.dispose();
     _cityController.dispose();
+    _subcityController.dispose();
+    _woredaController.dispose();
     _stateController.dispose();
-    _postalCodeController.dispose();
     super.dispose();
   }
 
@@ -105,45 +103,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
             ),
             const SizedBox(height: AppThemes.spaceM),
             
-            // Address Line 1
-            Text(
-              'Street Address',
-              style: AppThemes.titleMedium(widget.theme),
-            ),
-            const SizedBox(height: AppThemes.spaceS),
-            TextField(
-              controller: _addressLine1Controller,
-              onChanged: (value) {
-                context.read<OnboardingBloc>().add(UpdateAddressLine1(value));
-              },
-              decoration: AppThemes.inputDecoration(
-                widget.theme,
-                hintText: 'Enter street address',
-              ),
-              style: AppThemes.bodyMedium(widget.theme),
-            ),
-            const SizedBox(height: AppThemes.spaceM),
-            
-            // Address Line 2
-            Text(
-              'Apartment, suite, etc. (optional)',
-              style: AppThemes.titleMedium(widget.theme),
-            ),
-            const SizedBox(height: AppThemes.spaceS),
-            TextField(
-              controller: _addressLine2Controller,
-              onChanged: (value) {
-                context.read<OnboardingBloc>().add(UpdateAddressLine2(value));
-              },
-              decoration: AppThemes.inputDecoration(
-                widget.theme,
-                hintText: 'Apartment, suite, etc.',
-              ),
-              style: AppThemes.bodyMedium(widget.theme),
-            ),
-            const SizedBox(height: AppThemes.spaceM),
-            
-            // City and State Row
+            // City and Subcity Row
             Row(
               children: [
                 Expanded(
@@ -162,7 +122,61 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                         },
                         decoration: AppThemes.inputDecoration(
                           widget.theme,
-                          hintText: 'City',
+                          hintText: 'e.g., Addis Ababa',
+                        ),
+                        style: AppThemes.bodyMedium(widget.theme),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppThemes.spaceM),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Subcity',
+                        style: AppThemes.titleMedium(widget.theme),
+                      ),
+                      const SizedBox(height: AppThemes.spaceS),
+                      TextField(
+                        controller: _subcityController,
+                        onChanged: (value) {
+                          context.read<OnboardingBloc>().add(UpdateSubcity(value));
+                        },
+                        decoration: AppThemes.inputDecoration(
+                          widget.theme,
+                          hintText: 'e.g., Bole',
+                        ),
+                        style: AppThemes.bodyMedium(widget.theme),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppThemes.spaceM),
+            
+            // Woreda and State Row
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Woreda',
+                        style: AppThemes.titleMedium(widget.theme),
+                      ),
+                      const SizedBox(height: AppThemes.spaceS),
+                      TextField(
+                        controller: _woredaController,
+                        onChanged: (value) {
+                          context.read<OnboardingBloc>().add(UpdateWoreda(value));
+                        },
+                        decoration: AppThemes.inputDecoration(
+                          widget.theme,
+                          hintText: 'e.g., 01',
                         ),
                         style: AppThemes.bodyMedium(widget.theme),
                       ),
@@ -186,7 +200,7 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                         },
                         decoration: AppThemes.inputDecoration(
                           widget.theme,
-                          hintText: 'State/Region',
+                          hintText: 'e.g., Addis Ababa',
                         ),
                         style: AppThemes.bodyMedium(widget.theme),
                       ),
@@ -194,33 +208,6 @@ class _ShippingAddressStepState extends State<ShippingAddressStep> {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: AppThemes.spaceM),
-            
-            // Postal Code
-            SizedBox(
-              width: 200,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Postal Code',
-                    style: AppThemes.titleMedium(widget.theme),
-                  ),
-                  const SizedBox(height: AppThemes.spaceS),
-                  TextField(
-                    controller: _postalCodeController,
-                    onChanged: (value) {
-                      context.read<OnboardingBloc>().add(UpdatePostalCode(value));
-                    },
-                    decoration: AppThemes.inputDecoration(
-                      widget.theme,
-                      hintText: 'Postal Code',
-                    ),
-                    style: AppThemes.bodyMedium(widget.theme),
-                  ),
-                ],
-              ),
             ),
           ],
         );

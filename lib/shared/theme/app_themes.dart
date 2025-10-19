@@ -4,8 +4,6 @@ enum AppThemeType {
   coffee,
   green,
   basic,
-  mustard,
-  beige,
 }
 
 class AppThemeData {
@@ -238,73 +236,12 @@ class AppThemes {
     isDark: false,
   );
 
-  // 4️⃣ MUSTARD – Creative Startups / Marketing / Small Businesses
-  static const AppThemeData mustard = AppThemeData(
-    name: 'Mustard',
-    emoji: '🌟',
-    description: 'Creative / Marketing - Bold & Energetic',
-    background: Color(0xFFFFF4D9),
-    primary: Color(0xFFD9A441),
-    secondary: Color(0xFFF1C27D),
-    accent: Color(0xFFFBE8B3),
-    surface: Color(0xFFFFF8E5),
-    buttonBackground: Color(0xFFD9A441),
-    buttonHover: Color(0xFFB88432),
-    inputBackground: Color(0xFFFFF8E5),
-    inputBorder: Color(0xFFB88432),
-    inputFocus: Color(0xFFD9A441),
-    labelText: Color(0xFF6B4A1C),
-    textPrimary: Color(0xFF6B4A1C),
-    textSecondary: Color(0xFFA77B52),
-    textHint: Color(0xFFA77B52),
-    subtext: Color(0xFFA77B52),
-    linkText: Color(0xFFFBE8B3),
-    divider: Color(0xFFF3D8A3),
-    shadowColor: Color(0x1AD9A441), // rgba(217,164,65,0.1)
-    error: Color(0xFFD32F2F),
-    success: Color(0xFF388E3C),
-    warning: Color(0xFFFF9800),
-    info: Color(0xFF1976D2),
-    isDark: false,
-  );
-
-  // 5️⃣ BEIGE – Manufacturers / Industrial / Professional Services
-  static const AppThemeData beige = AppThemeData(
-    name: 'Beige',
-    emoji: '🏭',
-    description: 'Industrial / Professional - Elegant & Refined',
-    background: Color(0xFFF9F5EF),
-    primary: Color(0xFFD6C2A1),
-    secondary: Color(0xFFEAD9C3),
-    accent: Color(0xFFF5EFE6),
-    surface: Color(0xFFFDF8F0),
-    buttonBackground: Color(0xFFD6C2A1),
-    buttonHover: Color(0xFFBFA888),
-    inputBackground: Color(0xFFFDF8F0),
-    inputBorder: Color(0xFFCBB89E),
-    inputFocus: Color(0xFFD6C2A1),
-    labelText: Color(0xFF7B6652),
-    textPrimary: Color(0xFF7B6652),
-    textSecondary: Color(0xFFA69381),
-    textHint: Color(0xFFA69381),
-    subtext: Color(0xFFA69381),
-    linkText: Color(0xFFF5EFE6),
-    divider: Color(0xFFE3D9C8),
-    shadowColor: Color(0x1AD6C2A1), // rgba(214,194,161,0.1)
-    error: Color(0xFFD32F2F),
-    success: Color(0xFF388E3C),
-    warning: Color(0xFFFF9800),
-    info: Color(0xFF1976D2),
-    isDark: false,
-  );
 
   // Get all available themes
   static List<AppThemeData> get allThemes => [
     coffee,
     green,
     basic,
-    mustard,
-    beige,
   ];
 
   // Get theme by type
@@ -316,10 +253,6 @@ class AppThemes {
         return green;
       case AppThemeType.basic:
         return basic;
-      case AppThemeType.mustard:
-        return mustard;
-      case AppThemeType.beige:
-        return beige;
     }
   }
 
@@ -565,4 +498,107 @@ class AppThemes {
       ),
     );
   }
+}
+
+// Backward compatibility layer for old AppTheme references
+class AppTheme {
+  // Colors - using green theme as default for compatibility
+  static const Color primaryGreen = Color(0xFF2E7D32);
+  static const Color lightGreen = Color(0xFFE8F5E8);
+  static const Color darkGreen = Color(0xFF1B5E20);
+  static const Color accentGreen = Color(0xFF4CAF50);
+  
+  static const Color errorRed = Color(0xFFD32F2F);
+  static const Color warningOrange = Color(0xFFFF9800);
+  static const Color infoBlue = Color(0xFF1976D2);
+  static const Color successGreen = Color(0xFF388E3C);
+  static const Color emeraldGreen = Color(0xFF50C878);
+  
+  // Additional color aliases for compatibility
+  static const Color successColor = successGreen;
+  static const Color primaryColor = primaryGreen;
+  static const Color errorColor = errorRed;
+  static const Color warningColor = warningOrange;
+  static const Color borderColor = dividerColor;
+  
+  static const Color textPrimary = Color(0xFF212121);
+  static const Color textSecondary = Color(0xFF757575);
+  static const Color textHint = Color(0xFF9E9E9E);
+  
+  static const Color backgroundPrimary = Color(0xFFFAFAFA);
+  static const Color backgroundSecondary = Color(0xFFFFFFFF);
+  static const Color dividerColor = Color(0xFFE0E0E0);
+
+  // Spacing
+  static const double spaceXS = 4.0;
+  static const double spaceS = 8.0;
+  static const double spaceM = 16.0;
+  static const double spaceL = 24.0;
+  static const double spaceXL = 32.0;
+  static const double spaceXXL = 48.0;
+
+  // Border Radius
+  static const double borderRadius = 8.0;
+  static const double largeBorderRadius = 16.0;
+  static const double buttonBorderRadius = 12.0;
+  static const double cardBorderRadius = 16.0;
+
+  // Font Sizes
+  static const double fontSizeSmall = 12.0;
+  static const double fontSizeMedium = 14.0;
+  static const double fontSizeLarge = 16.0;
+  static const double fontSizeXL = 18.0;
+  static const double fontSizeXXL = 24.0;
+  static const double fontSizeHero = 32.0;
+  static const double fontSizeRegular = 16.0;
+
+  // Button
+  static const double buttonHeight = 48.0;
+
+  // Gradients
+  static LinearGradient get successGradient => LinearGradient(
+    colors: [successGreen, emeraldGreen],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Text Styles
+  static TextStyle get titleLarge => const TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: textPrimary,
+    height: 1.4,
+  );
+
+  // Card Decoration
+  static BoxDecoration get cardDecoration => BoxDecoration(
+    color: backgroundSecondary,
+    borderRadius: BorderRadius.circular(largeBorderRadius),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 8,
+        offset: const Offset(0, 2),
+      ),
+    ],
+    border: Border.all(
+      color: dividerColor.withOpacity(0.5),
+      width: 0.5,
+    ),
+  );
+
+  // Button Styles
+  static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
+    backgroundColor: primaryGreen,
+    foregroundColor: Colors.white,
+    elevation: 2,
+    shadowColor: primaryGreen.withOpacity(0.3),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(buttonBorderRadius),
+    ),
+    padding: const EdgeInsets.symmetric(
+      horizontal: spaceL,
+      vertical: spaceM,
+    ),
+  );
 }

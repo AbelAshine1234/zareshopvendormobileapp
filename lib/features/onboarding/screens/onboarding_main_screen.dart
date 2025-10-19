@@ -585,20 +585,45 @@ class _OnboardingViewState extends State<_OnboardingView>
     return Container(
       padding: const EdgeInsets.all(AppThemes.spaceL),
       color: theme.surface,
-      child: AppPrimaryButton(
-        text: state.isLastStep ? 'Finish Setup' : 'Continue',
-        onPressed: state.canProceed
-            ? () {
-                print('🎯 [ONBOARDING_MAIN] Continue button pressed');
-                print('🎯 [ONBOARDING_MAIN] Current step: ${state.currentStep}');
-                print('🎯 [ONBOARDING_MAIN] Is last step: ${state.isLastStep}');
-                print('🎯 [ONBOARDING_MAIN] Can proceed: ${state.canProceed}');
-                print('🎯 [ONBOARDING_MAIN] Dispatching NextStep event');
-                context.read<OnboardingBloc>().add(const NextStep());
-              }
-            : null,
-        enabled: state.canProceed,
-        height: 52,
+      child: Row(
+        children: [
+          // Previous button (only show if not on first step)
+          if (state.currentStep > 0) ...[
+            Expanded(
+              flex: 1,
+              child: AppSecondaryButton(
+                text: 'Previous',
+                onPressed: () {
+                  print('🎯 [ONBOARDING_MAIN] Previous button pressed');
+                  print('🎯 [ONBOARDING_MAIN] Current step: ${state.currentStep}');
+                  print('🎯 [ONBOARDING_MAIN] Dispatching PreviousStep event');
+                  context.read<OnboardingBloc>().add(const PreviousStep());
+                },
+                height: 52,
+              ),
+            ),
+            const SizedBox(width: AppThemes.spaceM),
+          ],
+          // Continue/Finish button
+          Expanded(
+            flex: state.currentStep > 0 ? 2 : 1,
+            child: AppPrimaryButton(
+              text: state.isLastStep ? 'Finish Setup' : 'Continue',
+              onPressed: state.canProceed
+                  ? () {
+                      print('🎯 [ONBOARDING_MAIN] Continue button pressed');
+                      print('🎯 [ONBOARDING_MAIN] Current step: ${state.currentStep}');
+                      print('🎯 [ONBOARDING_MAIN] Is last step: ${state.isLastStep}');
+                      print('🎯 [ONBOARDING_MAIN] Can proceed: ${state.canProceed}');
+                      print('🎯 [ONBOARDING_MAIN] Dispatching NextStep event');
+                      context.read<OnboardingBloc>().add(const NextStep());
+                    }
+                  : null,
+              enabled: state.canProceed,
+              height: 52,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -667,7 +692,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                     ),
                     const SizedBox(height: AppThemes.spaceS),
                     Text(
-                      'Your application is now under review. You will receive an email notification once it\'s approved.',
+                      'Your application is now under review by our admin team. This process typically takes 24-48 hours. You will receive an email notification once it\'s approved.',
                       style: AppThemes.bodyMedium(theme),
                       textAlign: TextAlign.center,
                     ),
@@ -676,14 +701,36 @@ class _OnboardingViewState extends State<_OnboardingView>
               ),
               const SizedBox(height: AppThemes.spaceXL),
               
-              // Action Button
-              AppPrimaryButton(
-                text: 'Go to Dashboard',
-                onPressed: () {
-                  context.go('/');
-                },
-                width: double.infinity,
-                height: 52,
+              // Action Buttons
+              Column(
+                children: [
+                  AppPrimaryButton(
+                    text: 'Contact Help',
+                    icon: Icons.support_agent,
+                    onPressed: () {
+                      ContactHelpDialog.show(context, theme);
+                    },
+                    width: double.infinity,
+                    height: 52,
+                  ),
+                  const SizedBox(height: AppThemes.spaceM),
+                  AppSecondaryButton(
+                    text: 'Wait for Approval',
+                    icon: Icons.hourglass_empty,
+                    onPressed: () {
+                      // Just show a message that they need to wait
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Please wait for admin approval. You will be notified via email.'),
+                          backgroundColor: theme.info,
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    },
+                    width: double.infinity,
+                    height: 52,
+                  ),
+                ],
               ),
             ],
           ),
@@ -853,7 +900,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                   AppPrimaryButton(
                     text: 'Try Again',
                     onPressed: () {
-                      context.read<OnboardingBloc>().add(const CompleteOnboarding());
+                      context.read<OnboardingBloc>().add(const RetryVendorSubmission());
                     },
                     width: double.infinity,
                     height: 52,
@@ -862,7 +909,7 @@ class _OnboardingViewState extends State<_OnboardingView>
                   AppSecondaryButton(
                     text: 'Contact Support',
                     onPressed: () {
-                      // TODO: Implement contact support
+                      ContactHelpDialog.show(context, theme);
                     },
                     width: double.infinity,
                     height: 52,
