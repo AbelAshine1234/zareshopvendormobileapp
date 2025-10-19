@@ -436,13 +436,8 @@ class _LoginViewState extends State<_LoginView> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // TODO: Implement forgot password screen
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Forgot password feature coming soon'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
+                            print('🔑 [LOGIN] Forgot password pressed, navigating to forgot password');
+                            context.go('/forgot-password');
                           },
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,

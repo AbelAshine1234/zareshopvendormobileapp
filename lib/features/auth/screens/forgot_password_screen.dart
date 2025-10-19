@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/theme/theme_provider.dart';
+import '../../../shared/theme/app_themes.dart';
+import '../../../shared/widgets/theme_selector/theme_selector_button.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -63,7 +67,17 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is ForgotPasswordSuccess) {
+        if (state is ForgotPasswordOtpSent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('OTP sent to ${state.phoneNumber}'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          // Navigate to OTP verification screen
+          context.go('/forgot-password-otp', extra: state.phoneNumber);
+        } else if (state is ForgotPasswordSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Password reset successful!'),
@@ -81,67 +95,107 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 40),
-                  _buildHeader(),
-                  const SizedBox(height: 48),
-                  _buildDescription(),
-                  const SizedBox(height: 40),
-                  _buildForgotPasswordCard(),
-                  const SizedBox(height: 24),
-                ],
-              ),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          final theme = themeProvider.currentTheme;
+          
+          return Scaffold(
+            backgroundColor: theme.background,
+            body: Stack(
+              children: [
+                SafeArea(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 40),
+                          _buildHeader(theme),
+                          const SizedBox(height: 48),
+                          _buildDescription(theme),
+                          const SizedBox(height: 40),
+                          _buildForgotPasswordCard(theme),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Theme selector button in top-right
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: SafeArea(
+                    child: const ThemeSelectorButton(),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppThemeData theme) {
     return Column(
       children: [
-        Text(
-          'Reset Password',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Enter your phone number to receive reset instructions',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[600],
-            letterSpacing: 0.5,
-          ),
+        // Header row with back button and title
+        Row(
+          children: [
+            // Back button
+            IconButton(
+              onPressed: () {
+                print('🔙 [FORGOT_PASSWORD] Back button pressed, navigating to login');
+                context.go('/login');
+              },
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: theme.textPrimary,
+                size: 20,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: theme.surface,
+                foregroundColor: theme.textPrimary,
+                padding: const EdgeInsets.all(8),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Title
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    'Reset Password',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: theme.primary,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Enter your phone number to receive reset instructions',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: theme.textSecondary,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildDescription() {
+  Widget _buildDescription(AppThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -150,7 +204,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: theme.textPrimary,
             height: 1.3,
           ),
         ),
@@ -159,7 +213,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           'Don\'t worry! Enter your phone number and we\'ll send you a verification code to reset your password.',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey[600],
+            color: theme.textSecondary,
             height: 1.5,
           ),
         ),
@@ -167,7 +221,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
     );
   }
 
-  Widget _buildForgotPasswordCard() {
+  Widget _buildForgotPasswordCard(AppThemeData theme) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
@@ -175,15 +229,15 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
         return Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.grey[300]!,
+              color: theme.border,
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: theme.shadow,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -197,7 +251,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: theme.textPrimary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -208,16 +262,16 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+                  color: theme.textSecondary,
                 ),
               ),
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: Colors.grey[50],
+                  color: theme.background,
                   border: Border.all(
-                    color: _phoneError != null ? Colors.red : Colors.grey[300]!,
+                    color: _phoneError != null ? theme.error : theme.border,
                     width: 1.5,
                   ),
                 ),
@@ -268,7 +322,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[700],
+                              color: theme.textSecondary,
                             ),
                           ),
                         ],
@@ -277,7 +331,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                     Container(
                       width: 1,
                       height: 40,
-                      color: Colors.grey[300],
+                      color: theme.border,
                     ),
                     Expanded(
                       child: TextField(
@@ -296,7 +350,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 16),
                           hintStyle: TextStyle(
-                            color: Colors.grey[400],
+                            color: theme.textSecondary.withValues(alpha: 0.5),
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
                           ),
@@ -304,7 +358,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
-                          color: Colors.black87,
+                          color: theme.textPrimary,
                         ),
                       ),
                     ),
@@ -318,7 +372,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                     children: [
                       Icon(
                         Icons.error_outline,
-                        color: Colors.red,
+                        color: theme.error,
                         size: 16,
                       ),
                       const SizedBox(width: 4),
@@ -326,7 +380,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                         _phoneError!,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.red,
+                          color: theme.error,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -361,13 +415,13 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: theme.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    disabledBackgroundColor: Colors.green.withOpacity(0.6),
+                    disabledBackgroundColor: theme.primary.withValues(alpha: 0.6),
                   ),
                   child: isLoading
                       ? const SizedBox(

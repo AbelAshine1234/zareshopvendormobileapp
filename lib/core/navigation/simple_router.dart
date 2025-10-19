@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/screens/forgot_password_otp_screen.dart';
 import '../../features/onboarding/screens/onboarding_main_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/onboarding/steps/admin_approval_screen.dart';
@@ -29,6 +31,23 @@ class SimpleRouter {
           builder: (context, state) {
             print('🔐 [SIMPLE_ROUTER] /login route accessed');
             return const LoginScreen();
+          },
+        ),
+        GoRoute(
+          path: '/forgot-password',
+          name: 'forgot-password',
+          builder: (context, state) {
+            print('🔑 [SIMPLE_ROUTER] /forgot-password route accessed');
+            return const ForgotPasswordScreen();
+          },
+        ),
+        GoRoute(
+          path: '/forgot-password-otp',
+          name: 'forgot-password-otp',
+          builder: (context, state) {
+            print('🔑 [SIMPLE_ROUTER] /forgot-password-otp route accessed');
+            final phoneNumber = state.extra as String? ?? '';
+            return ForgotPasswordOtpScreen(phoneNumber: phoneNumber);
           },
         ),
         GoRoute(

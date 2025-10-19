@@ -43,6 +43,10 @@ class AppThemeData {
   // UI elements
   final Color divider;
   final Color shadowColor;
+  
+  // Aliases for compatibility
+  Color get border => inputBorder;
+  Color get shadow => shadowColor;
 
   const AppThemeData({
     required this.name,

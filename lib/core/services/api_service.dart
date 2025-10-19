@@ -5,9 +5,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io' show File;
 import 'package:mime/mime.dart';
-import 'dart:html' as html if (dart.library.io) 'dart:io';
+import 'dart:io' as io if (dart.library.io) 'dart:io';
+import 'dart:html' as html if (dart.library.html) 'dart:html';
 
 class ApiService {
   // Backend API URL
@@ -82,7 +82,7 @@ class ApiService {
       } else {
         print('📦 [API_SERVICE] Handling file path...');
         // For mobile/desktop, read file directly
-        final file = File(imagePath);
+        final file = io.File(imagePath);
         if (await file.exists()) {
           final bytes = await file.readAsBytes();
           print('✅ [API_SERVICE] File read successfully (${bytes.length} bytes)');
@@ -804,13 +804,13 @@ class ApiService {
         try {
           print('\n🔄 [API_SERVICE] Validating file paths...');
           // Check cover image
-          final coverFile = File(coverImagePath);
+          final coverFile = io.File(coverImagePath);
           if (!await coverFile.exists()) {
             throw Exception('Cover image file not found');
           }
           
           // Check license image
-          final licenseFile = File(businessLicenseImagePath);
+          final licenseFile = io.File(businessLicenseImagePath);
           if (!await licenseFile.exists()) {
             throw Exception('License image file not found');
           }
