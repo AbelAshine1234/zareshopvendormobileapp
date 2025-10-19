@@ -35,6 +35,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<UpdateAddress>(_onUpdateAddress);
     on<UpdateBusinessDescription>(_onUpdateBusinessDescription);
     on<UpdateCategory>(_onUpdateCategory);
+    on<UpdateCategories>(_onUpdateCategories);
     
     // Step 4: Documents
     on<UpdateFaydaIdNumber>(_onUpdateFaydaIdNumber);
@@ -521,6 +522,15 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
+  void _onUpdateCategories(UpdateCategories event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final currentState = state as OnboardingInProgress;
+      emit(currentState.copyWith(
+        data: currentState.data.copyWith(categories: event.categories),
+      ));
+    }
+  }
+
   // Step 4: Documents Events
   void _onUpdateFaydaIdNumber(UpdateFaydaIdNumber event, Emitter<OnboardingState> emit) {
     if (state is OnboardingInProgress) {
@@ -725,25 +735,46 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           // Prepare data
           final data = currentState.data;
           
-          // Parse single category
-          int categoryId = 1; // Default category ID
+          // Parse categories (support both single and multiple)
+          List<int> categoryIds = [1]; // Default category ID
           print('🏷️ [ONBOARDING_BLOC] Raw category data: "${data.category}"');
+          print('🏷️ [ONBOARDING_BLOC] Raw categories data: ${data.categories}');
           
-          if (data.category.isNotEmpty) {
+          if (data.categories.isNotEmpty) {
+            // Use multiple categories if available
             try {
-              // Try to parse as direct ID if it's a number
-              categoryId = int.parse(data.category);
-              print('✅ [ONBOARDING_BLOC] Parsed category ID: $categoryId');
+              categoryIds = data.categories.map((id) => int.parse(id)).toList();
+              print('✅ [ONBOARDING_BLOC] Parsed multiple category IDs: $categoryIds');
             } catch (e) {
-              print('⚠️ [ONBOARDING_BLOC] Failed to parse category ID: ${data.category}, using default ID: 1');
-              categoryId = 1; // Fallback to default
+              print('⚠️ [ONBOARDING_BLOC] Failed to parse multiple category IDs: ${data.categories}, using single category fallback');
+              // Fallback to single category logic
+              if (data.category.isNotEmpty) {
+                try {
+                  categoryIds = [int.parse(data.category)];
+                  print('✅ [ONBOARDING_BLOC] Fallback to single category ID: $categoryIds');
+                } catch (e2) {
+                  print('⚠️ [ONBOARDING_BLOC] Failed to parse single category ID: ${data.category}, using default ID: 1');
+                  categoryIds = [1];
+                }
+              } else {
+                categoryIds = [1];
+              }
+            }
+          } else if (data.category.isNotEmpty) {
+            // Fallback to single category
+            try {
+              categoryIds = [int.parse(data.category)];
+              print('✅ [ONBOARDING_BLOC] Parsed single category ID: $categoryIds');
+            } catch (e) {
+              print('⚠️ [ONBOARDING_BLOC] Failed to parse single category ID: ${data.category}, using default ID: 1');
+              categoryIds = [1];
             }
           } else {
-            print('⚠️ [ONBOARDING_BLOC] No category selected, using default category ID: 1');
-            categoryId = 1;
+            print('⚠️ [ONBOARDING_BLOC] No categories selected, using default category ID: 1');
+            categoryIds = [1];
           }
           
-          print('✅ [ONBOARDING_BLOC] Final category ID: $categoryId');
+          print('✅ [ONBOARDING_BLOC] Final category IDs: $categoryIds');
           
           // Prepare payment method details
           print('💳 [ONBOARDING_BLOC] ===== PAYMENT METHOD DETAILS =====');
@@ -798,7 +829,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           print('📝 [ONBOARDING_BLOC] City: ${data.shippingCity}');
           print('📝 [ONBOARDING_BLOC] State: ${data.state}');
           print('📝 [ONBOARDING_BLOC] Country: ${data.country}');
-          print('📝 [ONBOARDING_BLOC] Category ID: $categoryId');
+          print('📝 [ONBOARDING_BLOC] Category IDs: $categoryIds');
           print('📝 [ONBOARDING_BLOC] Subscription ID: ${data.selectedSubscriptionId}');
           print('👤 [ONBOARDING_BLOC] User Info:');
           print('   Full Name: ${data.fullName}');
@@ -899,7 +930,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
             kebele: data.kebele.isNotEmpty ? data.kebele : null,
             postalCode: data.postalCode.isNotEmpty ? data.postalCode : null,
             country: data.country,
-            categoryIds: [categoryId],
+            categoryIds: categoryIds,
             paymentMethodType: paymentMethodType,
             accountHolderName: data.accountHolderName,
             accountNumber: accountNumber,

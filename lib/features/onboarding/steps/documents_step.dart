@@ -148,7 +148,10 @@ class _DocumentsStepState extends State<DocumentsStep> {
                     onTap: () => _selectImage(documentType),
                     child: Container(
                       width: double.infinity,
-                      height: 120,
+                      constraints: const BoxConstraints(
+                        minHeight: 200,
+                        maxHeight: 300,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -161,8 +164,8 @@ class _DocumentsStepState extends State<DocumentsStep> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: kIsWeb
-                                ? Image.network(selectedFile.path, fit: BoxFit.cover)
-                                : Image.file(File(selectedFile.path), fit: BoxFit.cover),
+                                ? Image.network(selectedFile.path, fit: BoxFit.contain)
+                                : Image.file(File(selectedFile.path), fit: BoxFit.contain),
                           ),
                           // Pencil icon inside the image
                           Positioned(
@@ -255,12 +258,12 @@ class _DocumentsStepState extends State<DocumentsStep> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Business Documents',
+              'KYC Verification',
               style: AppThemes.headlineLarge(widget.theme),
             ),
             const SizedBox(height: 8),
             Text(
-              'Upload the required documents to verify your business.',
+              'Upload the required documents for Know Your Customer (KYC) verification.',
               style: AppThemes.bodyLarge(widget.theme),
             ),
             const SizedBox(height: 24),
@@ -268,7 +271,7 @@ class _DocumentsStepState extends State<DocumentsStep> {
             // Business License Section
             _buildImageUploadSection(
               title: 'Business License *',
-              description: 'Upload your official business registration or license document',
+              description: 'Upload your official business registration or license document for KYC verification',
               icon: Icons.business_center,
               documentType: 'business_license',
               selectedFile: _businessLicenseImage,
@@ -277,7 +280,7 @@ class _DocumentsStepState extends State<DocumentsStep> {
             // Cover Image Section
             _buildImageUploadSection(
               title: 'Business Cover Image *',
-              description: 'Upload a cover image that represents your business',
+              description: 'Upload a cover image that represents your business for KYC verification',
               icon: Icons.image,
               documentType: 'cover',
               selectedFile: _coverImage,
@@ -299,14 +302,14 @@ class _DocumentsStepState extends State<DocumentsStep> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Document Guidelines',
+                            'KYC Document Guidelines',
                             style: AppThemes.titleMedium(widget.theme).copyWith(
                               color: widget.theme.info,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '• Images should be clear and readable\n• Accepted formats: JPG, PNG\n• Maximum file size: 5MB per image',
+                            '• Images should be clear and readable for verification\n• Accepted formats: JPG, PNG\n• Maximum file size: 5MB per image\n• Documents must be valid and unexpired',
                             style: AppThemes.bodySmall(widget.theme).copyWith(
                               color: widget.theme.info,
                             ),

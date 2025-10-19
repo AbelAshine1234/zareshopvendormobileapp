@@ -218,7 +218,7 @@ class _PayoutStepState extends State<PayoutStep> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Use Registration Phone?',
+                            'Use Registration Number?',
                             style: AppThemes.titleMedium(widget.theme).copyWith(
                               color: widget.theme.primary,
                             ),
@@ -242,7 +242,15 @@ class _PayoutStepState extends State<PayoutStep> {
                             // Get phone from state and set it
                             final currentState = context.read<OnboardingBloc>().state;
                             if (currentState is OnboardingInProgress) {
-                              _accountNumberController.text = currentState.data.phoneNumber;
+                              String phoneNumber = currentState.data.phoneNumber;
+                              // Remove +251 prefix to show only the 9 digits in the input
+                              if (phoneNumber.startsWith('+251')) {
+                                phoneNumber = phoneNumber.substring(4);
+                              } else if (phoneNumber.startsWith('251')) {
+                                phoneNumber = phoneNumber.substring(3);
+                              }
+                              _accountNumberController.text = phoneNumber;
+                              // Send the full phone number with +251 to the bloc
                               context.read<OnboardingBloc>().add(UpdateAccountNumber(currentState.data.phoneNumber));
                             }
                           } else {
@@ -334,7 +342,14 @@ class _PayoutStepState extends State<PayoutStep> {
                       child: TextField(
                         controller: _accountNumberController,
                         onChanged: (value) {
-                          context.read<OnboardingBloc>().add(UpdateAccountNumber('+251$value'));
+                          // Only add +251 if the value doesn't already start with it
+                          String phoneNumber = value;
+                          if (!phoneNumber.startsWith('+251') && !phoneNumber.startsWith('251')) {
+                            phoneNumber = '+251$value';
+                          } else if (phoneNumber.startsWith('251')) {
+                            phoneNumber = '+$value';
+                          }
+                          context.read<OnboardingBloc>().add(UpdateAccountNumber(phoneNumber));
                         },
                         keyboardType: TextInputType.number,
                         maxLength: 9,

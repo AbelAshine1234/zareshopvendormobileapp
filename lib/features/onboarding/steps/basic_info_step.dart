@@ -4,7 +4,7 @@ import '../../../shared/shared.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
-import '../widgets/common/category_dropdown.dart';
+import '../widgets/common/multi_select_category_widget.dart';
 
 class BasicInfoStep extends StatefulWidget {
   final AppThemeData theme;
@@ -25,7 +25,7 @@ class BasicInfoStep extends StatefulWidget {
 class _BasicInfoStepState extends State<BasicInfoStep> {
   final TextEditingController _businessNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  Map<String, dynamic>? _selectedCategory;
+  List<String> _selectedCategories = [];
 
   @override
   void dispose() {
@@ -73,15 +73,10 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
             ),
             const SizedBox(height: AppThemes.spaceL),
             
-            // Business Category
-            Text(
-              'Business Category',
-              style: AppThemes.titleMedium(widget.theme),
-            ),
-            const SizedBox(height: AppThemes.spaceS),
+            // Business Categories
             widget.loadingCategories
                 ? Container(
-                    height: 56,
+                    height: 200,
                     decoration: AppThemes.cardDecoration(widget.theme),
                     child: Center(
                       child: Row(
@@ -104,17 +99,15 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
                       ),
                     ),
                   )
-                : CategoryDropdown(
+                : MultiSelectCategoryWidget(
                     categories: widget.categories,
-                    selectedCategory: _selectedCategory,
-                    onChanged: (category) {
+                    selectedCategories: _selectedCategories,
+                    onChanged: (categories) {
                       setState(() {
-                        _selectedCategory = category;
+                        _selectedCategories = categories;
                       });
-                      // Update BLoC with category ID
-                      if (category != null) {
-                        context.read<OnboardingBloc>().add(UpdateBusinessCategory(category['id']));
-                      }
+                      // Update BLoC with selected category IDs
+                      context.read<OnboardingBloc>().add(UpdateCategories(categories));
                     },
                     theme: widget.theme,
                   ),

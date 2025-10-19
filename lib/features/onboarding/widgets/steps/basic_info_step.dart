@@ -4,7 +4,7 @@ import '../../../../shared/shared.dart';
 import '../../bloc/onboarding_bloc.dart';
 import '../../bloc/onboarding_event.dart';
 import '../../bloc/onboarding_state.dart';
-import '../common/category_dropdown.dart';
+import '../common/multi_select_category_widget.dart';
 
 class BasicInfoStep extends StatelessWidget {
   const BasicInfoStep({super.key});
@@ -129,7 +129,19 @@ class BasicInfoStep extends StatelessWidget {
               const SizedBox(height: AppTheme.spaceM),
               
               // Category Selection
-              const CategoryDropdown(),
+              MultiSelectCategoryWidget(
+                categories: OnboardingConstants.categories.map((cat) => {
+                  'id': OnboardingConstants.categories.indexOf(cat) + 1,
+                  'name': cat['name'],
+                  'icon': cat['icon'],
+                  'color': cat['color'],
+                }).toList(),
+                selectedCategories: state.data.categories,
+                onChanged: (categories) {
+                  context.read<OnboardingBloc>().add(UpdateCategories(categories));
+                },
+                theme: AppTheme.of(context),
+              ),
               
               const SizedBox(height: AppTheme.spaceXL),
               
@@ -158,6 +170,6 @@ class BasicInfoStep extends StatelessWidget {
            data.businessName.isNotEmpty &&
            data.email.isNotEmpty &&
            data.businessDescription.isNotEmpty &&
-           data.category.isNotEmpty;
+           (data.category.isNotEmpty || data.categories.isNotEmpty);
   }
 }

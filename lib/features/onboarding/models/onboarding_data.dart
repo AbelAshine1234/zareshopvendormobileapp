@@ -26,7 +26,8 @@ class OnboardingData extends Equatable {
   final String region;
   final String zone;
   final String businessDescription;
-  final String category;
+  final String category; // Keep for backward compatibility
+  final List<String> categories; // New field for multiple categories
   
   // Step 4: Documents
   final String faydaIdNumber;
@@ -90,6 +91,7 @@ class OnboardingData extends Equatable {
     this.zone = '',
     this.businessDescription = '',
     this.category = '',
+    this.categories = const [],
     this.faydaIdNumber = '',
     this.faydaIdPhotoUrl = '',
     this.businessLicenseNumber = '',
@@ -144,6 +146,7 @@ class OnboardingData extends Equatable {
     String? zone,
     String? businessDescription,
     String? category,
+    List<String>? categories,
     String? faydaIdNumber,
     String? faydaIdPhotoUrl,
     String? businessLicenseNumber,
@@ -197,6 +200,7 @@ class OnboardingData extends Equatable {
       zone: zone ?? this.zone,
       businessDescription: businessDescription ?? this.businessDescription,
       category: category ?? this.category,
+      categories: categories ?? this.categories,
       faydaIdNumber: faydaIdNumber ?? this.faydaIdNumber,
       faydaIdPhotoUrl: faydaIdPhotoUrl ?? this.faydaIdPhotoUrl,
       businessLicenseNumber: businessLicenseNumber ?? this.businessLicenseNumber,
@@ -246,7 +250,7 @@ class OnboardingData extends Equatable {
       case 2: // Basic Info (Business only)
         return businessName.isNotEmpty &&
             businessDescription.isNotEmpty &&
-            category.isNotEmpty;
+            (category.isNotEmpty || categories.isNotEmpty);
       case 3: // Shipping Address
         return addressLine1.isNotEmpty && addressLine1.length >= 3;
       case 4: // Documents (Business only)
@@ -289,6 +293,7 @@ class OnboardingData extends Equatable {
         zone,
         businessDescription,
         category,
+        categories,
         faydaIdNumber,
         faydaIdPhotoUrl,
         businessLicenseNumber,

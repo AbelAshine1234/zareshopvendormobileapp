@@ -180,6 +180,13 @@ class UpdateCategory extends OnboardingEvent {
   List<Object?> get props => [category];
 }
 
+class UpdateCategories extends OnboardingEvent {
+  final List<String> categories;
+  const UpdateCategories(this.categories);
+  @override
+  List<Object?> get props => [categories];
+}
+
 // Step 4: Documents Events
 class UpdateFaydaIdNumber extends OnboardingEvent {
   final String faydaIdNumber;

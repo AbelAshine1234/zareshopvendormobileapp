@@ -35,6 +35,21 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
     print('🎯 [SUBSCRIPTION_STEP] Agree terms: $_agreeTermsCheck');
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Sync with BLoC state when widget is built
+    final currentState = context.read<OnboardingBloc>().state;
+    if (currentState is OnboardingInProgress) {
+      if (mounted) {
+        setState(() {
+          _selectedSubscriptionId = currentState.data.selectedSubscriptionId;
+          _agreeTermsCheck = currentState.data.agreeTermsCheck;
+        });
+      }
+    }
+  }
+
   Widget _buildSubscriptionCard(Map<String, dynamic> subscription) {
     final bool isSelected = _selectedSubscriptionId == subscription['id'];
     final features = subscription['features'] as List<dynamic>? ?? [];
@@ -80,12 +95,35 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                     color: isSelected ? widget.theme.primary : widget.theme.textPrimary,
                   ),
                 ),
-                if (isSelected)
-                  Icon(
-                    Icons.check_circle,
-                    color: widget.theme.primary,
-                    size: 24,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected ? widget.theme.primary : widget.theme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? widget.theme.primary : widget.theme.accent,
+                      width: 1,
+                    ),
                   ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                        color: isSelected ? Colors.white : widget.theme.textSecondary,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isSelected ? 'Selected' : 'Select',
+                        style: AppThemes.bodySmall(widget.theme).copyWith(
+                          color: isSelected ? Colors.white : widget.theme.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: AppThemes.spaceS),
@@ -232,28 +270,53 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
             const SizedBox(height: AppThemes.spaceL),
             
             // Terms Agreement Checkbox
-            Row(
-              children: [
-                Checkbox(
-                  value: _agreeTermsCheck,
-                  onChanged: (value) {
-                    print('🎯 [SUBSCRIPTION_STEP] Terms checkbox changed: $value');
-                    setState(() {
-                      _agreeTermsCheck = value ?? false;
-                    });
-                    print('🎯 [SUBSCRIPTION_STEP] Updated agree terms: $_agreeTermsCheck');
-                    context.read<OnboardingBloc>().add(ToggleTermsAgreement(_agreeTermsCheck));
-                    print('🎯 [SUBSCRIPTION_STEP] ToggleTermsAgreement event dispatched');
-                  },
-                  activeColor: widget.theme.primary,
+            Container(
+              padding: const EdgeInsets.all(AppThemes.spaceM),
+              decoration: BoxDecoration(
+                color: widget.theme.surface,
+                borderRadius: BorderRadius.circular(AppThemes.borderRadius),
+                border: Border.all(
+                  color: _agreeTermsCheck ? widget.theme.primary : widget.theme.accent,
+                  width: _agreeTermsCheck ? 2 : 1,
                 ),
-                Expanded(
-                  child: Text(
-                    'I agree to the subscription terms and conditions',
-                    style: AppThemes.bodyMedium(widget.theme),
+              ),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _agreeTermsCheck,
+                    onChanged: (value) {
+                      print('🎯 [SUBSCRIPTION_STEP] Terms checkbox changed: $value');
+                      setState(() {
+                        _agreeTermsCheck = value ?? false;
+                      });
+                      print('🎯 [SUBSCRIPTION_STEP] Updated agree terms: $_agreeTermsCheck');
+                      context.read<OnboardingBloc>().add(ToggleTermsAgreement(_agreeTermsCheck));
+                      print('🎯 [SUBSCRIPTION_STEP] ToggleTermsAgreement event dispatched');
+                    },
+                    activeColor: widget.theme.primary,
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'I agree to the ',
+                            style: AppThemes.bodyMedium(widget.theme),
+                          ),
+                          TextSpan(
+                            text: 'subscription terms and conditions',
+                            style: AppThemes.bodyMedium(widget.theme).copyWith(
+                              color: widget.theme.primary,
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             
             const SizedBox(height: AppThemes.spaceL),
