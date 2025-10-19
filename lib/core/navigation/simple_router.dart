@@ -3,6 +3,7 @@ import '../../features/splash/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/onboarding/screens/onboarding_main_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
+import '../../features/onboarding/steps/admin_approval_screen.dart';
 
 class SimpleRouter {
   static final GoRouter router = _createRouter();
@@ -37,6 +38,14 @@ class SimpleRouter {
             print('📝 [SIMPLE_ROUTER] /onboarding route accessed');
             final useMockData = state.uri.queryParameters['mock'] == 'true';
             return OnboardingMainScreen(useMockData: useMockData);
+          },
+        ),
+        GoRoute(
+          path: '/admin-approval',
+          name: 'admin-approval',
+          builder: (context, state) {
+            print('⏳ [SIMPLE_ROUTER] Admin approval route accessed');
+            return const AdminApprovalScreen();
           },
         ),
         GoRoute(

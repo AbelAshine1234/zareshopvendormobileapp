@@ -51,3 +51,7 @@ class AuthUnauthenticated extends AuthState {
 class AuthChecking extends AuthState {
   const AuthChecking();
 }
+
+class AuthWaitingApproval extends AuthState {
+  const AuthWaitingApproval();
+}

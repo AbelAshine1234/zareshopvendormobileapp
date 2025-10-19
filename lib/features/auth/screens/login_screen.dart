@@ -124,24 +124,54 @@ class _LoginViewState extends State<_LoginView> {
   Widget _buildHeader(AppThemeData theme) {
     return Column(
       children: [
-        Text(
-          'ZARESHOP',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: theme.primary,
-            letterSpacing: 3,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'VENDOR PORTAL',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: theme.textSecondary,
-            letterSpacing: 2,
-          ),
+        // Header row with back button and title
+        Row(
+          children: [
+            // Back button
+            IconButton(
+              onPressed: () {
+                print('🔙 [LOGIN] Back button pressed, navigating to splash');
+                context.go('/splash');
+              },
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: theme.textPrimary,
+                size: 20,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: theme.surface,
+                foregroundColor: theme.textPrimary,
+                padding: const EdgeInsets.all(8),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Title
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    'ZARESHOP',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: theme.primary,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'VENDOR PORTAL',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: theme.textSecondary,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );

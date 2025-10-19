@@ -418,16 +418,42 @@ class _OnboardingViewState extends State<_OnboardingView>
       ),
       child: Column(
         children: [
-          AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeInOut,
-            style: TextStyle(
-              fontSize: _isHeaderCollapsed ? 16 : 28,
-              fontWeight: FontWeight.w700,
-              color: theme.primary,
-              letterSpacing: 2,
-            ),
-            child: const Text('ZARESHOP'),
+          // Header row with back button and title
+          Row(
+            children: [
+              // Back button
+              IconButton(
+                onPressed: () {
+                  print('🔙 [ONBOARDING] Back button pressed, navigating to splash');
+                  context.go('/splash');
+                },
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: theme.textPrimary,
+                  size: 20,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: theme.surface,
+                  foregroundColor: theme.textPrimary,
+                  padding: const EdgeInsets.all(8),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Title
+              Expanded(
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut,
+                  style: TextStyle(
+                    fontSize: _isHeaderCollapsed ? 16 : 28,
+                    fontWeight: FontWeight.w700,
+                    color: theme.primary,
+                    letterSpacing: 2,
+                  ),
+                  child: const Text('ZARESHOP'),
+                ),
+              ),
+            ],
           ),
           AnimatedSize(
             duration: const Duration(milliseconds: 400),

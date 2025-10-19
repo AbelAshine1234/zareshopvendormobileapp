@@ -28,8 +28,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     
     _initializeLoading();
     
-    // Check authentication status
-    context.read<AuthBloc>().add(const CheckAuthenticationStatus());
+    // Check authentication status after a delay to ensure splash screen is shown first
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        print('🎯 [SPLASH_SCREEN] Checking authentication status after delay');
+        context.read<AuthBloc>().add(const CheckAuthenticationStatus());
+      }
+    });
   }
 
   void _initializeLoading() async {
@@ -82,15 +87,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    print('🎯 [SPLASH_SCREEN] Building splash screen widget');
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         print('🎯 [SPLASH_SCREEN] Auth state changed: ${state.runtimeType}');
         
-        if (state is AuthAuthenticated) {
-          print('🎯 [SPLASH_SCREEN] User is authenticated, navigating to dashboard');
-          context.go('/dashboard');
-        } else if (state is AuthUnauthenticated) {
-          print('🎯 [SPLASH_SCREEN] User is not authenticated, staying on splash screen');
+        // Only auto-navigate if we're not already on the splash screen
+        // This allows users to manually navigate back to splash screen
+        final currentLocation = GoRouterState.of(context).uri.path;
+        if (currentLocation != '/splash') {
+          if (state is AuthAuthenticated) {
+            print('🎯 [SPLASH_SCREEN] User is authenticated and approved, navigating to dashboard');
+            context.go('/');
+          } else if (state is AuthWaitingApproval) {
+            print('🎯 [SPLASH_SCREEN] User is authenticated but waiting for approval, navigating to admin approval');
+            context.go('/admin-approval');
+          }
+        } else {
+          print('🎯 [SPLASH_SCREEN] Already on splash screen, not auto-navigating');
         }
       },
       child: BlocBuilder<AuthBloc, AuthState>(

@@ -135,8 +135,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         print('🔐 [AUTH_BLOC] User verification result: ${userResult['success']}');
         
         if (userResult['success'] == true) {
-          print('🔐 [AUTH_BLOC] Token is valid, emitting AuthAuthenticated');
-          emit(const AuthAuthenticated());
+          print('🔐 [AUTH_BLOC] Token is valid, checking approval status...');
+          final userData = userResult['data'];
+          
+          // Check if user is waiting for approval
+          if (userData != null && userData['vendor_status'] == 'pending') {
+            print('🔐 [AUTH_BLOC] User is waiting for approval, emitting AuthWaitingApproval');
+            emit(const AuthWaitingApproval());
+          } else {
+            print('🔐 [AUTH_BLOC] User is authenticated and approved, emitting AuthAuthenticated');
+            emit(const AuthAuthenticated());
+          }
         } else {
           print('🔐 [AUTH_BLOC] Token is invalid, clearing and emitting AuthUnauthenticated');
           // Token is invalid, clear it
