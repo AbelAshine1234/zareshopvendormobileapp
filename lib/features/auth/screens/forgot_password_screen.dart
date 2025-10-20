@@ -8,6 +8,8 @@ import '../../../shared/theme/app_themes.dart';
 import '../../../shared/widgets/theme_selector/theme_selector_button.dart';
 import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../../../core/services/localization_service.dart';
+import '../../../shared/widgets/inputs/phone_input.dart';
+import '../../../shared/widgets/inline_error_banner.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -36,11 +38,16 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
   final _otpController = TextEditingController();
   final _newPasswordController = TextEditingController();
   String? _phoneError;
+  String? _inlineErrorMessage;
 
   @override
   void initState() {
     super.initState();
     // No animations for better performance
+    // Ensure latest localization assets (newly added keys) are loaded
+    LocalizationService.instance.loadLanguage(
+      LocalizationService.instance.currentLanguage,
+    );
   }
 
   @override
@@ -81,6 +88,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           );
           // Navigate to OTP verification screen
           context.go('/forgot-password-otp', extra: state.phoneNumber);
+          setState(() { _inlineErrorMessage = null; });
         } else if (state is ForgotPasswordSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -90,13 +98,15 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           );
           context.go('/login');
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          final lower = state.message.toLowerCase();
+          final msgKey = lower.contains('user not found')
+              ? 'errors.userNotFound'
+              : lower.contains('otp')
+                  ? 'errors.invalidOtp'
+                  : lower.contains('exists')
+                      ? 'errors.userExists'
+                      : 'errors.unknownError';
+          setState(() { _inlineErrorMessage = msgKey.tr(); });
         }
       },
       child: Consumer2<ThemeProvider, LocalizationService>(
@@ -105,69 +115,114 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           
           return Scaffold(
             backgroundColor: theme.background,
-            body: Stack(
-              children: [
-                SafeArea(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Top utilities row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const SizedBox(height: 40),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 96, left: 56),
-                            child: _buildHeader(theme),
+                          IconButton(
+                            onPressed: () {
+                              context.go('/login');
+                            },
+                            icon: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: theme.textPrimary,
+                              size: 18,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: theme.surface,
+                              foregroundColor: theme.textPrimary,
+                              padding: const EdgeInsets.all(8),
+                              side: BorderSide(color: theme.divider, width: 1),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
                           ),
-                          const SizedBox(height: 56),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 96, left: 56),
-                            child: _buildDescription(theme),
-                          ),
-                          const SizedBox(height: 40),
-                          _buildForgotPasswordCard(theme),
-                          const SizedBox(height: 24),
+                          const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              LanguageSwitcherButton(),
+                              SizedBox(width: 8),
+                              ThemeSelectorButton(),
+                            ],
+                          )
                         ],
                       ),
-                    ),
-                  ),
-                ),
-                // Left-aligned back button at same vertical line as top-right buttons (on top of content)
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  child: IconButton(
-                    onPressed: () {
-                      print('🔙 [FORGOT_PASSWORD] Back button pressed, navigating to login');
-                      context.go('/login');
-                    },
-                    icon: Icon(
-                      Icons.arrow_back_ios,
-                      color: theme.textPrimary,
-                      size: 20,
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: theme.surface,
-                      foregroundColor: theme.textPrimary,
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                ),
-                // Theme selector and language switcher buttons in top-right
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      LanguageSwitcherButton(),
-                      SizedBox(width: 8),
-                      ThemeSelectorButton(),
+
+                      const SizedBox(height: 24),
+
+                      // Brand header (reuse pattern from login)
+                      SizedBox(
+                        height: 64,
+                        child: Image.asset(
+                          'assets/logo/logo-green.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'ZareShop',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: theme.primary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Inline error
+                      if (_inlineErrorMessage != null) ...[
+                        InlineErrorBanner(
+                          theme: theme,
+                          message: _inlineErrorMessage!,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+
+                      // Headline & subtitle
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'auth.forgotPassword.title'.tr(),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: theme.textPrimary,
+                              height: 1.25,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'auth.forgotPassword.subtitle'.tr(),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      _buildForgotPasswordCard(theme),
+
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -294,104 +349,13 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: theme.background,
-                  border: Border.all(
-                    color: _phoneError != null ? theme.error : theme.border,
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 16, top: 16, bottom: 16, right: 12),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 28,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: Image.network(
-                                'https://flagcdn.com/w40/et.png',
-                                width: 28,
-                                height: 20,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.green,
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        'ET',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '+251',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: theme.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: theme.border,
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: _phoneController,
-                        onChanged: _validateEthiopianPhone,
-                        keyboardType: TextInputType.number,
-                        maxLength: 9,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(9),
-                        ],
-                        decoration: InputDecoration(
-                          hintText: 'auth.forgotPassword.phoneHint'.tr(),
-                          border: InputBorder.none,
-                          counterText: '',
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
-                          hintStyle: TextStyle(
-                            color: theme.textSecondary.withValues(alpha: 0.5),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: theme.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              PhoneInput(
+                theme: theme,
+                controller: _phoneController,
+                errorText: _phoneError,
+                onChangedDigitsOnly: _validateEthiopianPhone,
+                countryCode: '+251',
+                hintDigits: 'auth.forgotPassword.phoneHint'.tr(),
               ),
               if (_phoneError != null)
                 Padding(
@@ -476,4 +440,6 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
       },
     );
   }
+
+  // removed old banner helper; now using persisted _inlineErrorMessage
 }

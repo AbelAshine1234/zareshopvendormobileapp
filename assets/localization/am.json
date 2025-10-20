@@ -104,6 +104,8 @@
       "invalidCredentials": "ስልክ ቁጥር ወይም የይለፍ ቃል ትክክል አይደለም",
       "loginSuccess": "መግባት ተሳክቷል!",
       "loginError": "መግባት አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+      ,
+      "secureLogin": "ደህንነቱ የተጠበቀ መግቢያ"
     },
     "forgotPassword": {
       "title": "የይለፍ ቃል እንደገና አስቀምጥ",
@@ -314,7 +316,8 @@
     },
     "userExists": {
       "title": "መለያ አስቀድሞ አለ",
-      "loginInstead": " instead ይግቡ",
+      "banner": "ተጠቃሚ አስቀድሞ አለ። እባክዎ ይግቡ።",
+      "loginInstead": "ይግቡ",
       "tryDifferent": "የተለየ መረጃ ይሞክሩ"
     },
     "submissionFailed": {
@@ -413,9 +416,17 @@
     "unknownError": "ያልታወቀ ስህተት ተከስቷል።",
     "validationError": "እባክዎ ግቤትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
     "authError": "ማረጋገጫ አልተሳካም። እባክዎ እንደገና ይግቡ።",
-    "permissionError": "ፈቃድ ተሰጥቷል።",
+    "permissionError": "ፈቃድ ተከልክሏል።",
     "fileError": "የፋይል መጫን አልተሳካም።",
-    "timeoutError": "የጥያቄ ጊዜ አልቋል። እባክዎ እንደገና ይሞክሩ።"
+    "timeoutError": "የጥያቄ ጊዜ አልቋል። እባክዎ እንደገና ይሞክሩ።",
+    "userExists": "ተጠቃሚ አስቀድሞ አለ። እባክዎ ይግቡ.",
+    "invalidOtp": "የማረጋገጫ ኮድ ትክክል አይደለም.",
+    "invalidCredentials": "የስልክ ቁጥር ወይም የይለፍ ቃል ትክክል አይደለም.",
+    "phoneInUse": "ይህ የስልክ ቁጥር አስቀድሞ ተጠቀምቷል.",
+    "userNotFound": "ተጠቃሚ በዚህ የስልክ ቁጥር አልተገኘም።",
+    "registrationFailed": "መመዝገብ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+    "vendorCreationFailed": "የንግድ ሻች መፍጠር አልተሳካም።",
+    "loginAfterOtpFailed": "OTP ከተረጋገጠ በኋላ መግባት አልተሳካም።"
   },
   "validation": {
     "required": "ይህ መስኮች ያስፈልጋል",
@@ -438,5 +449,18 @@
     "selectTheme": "ገጽታዎን ይምረጡ",
     "themeDescription": "ለንግድዎ የሚስማማ ገጽታ ይምረጡ",
     "changeTheme": "ገጽታ ቀይር"
+  },
+  "splash": {
+    "subtitlePortal": "የነጋዴ ፖርታልዎ",
+    "tagline": "አስተዳድር • ሽያጭ • እድገት",
+    "loginCta": "ወደ ሱቅዎ ይግቡ",
+    "signupCta": "ዛሬ ጀምሩ ለመሸጥ",
+    "chooseStyle": "የእርስዎን አቀራረብ ይምረጡ",
+    "theme": {
+      "coffee": "ቡና",
+      "green": "አረንጓዴ",
+      "basic": "መሠረታዊ"
+    },
+    "footer": "ነጋዴዎችን ለስኬት መበረታታት"
   }
 }

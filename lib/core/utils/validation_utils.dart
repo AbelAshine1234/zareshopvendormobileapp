@@ -1,3 +1,5 @@
+import '../services/localization_service.dart';
+
 class ValidationUtils {
   // Email validation
   static bool isValidEmail(String email) {
@@ -167,11 +169,12 @@ class ValidationUtils {
 
   static String? validateEthiopianPhone(String? phone) {
     if (phone == null || phone.isEmpty) {
-      return 'Phone number is required';
+      return LocalizationService.instance.get('validation.required');
     }
     
     if (!isValidEthiopianPhone(phone)) {
-      return 'Please enter a valid Ethiopian phone number (e.g., 0912345678)';
+      // Use generic phone validation message so it localizes across pages
+      return LocalizationService.instance.get('validation.phone');
     }
     
     return null;

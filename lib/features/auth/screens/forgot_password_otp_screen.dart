@@ -8,6 +8,8 @@ import '../../../shared/theme/app_themes.dart';
 import '../../../shared/widgets/theme_selector/theme_selector_button.dart';
 import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../../../core/services/localization_service.dart';
+import '../../../shared/widgets/inputs/password_input.dart';
+import '../../../shared/widgets/inline_error_banner.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -103,13 +105,7 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
           );
           context.go('/login');
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          setState(() {});
         }
       },
       child: Consumer2<ThemeProvider, LocalizationService>(
@@ -118,77 +114,112 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
           
           return Scaffold(
             backgroundColor: theme.background,
-            body: Stack(
-              children: [
-                SafeArea(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Top utilities row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const SizedBox(height: 40),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 96, left: 56),
-                            child: _buildHeader(theme),
+                          IconButton(
+                            onPressed: () {
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.go('/forgot-password');
+                              }
+                            },
+                            icon: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: theme.textPrimary,
+                              size: 18,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: theme.surface,
+                              foregroundColor: theme.textPrimary,
+                              padding: const EdgeInsets.all(8),
+                              side: BorderSide(color: theme.divider, width: 1),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
                           ),
-                          const SizedBox(height: 56),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 96, left: 56),
-                            child: _buildDescription(theme),
-                          ),
-                          const SizedBox(height: 40),
-                          _buildOtpVerificationCard(theme),
-                          const SizedBox(height: 24),
+                          const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              LanguageSwitcherButton(),
+                              SizedBox(width: 8),
+                              ThemeSelectorButton(),
+                            ],
+                          )
                         ],
                       ),
-                    ),
-                  ),
-                ),
-                // Left-aligned back button at same vertical line as top-right buttons (on top of content)
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  child: IconButton(
-                    onPressed: () {
-                      print('🔙 [FORGOT_PASSWORD_OTP] Back button pressed');
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go('/forgot-password');
-                      }
-                    },
-                    icon: Icon(
-                      Icons.arrow_back_ios,
-                      color: theme.textPrimary,
-                      size: 20,
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: theme.surface,
-                      foregroundColor: theme.textPrimary,
-                      padding: const EdgeInsets.all(8),
-                      side: BorderSide(
-                        color: theme.border,
-                        width: 1,
+
+                      const SizedBox(height: 24),
+
+                      // Brand header
+                      SizedBox(
+                        height: 64,
+                        child: Image.asset(
+                          'assets/logo/logo-green.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                // Theme selector and language switcher buttons in top-right
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      LanguageSwitcherButton(),
-                      SizedBox(width: 8),
-                      ThemeSelectorButton(),
+                      const SizedBox(height: 10),
+                      Text(
+                        'ZareShop',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: theme.primary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Inline error
+                      _maybeErrorBanner(theme),
+
+                      // Headline & subtitle
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'auth.verifyOtp.title'.tr(),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: theme.textPrimary,
+                              height: 1.25,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'auth.verifyOtp.subtitle'.tr(params: {'phoneNumber': widget.phoneNumber}),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      _buildOtpVerificationCard(theme),
+
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -390,48 +421,16 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: theme.background,
-                  border: Border.all(
-                    color: _passwordError != null ? theme.error : theme.border,
-                    width: 1.5,
-                  ),
-                ),
-                child: TextField(
-                  controller: _newPasswordController,
-                  onChanged: _validatePassword,
-                  obscureText: !_isPasswordVisible,
-                  decoration: InputDecoration(
-                    hintText: 'auth.verifyOtp.newPasswordHint'.tr(),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
-                    hintStyle: TextStyle(
-                      color: theme.textSecondary.withValues(alpha: 0.5),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: theme.textSecondary,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                    ),
-                  ),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: theme.textPrimary,
-                  ),
-                ),
+              PasswordInput(
+                theme: theme,
+                controller: _newPasswordController,
+                obscureText: !_isPasswordVisible,
+                onToggleVisibility: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+                hintText: 'auth.verifyOtp.newPasswordHint'.tr(),
               ),
               if (_passwordError != null)
                 Padding(
@@ -468,48 +467,16 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: theme.background,
-                  border: Border.all(
-                    color: _confirmPasswordError != null ? theme.error : theme.border,
-                    width: 1.5,
-                  ),
-                ),
-                child: TextField(
-                  controller: _confirmPasswordController,
-                  onChanged: _validateConfirmPassword,
-                  obscureText: !_isConfirmPasswordVisible,
-                  decoration: InputDecoration(
-                    hintText: 'auth.verifyOtp.confirmPasswordHint'.tr(),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
-                    hintStyle: TextStyle(
-                      color: theme.textSecondary.withValues(alpha: 0.5),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: theme.textSecondary,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                        });
-                      },
-                    ),
-                  ),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: theme.textPrimary,
-                  ),
-                ),
+              PasswordInput(
+                theme: theme,
+                controller: _confirmPasswordController,
+                obscureText: !_isConfirmPasswordVisible,
+                onToggleVisibility: () {
+                  setState(() {
+                    _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                  });
+                },
+                hintText: 'auth.verifyOtp.confirmPasswordHint'.tr(),
               ),
               if (_confirmPasswordError != null)
                 Padding(
@@ -624,5 +591,25 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
         );
       },
     );
+  }
+  Widget _maybeErrorBanner(AppThemeData theme) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthError) {
+      final msgKey = authState.message.contains('invalid')
+          ? 'errors.invalidOtp'
+          : authState.message.contains('exists')
+              ? 'errors.userExists'
+              : 'errors.unknownError';
+      return Column(
+        children: [
+          InlineErrorBanner(
+            theme: theme,
+            message: msgKey.tr(),
+          ),
+          const SizedBox(height: 12),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
   }
 }

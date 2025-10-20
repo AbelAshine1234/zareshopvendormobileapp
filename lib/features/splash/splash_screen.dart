@@ -231,7 +231,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           
                           // Subtitle
                           Text(
-                            'Your Vendor Portal',
+                            'splash.subtitlePortal'.tr(),
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w600,
@@ -244,7 +244,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           
                           // Tagline
                           Text(
-                            'Manage • Sell • Grow',
+                            'splash.tagline'.tr(),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -271,10 +271,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(25),
                                     onTap: _navigateToLogin,
-                                    child: const Center(
+                                    child: Center(
                                       child: Text(
-                                        'Login to Your Shop',
-                                        style: TextStyle(
+                                        'splash.loginCta'.tr(),
+                                        style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w700,
                                           color: Colors.white,
@@ -306,7 +306,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     onTap: _navigateToSignup,
                                     child: Center(
                                       child: Text(
-                                        'Start Selling Today',
+                                        'splash.signupCta'.tr(),
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w700,
@@ -327,7 +327,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           Column(
                             children: [
                               Text(
-                                'Choose Your Style',
+                                'splash.chooseStyle'.tr(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: theme.textSecondary,
@@ -347,23 +347,23 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   _buildThemeButton(
                                     context,
                                     themeProvider,
-                                    'Coffee',
+                                    'splash.theme.coffee'.tr(),
                                     AppThemeType.coffee,
                                     '☕',
                                   ),
                                   _buildThemeButton(
                                     context,
                                     themeProvider,
-                                    'Green',
-                                    AppThemeType.green,
-                                    '🌿',
+                                    'splash.theme.basic'.tr(),
+                                    AppThemeType.basic,
+                                    '⚪',
                                   ),
                                   _buildThemeButton(
                                     context,
                                     themeProvider,
-                                    'Basic',
-                                    AppThemeType.basic,
-                                    '⚪',
+                                    'splash.theme.green'.tr(),
+                                    AppThemeType.green,
+                                    '🌿',
                                   ),
                                 ],
                               ),
@@ -371,7 +371,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               const SizedBox(height: 24),
                               
                               Text(
-                                'Empowering vendors to succeed',
+                                'splash.footer'.tr(),
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: theme.textSecondary.withValues(alpha: 0.7),

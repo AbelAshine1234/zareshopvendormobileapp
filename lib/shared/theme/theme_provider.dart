@@ -5,8 +5,8 @@ import 'app_themes.dart';
 class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'selected_theme';
   
-  AppThemeData _currentTheme = AppThemes.green; // Default theme
-  AppThemeType _currentThemeType = AppThemeType.green;
+  AppThemeData _currentTheme = AppThemes.basic; // Default theme switched to BASIC
+  AppThemeType _currentThemeType = AppThemeType.basic;
   
   AppThemeData get currentTheme => _currentTheme;
   AppThemeType get currentThemeType => _currentThemeType;
@@ -19,7 +19,7 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> _loadTheme() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final themeIndex = prefs.getInt(_themeKey) ?? AppThemeType.green.index;
+      final themeIndex = prefs.getInt(_themeKey) ?? AppThemeType.basic.index;
       
       if (themeIndex >= 0 && themeIndex < AppThemeType.values.length) {
         _currentThemeType = AppThemeType.values[themeIndex];

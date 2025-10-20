@@ -66,6 +66,8 @@
       "invalidCredentials": "Invalid phone number or password",
       "loginSuccess": "Login successful!",
       "loginError": "Login failed. Please try again."
+      ,
+      "secureLogin": "Secure login"
     },
     "forgotPassword": {
       "title": "Reset Password",
@@ -292,6 +294,7 @@
     },
     "userExists": {
       "title": "Account Already Exists",
+      "banner": "User already exists. Please try to login.",
       "loginInstead": "Login Instead",
       "tryDifferent": "Try Different Information"
     },
@@ -431,7 +434,15 @@
     "authError": "Authentication failed. Please login again.",
     "permissionError": "Permission denied.",
     "fileError": "File upload failed.",
-    "timeoutError": "Request timeout. Please try again."
+    "timeoutError": "Request timeout. Please try again.",
+    "userExists": "User already exists. Please login instead.",
+    "invalidOtp": "Invalid verification code.",
+    "invalidCredentials": "Invalid phone number or password.",
+    "phoneInUse": "This phone number is already in use.",
+    "userNotFound": "User not found with this phone number.",
+    "registrationFailed": "Registration failed. Please try again.",
+    "vendorCreationFailed": "Failed to create business vendor.",
+    "loginAfterOtpFailed": "Login failed after OTP verification."
   },
   "validation": {
     "required": "This field is required",
@@ -454,5 +465,18 @@
     "selectTheme": "Choose Your Theme",
     "themeDescription": "Select a theme that matches your business",
     "changeTheme": "Change Theme"
+  },
+  "splash": {
+    "subtitlePortal": "Your Vendor Portal",
+    "tagline": "Manage • Sell • Grow",
+    "loginCta": "Login to Your Shop",
+    "signupCta": "Start Selling Today",
+    "chooseStyle": "Choose Your Style",
+    "theme": {
+      "coffee": "Coffee",
+      "green": "Green",
+      "basic": "Basic"
+    },
+    "footer": "Empowering vendors to succeed"
   }
 }

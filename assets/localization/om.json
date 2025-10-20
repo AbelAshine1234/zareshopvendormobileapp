@@ -104,6 +104,8 @@
       "invalidCredentials": "Lakkoofsi bilbilaa ykn jecha iccitii dogoggora",
       "loginSuccess": "Seenuu milkaa'e!",
       "loginError": "Seenuu hin milkaa'ne. Mee hallee."
+      ,
+      "secureLogin": "Seensa nageenyaan eegame"
     },
     "forgotPassword": {
       "title": "Jecha Iccitii Hallee",
@@ -314,6 +316,7 @@
     },
     "userExists": {
       "title": "Akkaawuntiin dura jira",
+      "banner": "Fayyadamni duraan jiru. Mee seeni.",
       "loginInstead": "Iddoo seenu",
       "tryDifferent": "Odeeffannoo adda addaa yaali"
     },
@@ -415,7 +418,15 @@
     "authError": "Mirkaneessuu hin milkaa'ne. Mee hallee seenuu.",
     "permissionError": "Hayyama hin kennamne.",
     "fileError": "Fuudhuu faayilii hin milkaa'ne.",
-    "timeoutError": "Gaafii guyyaa darbee. Mee hallee."
+    "timeoutError": "Gaafii guyyaa darbee. Mee hallee.",
+    "userExists": "Fayyadamni duraan jiru. Mee seeni.",
+    "invalidOtp": "Koodiin mirkaneessaa sirrii miti.",
+    "invalidCredentials": "Lakkoofsi bilbilaa ykn jecha iccitii dogoggora.",
+    "phoneInUse": "Lakkoofsi bilbilaa kun duraan itti fayyadame.",
+    "userNotFound": "Fayyadamaan lakkoofsa bilbilaa kanaan hin argamne.",
+    "registrationFailed": "Galmeessi hin milkaa'in. Mee irra deebi'i.",
+    "vendorCreationFailed": "Fayyadama daldalaa uumuun hin milkaa'in.",
+    "loginAfterOtpFailed": "OTP booda seenuun hin milkaa'in."
   },
   "validation": {
     "required": "Bakka kun barbaachisa",
@@ -438,5 +449,18 @@
     "selectTheme": "Mata Duree Filadhu",
     "themeDescription": "Qarshii kee irratti hojjatuu mata duree filadhu",
     "changeTheme": "Mata Duree Jijjiiraa"
+  },
+  "splash": {
+    "subtitlePortal": "Poortalii Fudhaataa Keessan",
+    "tagline": "Bulchi • Gurguri • Guddiinsi",
+    "loginCta": "Gala Dukaan Keessan",
+    "signupCta": "Har'a Gurguruuf Jalqabi",
+    "chooseStyle": "Amaloota Kee Fili",
+    "theme": {
+      "coffee": "Koffii",
+      "green": "Giraana",
+      "basic": "Bu'uuraa"
+    },
+    "footer": "Fudhaatoota milkeessuuf jajjabeessuu"
   }
 }

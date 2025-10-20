@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
+import '../../../shared/widgets/inputs/phone_input.dart';
+import '../../../shared/widgets/inputs/password_input.dart';
 import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
@@ -24,6 +26,7 @@ class PhoneNumberStep extends StatefulWidget {
 }
 
 class _PhoneNumberStepState extends State<PhoneNumberStep> {
+  bool _isPasswordVisible = false;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
@@ -93,107 +96,15 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppThemes.borderRadius),
-                color: widget.theme.inputBackground,
-                border: Border.all(
-                  color: widget.phoneError != null ? widget.theme.error : widget.theme.inputBorder,
-                  width: 1.5,
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Country code with flag
-                  Padding(
-                    padding: const EdgeInsets.only(left: AppThemes.spaceM, top: AppThemes.spaceM, bottom: AppThemes.spaceM, right: AppThemes.spaceM),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Image.network(
-                              'https://flagcdn.com/w40/et.png',
-                              width: 28,
-                              height: 20,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    gradient: widget.theme.successGradient,
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'ET',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppThemes.spaceS),
-                        Text(
-                          '+251',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: widget.theme.labelText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Divider
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: widget.theme.divider,
-                  ),
-                  // Phone number input
-                  Expanded(
-                    child: TextField(
-                      onChanged: (value) {
-                        widget.onValidatePhone(value);
-                        context.read<OnboardingBloc>().add(UpdatePhoneNumber('+251$value'));
-                      },
-                      keyboardType: TextInputType.number,
-                      maxLength: 9,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(9),
-                      ],
-                      decoration: InputDecoration(
-                        hintText: '912345678',
-                        border: InputBorder.none,
-                        counterText: '',
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceM, vertical: AppThemes.spaceM),
-                        hintStyle: TextStyle(
-                          color: widget.theme.textHint,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: widget.theme.textPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            PhoneInput(
+              theme: widget.theme,
+              onChangedDigitsOnly: (value) {
+                widget.onValidatePhone(value);
+                context.read<OnboardingBloc>().add(UpdatePhoneNumber('+251$value'));
+              },
+              errorText: widget.phoneError,
+              countryCode: '+251',
+              hintDigits: 'onboarding.phoneNumber.phoneHint'.tr(),
             ),
             const SizedBox(height: AppThemes.spaceM),
             if (widget.phoneError != null)
@@ -231,36 +142,19 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
               style: AppThemes.titleLarge(widget.theme),
             ),
             const SizedBox(height: AppThemes.spaceM),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppThemes.borderRadius),
-                color: widget.theme.inputBackground,
-                border: Border.all(
-                  color: widget.theme.inputBorder,
-                  width: 1.5,
-                ),
-              ),
-              child: TextField(
-                onChanged: (value) {
-                  context.read<OnboardingBloc>().add(UpdatePassword(value));
-                },
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'onboarding.phoneNumber.passwordHint'.tr(),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: AppThemes.spaceM, vertical: AppThemes.spaceM),
-                  hintStyle: TextStyle(
-                    color: widget.theme.textHint,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: widget.theme.textPrimary,
-                ),
-              ),
+            PasswordInput(
+              theme: widget.theme,
+              controller: null,
+              obscureText: !_isPasswordVisible,
+              onToggleVisibility: () {
+                setState(() {
+                  _isPasswordVisible = !_isPasswordVisible;
+                });
+              },
+              onChanged: (value) {
+                context.read<OnboardingBloc>().add(UpdatePassword(value));
+              },
+              hintText: 'onboarding.phoneNumber.passwordHint'.tr(),
             ),
           ],
         );

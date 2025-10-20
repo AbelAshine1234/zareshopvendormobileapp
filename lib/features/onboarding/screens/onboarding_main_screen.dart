@@ -12,6 +12,7 @@ import '../bloc/onboarding_state.dart';
 import '../steps/steps.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/utils/validation_utils.dart';
+import '../../../shared/widgets/inline_error_banner.dart';
 
 class OnboardingMainScreen extends StatelessWidget {
   final bool useMockData;
@@ -52,6 +53,10 @@ class _OnboardingViewState extends State<_OnboardingView>
   // OTP timer
   int _otpCountdown = 60;
   Timer? _otpTimer;
+  
+  // Transient inline error banner message (similar to login screen)
+  String? _inlineErrorMessage;
+  int _lastStep = -1;
   
   // Categories from backend
   List<Map<String, dynamic>> _categories = [];
@@ -291,9 +296,12 @@ class _OnboardingViewState extends State<_OnboardingView>
         }
         
         if (state is OnboardingUserAlreadyExists) {
+          setState(() {
+            _inlineErrorMessage = 'onboarding.userExists.banner'.tr();
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text('onboarding.userExists.banner'.tr()),
               backgroundColor: theme.warning,
               duration: const Duration(seconds: 3),
               action: SnackBarAction(
@@ -314,13 +322,40 @@ class _OnboardingViewState extends State<_OnboardingView>
         }
         
         if (state is OnboardingError) {
+          // Map common server messages to localized keys
+          final lower = state.message.toLowerCase();
+          final msgKey = lower.contains('user') && lower.contains('exist')
+              ? 'errors.userExists'
+              : lower.contains('network')
+                  ? 'errors.networkError'
+                  : lower.contains('otp') || lower.contains('verification')
+                      ? 'errors.invalidOtp'
+                      : lower.contains('login') && lower.contains('otp')
+                          ? 'errors.loginAfterOtpFailed'
+                          : lower.contains('vendor') && lower.contains('failed')
+                              ? 'errors.vendorCreationFailed'
+                              : lower.contains('registration')
+                                  ? 'errors.registrationFailed'
+                                  : 'errors.unknownError';
+          setState(() {
+            _inlineErrorMessage = msgKey.tr();
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text(msgKey.tr()),
               backgroundColor: theme.error,
               duration: const Duration(seconds: 4),
             ),
           );
+        }
+        
+        if (state is OnboardingInProgress) {
+          if (_lastStep != state.currentStep) {
+            setState(() {
+              _inlineErrorMessage = null;
+              _lastStep = state.currentStep;
+            });
+          }
         }
         
         if (state is OnboardingInProgress && state.currentStep == 1) {
@@ -356,6 +391,14 @@ class _OnboardingViewState extends State<_OnboardingView>
                                 _buildWelcomeSection(theme),
                                 const SizedBox(height: AppThemes.spaceXL),
                                 _buildProgressSection(state, theme),
+                                const SizedBox(height: AppThemes.spaceM),
+                                if (_inlineErrorMessage != null) ...[
+                                  InlineErrorBanner(
+                                    theme: theme,
+                                    message: _inlineErrorMessage!,
+                                  ),
+                                  const SizedBox(height: AppThemes.spaceM),
+                                ],
                                 const SizedBox(height: AppThemes.spaceXL),
                                 _buildCurrentStepCard(context, state, theme),
                                 const SizedBox(height: 100),
