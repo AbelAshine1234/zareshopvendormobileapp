@@ -4,10 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/theme/theme_provider.dart';
-import '../../../shared/theme/app_themes.dart';
+import '../../../shared/shared.dart';
 import '../../../core/services/localization_service.dart';
-import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../../../data/models/order_model.dart';
 import '../bloc/orders_bloc.dart';
 import '../bloc/orders_event.dart';
@@ -531,28 +529,15 @@ class OrdersView extends StatelessWidget {
   }
 
   void _showDeclineDialog(BuildContext context, String orderId) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Decline Order'),
-        content: const Text('Are you sure you want to decline this order?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<OrdersBloc>().add(DeclineOrder(orderId));
-              Navigator.pop(dialogContext);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
-            ),
-            child: const Text('Decline'),
-          ),
-        ],
-      ),
+    AppDialogs.showConfirmationDialog(
+      context,
+      title: 'Decline Order',
+      message: 'Are you sure you want to decline this order?',
+      confirmText: 'Decline',
+      cancelText: 'Cancel',
+      onConfirm: () {
+        context.read<OrdersBloc>().add(DeclineOrder(orderId));
+      },
     );
   }
 

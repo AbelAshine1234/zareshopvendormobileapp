@@ -202,7 +202,24 @@ class ApiService {
         }),
       );
 
+      // Log raw backend response for testing/debugging
+      print('🔍 [API_SERVICE] Raw Login Response:');
+      print('   Status Code: ${response.statusCode}');
+      print('   Body: ${response.body}');
+
       final data = jsonDecode(response.body);
+      try {
+        print('📦 [API_SERVICE] Parsed Login Data Keys: ${data is Map ? data.keys.toList() : data.runtimeType}');
+        if (data is Map && data['user'] is Map) {
+          final user = data['user'] as Map<String, dynamic>;
+          print('👤 [API_SERVICE] User keys: ${user.keys.toList()}');
+          if (user['vendor'] is Map) {
+            final vendor = user['vendor'] as Map<String, dynamic>;
+            print('🏪 [API_SERVICE] Vendor keys: ${vendor.keys.toList()}');
+            print('🏪 [API_SERVICE] Vendor status fields: approved=${vendor['approved']}, is_verified=${vendor['is_verified']}, status=${vendor['status']}');
+          }
+        }
+      } catch (_) {}
 
       if (response.statusCode == 200) {
         // Save token and user data

@@ -3,10 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/theme/theme_provider.dart';
-import '../../../shared/theme/app_themes.dart';
+import '../../../shared/shared.dart';
 import '../../../core/services/localization_service.dart';
-import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../../../data/models/product_model.dart';
 import '../bloc/products_bloc.dart';
 import '../bloc/products_event.dart';
@@ -466,26 +464,15 @@ void _showEditProductDialog(BuildContext context, Product product) {
 }
 
 void _showDeleteConfirmation(BuildContext context, String productId) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Delete Product'),
-      content: const Text('Are you sure you want to delete this product?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            context.read<ProductsBloc>().add(DeleteProduct(productId));
-            Navigator.pop(context);
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Delete'),
-        ),
-      ],
-    ),
+  AppDialogs.showConfirmationDialog(
+    context,
+    title: 'Delete Product',
+    message: 'Are you sure you want to delete this product?',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    onConfirm: () {
+      context.read<ProductsBloc>().add(DeleteProduct(productId));
+    },
   );
 }
 

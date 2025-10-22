@@ -8,7 +8,6 @@ class AppConstants {
     {'code': 'en', 'name': 'English'},
     {'code': 'am', 'name': 'አማርኛ (Amharic)'},
     {'code': 'om', 'name': 'Afaan Oromoo'},
-    {'code': 'ti', 'name': 'ትግርኛ (Tigrigna)'},
   ];
 
   // Order Status

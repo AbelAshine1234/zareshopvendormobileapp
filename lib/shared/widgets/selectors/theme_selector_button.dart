@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../theme/theme_provider.dart';
-import '../../theme/app_themes.dart';
+import '../../utils/theme/theme_provider.dart';
+import '../../utils/theme/app_themes.dart';
 
 /// Global theme selector button that appears in the top-right corner
 /// Similar to dark mode toggles in other apps
@@ -33,6 +33,11 @@ class ThemeSelectorButton extends StatelessWidget {
           ),
           onPressed: () => _showThemeSelector(context, themeProvider),
           tooltip: 'Change Theme',
+          alignment: Alignment.center,
+          style: IconButton.styleFrom(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(4),
+          ),
         );
       },
     );

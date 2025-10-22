@@ -48,7 +48,7 @@ class _PayoutStepState extends State<PayoutStep> {
         setState(() {
           _selectedPaymentMethod = method;
         });
-        context.read<OnboardingBloc>().add(UpdatePaymentMethod(method));
+        context.read<OnboardingBloc>().add(UpdatePayoutMethod(method));
       },
       child: Container(
         padding: const EdgeInsets.all(AppThemes.spaceM),
@@ -132,31 +132,44 @@ class _PayoutStepState extends State<PayoutStep> {
             ),
             const SizedBox(height: AppThemes.spaceM),
             
-            _buildPaymentMethodCard(
-              method: 'telebirr',
-              title: 'paymentMethods.telebirr'.tr(),
-              description: 'paymentMethods.telebirrDesc'.tr(),
-              icon: Icons.phone_android,
-              color: const Color(0xFF1976D2),
-            ),
-            const SizedBox(height: AppThemes.spaceM),
-            
-            _buildPaymentMethodCard(
-              method: 'cbe_birr',
-              title: 'paymentMethods.cbeBirr'.tr(),
-              description: 'paymentMethods.cbeBirrDesc'.tr(),
-              icon: Icons.account_balance,
-              color: const Color(0xFF2E7D32),
-            ),
-            const SizedBox(height: AppThemes.spaceM),
-            
-            _buildPaymentMethodCard(
-              method: 'bank_account',
-              title: 'paymentMethods.bankAccount'.tr(),
-              description: 'paymentMethods.bankTransferDesc'.tr(),
-              icon: Icons.account_balance_wallet,
-              color: const Color(0xFF7B1FA2),
-            ),
+            ...() {
+              final methods = [
+                (
+                  method: 'telebirr',
+                  title: 'paymentMethods.telebirr'.tr(),
+                  description: 'paymentMethods.telebirrDesc'.tr(),
+                  icon: Icons.phone_android,
+                  color: const Color(0xFF1976D2),
+                ),
+                (
+                  method: 'cbe_birr',
+                  title: 'paymentMethods.cbeBirr'.tr(),
+                  description: 'paymentMethods.cbeBirrDesc'.tr(),
+                  icon: Icons.account_balance,
+                  color: const Color(0xFF2E7D32),
+                ),
+                (
+                  method: 'bank_account',
+                  title: 'paymentMethods.bankAccount'.tr(),
+                  description: 'paymentMethods.bankTransferDesc'.tr(),
+                  icon: Icons.account_balance_wallet,
+                  color: const Color(0xFF7B1FA2),
+                ),
+              ];
+              return [
+                for (var i = 0; i < methods.length; i++) ...[
+                  _buildPaymentMethodCard(
+                    method: methods[i].method,
+                    title: methods[i].title,
+                    description: methods[i].description,
+                    icon: methods[i].icon,
+                    color: methods[i].color,
+                  ),
+                  if (i < methods.length - 1)
+                    const SizedBox(height: AppThemes.spaceM),
+                ],
+              ];
+            }(),
             
             const SizedBox(height: AppThemes.spaceXL),
             
@@ -176,7 +189,7 @@ class _PayoutStepState extends State<PayoutStep> {
             TextField(
               controller: _accountHolderController,
               onChanged: (value) {
-                context.read<OnboardingBloc>().add(UpdateAccountHolder(value));
+                context.read<OnboardingBloc>().add(UpdateBankAccount(accountHolderName: value));
               },
               decoration: AppThemes.inputDecoration(
                 widget.theme,
@@ -252,11 +265,11 @@ class _PayoutStepState extends State<PayoutStep> {
                               }
                               _accountNumberController.text = phoneNumber;
                               // Send the full phone number with +251 to the bloc
-                              context.read<OnboardingBloc>().add(UpdateAccountNumber(currentState.data.phoneNumber));
+                              context.read<OnboardingBloc>().add(UpdateBankAccount(bankAccountNumber: currentState.data.phoneNumber));
                             }
                           } else {
                             _accountNumberController.clear();
-                            context.read<OnboardingBloc>().add(const UpdateAccountNumber(''));
+                            context.read<OnboardingBloc>().add(const UpdateBankAccount(bankAccountNumber: ''));
                           }
                         });
                       },
@@ -350,7 +363,7 @@ class _PayoutStepState extends State<PayoutStep> {
                           } else if (phoneNumber.startsWith('251')) {
                             phoneNumber = '+$value';
                           }
-                          context.read<OnboardingBloc>().add(UpdateAccountNumber(phoneNumber));
+                          context.read<OnboardingBloc>().add(UpdateBankAccount(bankAccountNumber: phoneNumber));
                         },
                         keyboardType: TextInputType.number,
                         maxLength: 9,
@@ -384,7 +397,7 @@ class _PayoutStepState extends State<PayoutStep> {
               TextField(
                 controller: _accountNumberController,
                 onChanged: (value) {
-                  context.read<OnboardingBloc>().add(UpdateAccountNumber(value));
+                  context.read<OnboardingBloc>().add(UpdateBankAccount(bankAccountNumber: value));
                 },
                 keyboardType: TextInputType.number,
                 decoration: AppThemes.inputDecoration(

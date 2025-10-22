@@ -122,48 +122,19 @@
       "passwordLabel": "Password",
       "passwordHint": "Enter your password"
     },
-    "otp": {
-      "title": "Verify Phone",
-      "subtitle": "Enter the verification code sent to your phone",
-      "verificationCode": "Verification Code",
-      "resendCode": "Resend Code",
-      "resendIn": "Resend in {seconds} seconds",
-      "verify": "Verify",
-      "otpError": "Invalid verification code",
-      "didntReceive": "Didn't receive the code? Check your SMS messages or try resending.",
-      "sentSuccess": "OTP sent successfully"
-    },
     "basicInfo": {
       "title": "Basic Information",
       "subtitle": "Tell us about your business",
-      "firstName": "First Name",
-      "lastName": "Last Name",
       "businessName": "Business Name",
-      "email": "Email Address",
-      "businessDescription": "Business Description",
-      "category": "Business Category",
-      "categories": "Business Categories",
-      "continue": "Continue",
-      "helperDescription": "A good description helps customers understand what you offer and builds trust.",
       "nameHint": "Enter your business name",
+      "businessDescription": "Business Description",
       "descriptionHint": "Describe your business, products, and services...",
-      "selectedCategories": "Selected Categories",
-      "selectCategories": "Select Categories",
-      "unknown": "Unknown",
-      "selectAtLeastOne": "Select at least one category for your business"
+      "helperDescription": "A good description helps customers understand what you offer and builds trust."
     },
     "documents": {
-      "title": "Documents",
-      "subtitle": "Upload required documents",
-      "faydaId": "Fayda ID Number",
-      "faydaIdPhoto": "Fayda ID Photo",
-      "businessLicense": "Business License",
-      "businessLicensePhoto": "Business License Photo",
-      "taxId": "Tax ID",
-      "uploadDocument": "Upload Document",
-      "continue": "Continue",
       "kycTitle": "KYC Verification",
       "kycSubtitle": "Upload the required documents for Know Your Customer (KYC) verification.",
+      "businessLicense": "Business License",
       "businessLicenseRequired": "Business License *",
       "businessLicenseDesc": "Upload your official business registration or license document for KYC verification",
       "coverImage": "Cover Image",
@@ -178,15 +149,10 @@
     "shippingAddress": {
       "title": "Shipping Address",
       "subtitle": "Where should we deliver orders?",
-      "addressLine1": "Address Line 1",
-      "addressLine2": "Address Line 2",
       "city": "City",
-      "region": "Region",
       "subcity": "Subcity",
       "woreda": "Woreda",
-      "kebele": "Kebele",
-      "postalCode": "Postal Code",
-      "continue": "Continue",
+      "region": "Region",
       "location": "Location",
       "tapToSelectOnMap": "Tap to select location on map",
       "pickLocation": "Pick Location",
@@ -197,10 +163,6 @@
       "regionHint": "e.g., Addis Ababa"
     },
     "subscription": {
-      "title": "Choose Subscription",
-      "subtitle": "Select a plan that fits your business",
-      "continue": "Continue",
-      "agreeTerms": "I agree to the Terms and Conditions",
       "choosePlanTitle": "Choose Your Plan",
       "choosePlanSubtitle": "Select a subscription plan to get started",
       "loading": "Loading subscription plans...",
@@ -215,25 +177,15 @@
       "benefitsTitle": "Subscription Benefits",
       "benefitsBullets": "• You can upgrade or downgrade your plan anytime\n• All plans include customer support\n• Payment is processed securely\n• Cancel anytime with no hidden fees",
       "agreeToPrefix": "I agree to the",
-      "termsLink": "subscription terms and conditions"
+      "termsLink": "Terms and Conditions"
     },
     "payout": {
       "title": "Payout Information",
       "subtitle": "How would you like to receive payments?",
-      "payoutMethod": "Payout Method",
-      "bankAccount": "Bank Account",
-      "mobileWallet": "Mobile Wallet",
-      "accountHolderName": "Account Holder Name",
-      "bankName": "Bank Name",
-      "accountNumber": "Account Number",
-      "mobileWalletNumber": "Mobile Wallet Number",
       "confirmDetails": "I confirm these details are correct",
       "authorizePayout": "I authorize ZareShop to process payouts",
-      "continue": "Continue",
       "accountDetails": "Account Details",
       "paymentAgreement": "Payment Agreement",
-      "confirmDetailsLong": "I confirm that the payment details provided are accurate and belong to me",
-      "authorizePayoutLong": "I authorize ZareShop to process payments to the account details provided",
       "secureTitle": "Secure & Protected",
       "secureDesc": "Your payment information is encrypted and securely stored. We never share your financial details with third parties."
     },
@@ -304,6 +256,20 @@
       "hint": "Please check your information and try again. If the problem persists, contact our support team.",
       "tryAgain": "Try Again",
       "contactSupport": "Contact Support"
+    },
+    "businessNameConflict": {
+      "title": "Business Name Conflict",
+      "headerTitle": "Business Name Already Exists",
+      "headerDesc": "The business name you entered is already taken by another vendor.",
+      "conflictTitle": "Name Conflict",
+      "conflictDesc": "The business name '{originalName}' is already registered. Please choose a different name for your business.",
+      "newNameLabel": "New Business Name",
+      "newNameHint": "Enter a unique business name",
+      "nameRequired": "Business name is required",
+      "nameTooShort": "Business name must be at least 3 characters",
+      "nameHelp": "Choose a unique name that represents your business",
+      "retryButton": "Submit with New Name",
+      "backButton": "Go Back to Edit"
     }
   },
   "paymentMethods": {
@@ -437,6 +403,7 @@
     "timeoutError": "Request timeout. Please try again.",
     "userExists": "User already exists. Please login instead.",
     "invalidOtp": "Invalid verification code.",
+    "otpExpired": "Verification code expired. Please request a new code.",
     "invalidCredentials": "Invalid phone number or password.",
     "phoneInUse": "This phone number is already in use.",
     "userNotFound": "User not found with this phone number.",
@@ -448,6 +415,7 @@
     "required": "This field is required",
     "email": "Please enter a valid email address",
     "phone": "Please enter a valid phone number",
+    "phone9Digits": "Phone number must be 9 digits",
     "password": "Password must be at least 6 characters",
     "confirmPassword": "Passwords do not match",
     "minLength": "Must be at least {min} characters",
@@ -478,5 +446,43 @@
       "basic": "Basic"
     },
     "footer": "Empowering vendors to succeed"
+  },
+  "terms": {
+    "title": "Zareshop Payout Terms",
+    "paymentProcessing": {
+      "title": "Payment Processing",
+      "content": "Zareshop will process your payouts according to the selected payment method. Payouts are typically processed within 2-5 business days."
+    },
+    "feesAndCharges": {
+      "title": "Fees and Charges",
+      "content": "A standard processing fee of 2.5% applies to all transactions. Additional fees may apply based on your payment method."
+    },
+    "verification": {
+      "title": "Verification",
+      "content": "Payment details must be verified before payouts can be processed. Please ensure all information is accurate."
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "dataProtection": "We respect your privacy and protect your data:",
+    "points": [
+      "Your personal information is encrypted and stored securely",
+      "We only collect data necessary for service delivery",
+      "We never sell or share your data with third parties",
+      "You can request data deletion at any time",
+      "All transactions are processed securely"
+    ]
+  }
+  ,
+  "otp": {
+    "title": "Verify Phone",
+    "subtitle": "Enter the verification code sent to your phone",
+    "verificationCode": "Verification Code",
+    "resendCode": "Resend Code",
+    "resendIn": "Resend in {seconds} seconds",
+    "verify": "Verify",
+    "otpError": "Invalid verification code",
+    "didntReceive": "Didn't receive the code? Check your SMS messages or try resending.",
+    "sentSuccess": "OTP sent successfully"
   }
 }

@@ -6,6 +6,27 @@ enum AppThemeType {
   basic,
 }
 
+class AppConstants {
+  // Animation Durations
+  static const Duration fastAnimation = Duration(milliseconds: 200);
+  static const Duration normalAnimation = Duration(milliseconds: 300);
+  static const Duration slowAnimation = Duration(milliseconds: 600);
+  static const Duration elasticAnimation = Duration(milliseconds: 800);
+
+  // Border Radius
+  static const double smallRadius = 8.0;
+  static const double mediumRadius = 12.0;
+  static const double largeRadius = 16.0;
+  static const double pillRadius = 100.0;
+
+  // Spacing
+  static const double tinySpace = 4.0;
+  static const double smallSpace = 8.0;
+  static const double mediumSpace = 16.0;
+  static const double largeSpace = 24.0;
+  static const double extraLargeSpace = 32.0;
+}
+
 class AppThemeData {
   final String name;
   final String emoji;
@@ -47,6 +68,16 @@ class AppThemeData {
   // Aliases for compatibility
   Color get border => inputBorder;
   Color get shadow => shadowColor;
+  
+  // Additional constants
+  Color get primaryGreen => primary;
+  Color get darkGreen => Color(0xFF16A34A);
+  Color get lightGreen => Color(0xFFBBF7D0);
+  Color get successGreen => success;
+  Color get textDark => textPrimary;
+  Color get textGray => textSecondary;
+  Color get borderGray => inputBorder;
+  Color get backgroundGray => background;
 
   const AppThemeData({
     required this.name,

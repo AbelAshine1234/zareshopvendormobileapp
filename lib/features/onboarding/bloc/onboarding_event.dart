@@ -37,19 +37,12 @@ class GoToStep extends OnboardingEvent {
   List<Object?> get props => [step];
 }
 
-// Step 1: Phone Number Events
+// Step 0: Phone Number & Password Events
 class UpdatePhoneNumber extends OnboardingEvent {
   final String phoneNumber;
   const UpdatePhoneNumber(this.phoneNumber);
   @override
   List<Object?> get props => [phoneNumber];
-}
-
-class UpdateVendorType extends OnboardingEvent {
-  final String vendorType;
-  const UpdateVendorType(this.vendorType);
-  @override
-  List<Object?> get props => [vendorType];
 }
 
 class UpdatePassword extends OnboardingEvent {
@@ -59,6 +52,7 @@ class UpdatePassword extends OnboardingEvent {
   List<Object?> get props => [password];
 }
 
+// Step 1: OTP Events
 class UpdateOTP extends OnboardingEvent {
   final String otp;
   const UpdateOTP(this.otp);
@@ -70,100 +64,12 @@ class ResendOTP extends OnboardingEvent {
   const ResendOTP();
 }
 
-// Step 3: Basic Info Events
-class UpdateFirstName extends OnboardingEvent {
-  final String firstName;
-  const UpdateFirstName(this.firstName);
-  @override
-  List<Object?> get props => [firstName];
-}
-
-class UpdateLastName extends OnboardingEvent {
-  final String lastName;
-  const UpdateLastName(this.lastName);
-  @override
-  List<Object?> get props => [lastName];
-}
-
-class UpdateFullName extends OnboardingEvent {
-  final String fullName;
-  const UpdateFullName(this.fullName);
-  @override
-  List<Object?> get props => [fullName];
-}
-
+// Step 2: Basic Info Events
 class UpdateBusinessName extends OnboardingEvent {
   final String businessName;
   const UpdateBusinessName(this.businessName);
   @override
   List<Object?> get props => [businessName];
-}
-
-class UpdateEmail extends OnboardingEvent {
-  final String email;
-  const UpdateEmail(this.email);
-  @override
-  List<Object?> get props => [email];
-}
-
-class UpdateLanguagePreference extends OnboardingEvent {
-  final String languagePreference;
-  const UpdateLanguagePreference(this.languagePreference);
-  @override
-  List<Object?> get props => [languagePreference];
-}
-
-class UpdateCoverPhoto extends OnboardingEvent {
-  final String coverPhotoUrl;
-  const UpdateCoverPhoto(this.coverPhotoUrl);
-  @override
-  List<Object?> get props => [coverPhotoUrl];
-}
-
-class UpdateAddress extends OnboardingEvent {
-  final String? street;
-  final String? city;
-  final String? region;
-  final String? zone;
-  final String? addressLine1;
-  final String? addressLine2;
-  final String? state;
-  final String? subcity;
-  final String? woreda;
-  final String? kebele;
-  final String? postalCode;
-  final String? country;
-  
-  const UpdateAddress({
-    this.street,
-    this.city,
-    this.region,
-    this.zone,
-    this.addressLine1,
-    this.addressLine2,
-    this.state,
-    this.subcity,
-    this.woreda,
-    this.kebele,
-    this.postalCode,
-    this.country,
-  });
-  
-  @override
-  List<Object?> get props => [
-    street,
-    city,
-    region,
-    zone,
-    addressLine1,
-    addressLine2,
-    state,
-    subcity,
-    woreda,
-    kebele,
-    postalCode,
-    country,
-  ];
 }
 
 class UpdateBusinessDescription extends OnboardingEvent {
@@ -173,13 +79,6 @@ class UpdateBusinessDescription extends OnboardingEvent {
   List<Object?> get props => [businessDescription];
 }
 
-class UpdateCategory extends OnboardingEvent {
-  final String category;
-  const UpdateCategory(this.category);
-  @override
-  List<Object?> get props => [category];
-}
-
 class UpdateCategories extends OnboardingEvent {
   final List<String> categories;
   const UpdateCategories(this.categories);
@@ -187,189 +86,12 @@ class UpdateCategories extends OnboardingEvent {
   List<Object?> get props => [categories];
 }
 
-// Step 4: Documents Events
-class UpdateFaydaIdNumber extends OnboardingEvent {
-  final String faydaIdNumber;
-  const UpdateFaydaIdNumber(this.faydaIdNumber);
-  @override
-  List<Object?> get props => [faydaIdNumber];
-}
-
-class UpdateBusinessLicenseNumber extends OnboardingEvent {
-  final String businessLicenseNumber;
-  const UpdateBusinessLicenseNumber(this.businessLicenseNumber);
-  @override
-  List<Object?> get props => [businessLicenseNumber];
-}
-
-class UpdateTaxId extends OnboardingEvent {
-  final String taxId;
-  const UpdateTaxId(this.taxId);
-  @override
-  List<Object?> get props => [taxId];
-}
-
-// Step 5: Subscription Events
-/// Event to select a subscription
-class SelectSubscription extends OnboardingEvent {
-  final int subscriptionId;
-  final String subscriptionName;
-  
-  const SelectSubscription({
-    required this.subscriptionId,
-    required this.subscriptionName,
-  });
-  
-  @override
-  List<Object?> get props => [subscriptionId, subscriptionName];
-}
-
-/// Event to toggle terms agreement checkbox
-class ToggleTermsAgreement extends OnboardingEvent {
-  final bool agreed;
-  
-  const ToggleTermsAgreement(this.agreed);
-  
-  @override
-  List<Object?> get props => [agreed];
-}
-
-/// Event to update shipping address
-class UpdateShippingAddress extends OnboardingEvent {
-  final String? addressLine1;
-  final String? addressLine2;
-  final String? city;
-  final String? state;
-  final String? region;
-  final String? subcity;
-  final String? woreda;
-  final String? kebele;
-  final String? postalCode;
-  final String? country;
-  final String? latitude;
-  final String? longitude;
-  
-  const UpdateShippingAddress({
-    this.addressLine1,
-    this.addressLine2,
-    this.city,
-    this.state,
-    this.region,
-    this.subcity,
-    this.woreda,
-    this.kebele,
-    this.postalCode,
-    this.country,
-    this.latitude,
-    this.longitude,
-  });
-  
-  @override
-  List<Object?> get props => [addressLine1, addressLine2, city, state, region, subcity, woreda, kebele, postalCode, country, latitude, longitude];
-}
-
-/// Event to update payout method
-class UpdatePayoutMethod extends OnboardingEvent {
-  final String payoutMethod; // 'bank' or 'wallet'
-  
-  const UpdatePayoutMethod(this.payoutMethod);
-  
-  @override
-  List<Object?> get props => [payoutMethod];
-}
-
-/// Event to update bank account information
-class UpdateBankAccount extends OnboardingEvent {
-  final String? accountHolderName;
-  final String? bankName;
-  final String? bankAccountNumber;
-  
-  const UpdateBankAccount({this.accountHolderName, this.bankName, this.bankAccountNumber});
-  
-  @override
-  List<Object?> get props => [accountHolderName, bankName, bankAccountNumber];
-}
-
-/// Event to update mobile wallet number
-class UpdateMobileWallet extends OnboardingEvent {
-  final String mobileWalletNumber;
-  
-  const UpdateMobileWallet(this.mobileWalletNumber);
-  
-  @override
-  List<Object?> get props => [mobileWalletNumber];
-}
-
-/// Event to update payout checkboxes
-class UpdatePayoutCheckboxes extends OnboardingEvent {
-  final bool? confirmDetailsCheck;
-  final bool? agreeTermsCheck;
-  final bool? authorizePayoutCheck;
-  
-  const UpdatePayoutCheckboxes({
-    this.confirmDetailsCheck,
-    this.agreeTermsCheck,
-    this.authorizePayoutCheck,
-  });
-  
-  @override
-  List<Object?> get props => [confirmDetailsCheck, agreeTermsCheck, authorizePayoutCheck];
-}
-
-/// Event to update selected subscription
-class UpdateSubscription extends OnboardingEvent {
-  final int subscriptionId;
-  
-  const UpdateSubscription(this.subscriptionId);
-  
-  @override
-  List<Object?> get props => [subscriptionId];
-}
-
-/// Event to complete onboarding
-class CompleteOnboarding extends OnboardingEvent {
-  const CompleteOnboarding();
-}
-
-/// Event to retry vendor submission after failure
-class RetryVendorSubmission extends OnboardingEvent {
-  const RetryVendorSubmission();
-}
-
-// Additional events for step files
-class UpdateBusinessCategory extends OnboardingEvent {
-  final int categoryId;
-  const UpdateBusinessCategory(this.categoryId);
-  @override
-  List<Object?> get props => [categoryId];
-}
-
-class UpdateAddressLine1 extends OnboardingEvent {
-  final String addressLine1;
-  const UpdateAddressLine1(this.addressLine1);
-  @override
-  List<Object?> get props => [addressLine1];
-}
-
-class UpdateAddressLine2 extends OnboardingEvent {
-  final String addressLine2;
-  const UpdateAddressLine2(this.addressLine2);
-  @override
-  List<Object?> get props => [addressLine2];
-}
-
+// Step 3: Shipping Address Events
 class UpdateCity extends OnboardingEvent {
   final String city;
   const UpdateCity(this.city);
   @override
   List<Object?> get props => [city];
-}
-
-class UpdateState extends OnboardingEvent {
-  final String state;
-  const UpdateState(this.state);
-  @override
-  List<Object?> get props => [state];
 }
 
 class UpdateSubcity extends OnboardingEvent {
@@ -379,13 +101,6 @@ class UpdateSubcity extends OnboardingEvent {
   List<Object?> get props => [subcity];
 }
 
-class UpdateKebele extends OnboardingEvent {
-  final String kebele;
-  const UpdateKebele(this.kebele);
-  @override
-  List<Object?> get props => [kebele];
-}
-
 class UpdateWoreda extends OnboardingEvent {
   final String woreda;
   const UpdateWoreda(this.woreda);
@@ -393,13 +108,14 @@ class UpdateWoreda extends OnboardingEvent {
   List<Object?> get props => [woreda];
 }
 
-class UpdatePostalCode extends OnboardingEvent {
-  final String postalCode;
-  const UpdatePostalCode(this.postalCode);
+class UpdateState extends OnboardingEvent {
+  final String state;
+  const UpdateState(this.state);
   @override
-  List<Object?> get props => [postalCode];
+  List<Object?> get props => [state];
 }
 
+// Step 4: Documents Events
 class UpdateBusinessLicense extends OnboardingEvent {
   final dynamic file;
   const UpdateBusinessLicense(this.file);
@@ -414,30 +130,70 @@ class UpdateCoverImage extends OnboardingEvent {
   List<Object?> get props => [file];
 }
 
-class UpdateFaydaImage extends OnboardingEvent {
-  final dynamic file;
-  const UpdateFaydaImage(this.file);
+// Step 5: Payout Events
+class UpdatePayoutMethod extends OnboardingEvent {
+  final String payoutMethod; // 'bank_account' or 'wallet'
+  const UpdatePayoutMethod(this.payoutMethod);
   @override
-  List<Object?> get props => [file];
+  List<Object?> get props => [payoutMethod];
 }
 
-class UpdatePaymentMethod extends OnboardingEvent {
-  final String paymentMethod;
-  const UpdatePaymentMethod(this.paymentMethod);
+class UpdateBankAccount extends OnboardingEvent {
+  final String? accountHolderName;
+  final String? bankName;
+  final String? bankAccountNumber;
+  const UpdateBankAccount({this.accountHolderName, this.bankName, this.bankAccountNumber});
   @override
-  List<Object?> get props => [paymentMethod];
+  List<Object?> get props => [accountHolderName, bankName, bankAccountNumber];
 }
 
-class UpdateAccountHolder extends OnboardingEvent {
-  final String accountHolder;
-  const UpdateAccountHolder(this.accountHolder);
+class UpdateMobileWallet extends OnboardingEvent {
+  final String mobileWalletNumber;
+  const UpdateMobileWallet(this.mobileWalletNumber);
   @override
-  List<Object?> get props => [accountHolder];
+  List<Object?> get props => [mobileWalletNumber];
 }
 
-class UpdateAccountNumber extends OnboardingEvent {
-  final String accountNumber;
-  const UpdateAccountNumber(this.accountNumber);
+class UpdatePayoutCheckboxes extends OnboardingEvent {
+  final bool? confirmDetailsCheck;
+  final bool? agreeTermsCheck;
+  final bool? authorizePayoutCheck;
+  const UpdatePayoutCheckboxes({
+    this.confirmDetailsCheck,
+    this.agreeTermsCheck,
+    this.authorizePayoutCheck,
+  });
   @override
-  List<Object?> get props => [accountNumber];
+  List<Object?> get props => [confirmDetailsCheck, agreeTermsCheck, authorizePayoutCheck];
+}
+
+// Step 6: Subscription Events
+class UpdateSubscription extends OnboardingEvent {
+  final int subscriptionId;
+  const UpdateSubscription(this.subscriptionId);
+  @override
+  List<Object?> get props => [subscriptionId];
+}
+
+class ToggleTermsAgreement extends OnboardingEvent {
+  final bool agreed;
+  const ToggleTermsAgreement(this.agreed);
+  @override
+  List<Object?> get props => [agreed];
+}
+
+// Completion Events
+class CompleteOnboarding extends OnboardingEvent {
+  const CompleteOnboarding();
+}
+
+class RetryVendorSubmission extends OnboardingEvent {
+  const RetryVendorSubmission();
+}
+
+class RetryWithNewBusinessName extends OnboardingEvent {
+  final String newBusinessName;
+  const RetryWithNewBusinessName(this.newBusinessName);
+  @override
+  List<Object?> get props => [newBusinessName];
 }

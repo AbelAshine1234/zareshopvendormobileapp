@@ -171,7 +171,19 @@ class ValidationUtils {
     if (phone == null || phone.isEmpty) {
       return LocalizationService.instance.get('validation.required');
     }
-    
+    // Normalize by removing country code and separators to check 9-digit local part
+    final digitsOnly = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    // Remove leading 251 or 0 to get local 9-digit part if present
+    String localPart = digitsOnly;
+    if (localPart.startsWith('251')) {
+      localPart = localPart.substring(3);
+    } else if (localPart.startsWith('0')) {
+      localPart = localPart.substring(1);
+    }
+    if (localPart.length != 9) {
+      return LocalizationService.instance.get('validation.phone9Digits');
+    }
+
     if (!isValidEthiopianPhone(phone)) {
       // Use generic phone validation message so it localizes across pages
       return LocalizationService.instance.get('validation.phone');

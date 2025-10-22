@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import '../../../shared/theme/theme_provider.dart';
-import '../../../shared/theme/app_themes.dart';
-import '../../../shared/widgets/dialogs/contact_help_dialog.dart';
 import '../../../shared/shared.dart';
+import '../../../core/services/localization_service.dart';
+import '../bloc/onboarding_bloc.dart';
+import '../bloc/onboarding_state.dart';
+import '../bloc/onboarding_event.dart';
 
-class AdminApprovalScreen extends StatelessWidget {
-  const AdminApprovalScreen({super.key});
+class VendorCreationFailedScreen extends StatelessWidget {
+  final OnboardingVendorSubmissionFailed state;
+
+  const VendorCreationFailedScreen({
+    super.key,
+    required this.state,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,77 +27,38 @@ class AdminApprovalScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AppThemes.spaceL),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Header with back button
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          print('🔙 [ADMIN_APPROVAL] Back button pressed, navigating to splash');
-                          context.go('/splash');
-                        },
-                        icon: Icon(
-                          Icons.arrow_back_ios,
-                          color: theme.textPrimary,
-                          size: 20,
-                        ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: theme.surface,
-                          foregroundColor: theme.textPrimary,
-                          padding: const EdgeInsets.all(8),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'Admin Approval',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: theme.primary,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppThemes.spaceXL),
-                  
-                  // Main content
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                  // Approval Icon
+                  // Error Icon
                   Container(
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: theme.primary.withValues(alpha: 0.1),
+                      color: theme.error.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.hourglass_empty_rounded,
+                      Icons.error_outline,
                       size: 60,
-                      color: theme.primary,
+                      color: theme.error,
                     ),
                   ),
                   const SizedBox(height: AppThemes.spaceXL),
                   
-                  // Title
+                  // Error Title
                   Text(
-                    'Awaiting Admin Approval',
+                    'onboarding.submissionFailed.title'.tr(),
                     style: AppThemes.displayLarge(theme).copyWith(
-                      color: theme.primary,
+                      color: theme.error,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppThemes.spaceM),
                   
-                  // Description
+                  // Error Message
                   Text(
-                    'Your vendor application is being reviewed by our admin team. You\'ll receive a notification once approved.',
+                    state.error,
                     style: AppThemes.bodyLarge(theme),
                     textAlign: TextAlign.center,
                   ),
@@ -101,10 +68,10 @@ class AdminApprovalScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(AppThemes.spaceL),
                     decoration: BoxDecoration(
-                      color: theme.info.withValues(alpha: 0.1),
+                      color: theme.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppThemes.borderRadius),
                       border: Border.all(
-                        color: theme.info.withValues(alpha: 0.3),
+                        color: theme.error.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -112,19 +79,19 @@ class AdminApprovalScreen extends StatelessWidget {
                         Icon(
                           Icons.info_outline,
                           size: 32,
-                          color: theme.info,
+                          color: theme.error,
                         ),
                         const SizedBox(height: AppThemes.spaceM),
                         Text(
-                          'What Happens Next?',
-                          style: AppThemes.titleLarge(theme).copyWith(
-                            color: theme.info,
+                          'onboarding.submissionFailed.whatNext'.tr(),
+                          style: AppThemes.titleMedium(theme).copyWith(
+                            color: theme.error,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: AppThemes.spaceS),
                         Text(
-                          'Our team will review your documents and business information within 24-48 hours. You\'ll receive an email and app notification when approved.',
+                          'onboarding.submissionFailed.hint'.tr(),
                           style: AppThemes.bodyMedium(theme),
                           textAlign: TextAlign.center,
                         ),
@@ -137,29 +104,23 @@ class AdminApprovalScreen extends StatelessWidget {
                   Column(
                     children: [
                       AppPrimaryButton(
-                        text: 'Contact Support',
-                        icon: Icons.support_agent,
+                        text: 'onboarding.submissionFailed.tryAgain'.tr(),
                         onPressed: () {
-                          ContactHelpDialog.show(context, theme);
+                          context.read<OnboardingBloc>().add(const RetryVendorSubmission());
                         },
                         width: double.infinity,
                         height: 52,
                       ),
                       const SizedBox(height: AppThemes.spaceM),
                       AppSecondaryButton(
-                        text: 'Logout',
-                        icon: Icons.logout,
+                        text: 'onboarding.submissionFailed.contactSupport'.tr(),
                         onPressed: () {
-                          // TODO: Implement logout functionality
-                          context.go('/splash');
+                          ContactHelpDialog.show(context, theme);
                         },
                         width: double.infinity,
                         height: 52,
                       ),
                     ],
-                  ),
-                      ],
-                    ),
                   ),
                 ],
               ),

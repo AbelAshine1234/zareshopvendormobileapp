@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../theme/theme_provider.dart';
-import '../../theme/app_themes.dart';
+import '../utils/theme/theme_provider.dart';
+import '../utils/theme/app_themes.dart';
 
 class AppPrimaryButton extends StatelessWidget {
   final String text;

@@ -5,7 +5,7 @@ import '../../../core/services/localization_service.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
-import './multi_select_category_widget.dart';
+import '../widgets/category_selection_widget.dart';
 
 class BasicInfoStep extends StatefulWidget {
   final AppThemeData theme;
@@ -26,7 +26,21 @@ class BasicInfoStep extends StatefulWidget {
 class _BasicInfoStepState extends State<BasicInfoStep> {
   final TextEditingController _businessNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  List<String> _selectedCategories = [];
+  List<int> _selectedCategories = [];
+  bool _initializedFromState = false;
+
+  /// Convert Map categories to CategoryModel objects
+  List<CategoryModel> get _categoryModels {
+    return widget.categories.map((cat) {
+      return CategoryModel(
+        id: cat['id'] as int,
+        name: cat['name'] as String,
+        description: cat['description'] as String? ?? '',
+        status: true,
+        createdAt: DateTime.now(),
+      );
+    }).toList();
+  }
 
   @override
   void dispose() {
@@ -40,6 +54,21 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state is! OnboardingInProgress) return const SizedBox.shrink();
+        if (!_initializedFromState) {
+          _businessNameController.text = state.data.businessName;
+          _descriptionController.text = state.data.businessDescription;
+          _selectedCategories = state.data.categories
+              .map((id) {
+                try {
+                  return int.parse(id);
+                } catch (_) {
+                  return null;
+                }
+              })
+              .whereType<int>()
+              .toList();
+          _initializedFromState = true;
+        }
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,17 +129,19 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
                       ),
                     ),
                   )
-                : MultiSelectCategoryWidget(
-                    categories: widget.categories,
-                    selectedCategories: _selectedCategories,
-                    onChanged: (categories) {
+                : CategorySelectionWidget(
+                    categories: _categoryModels,
+                    selectedCategoryIds: _selectedCategories,
+                    onCategoriesChanged: (categoryIds) {
                       setState(() {
-                        _selectedCategories = categories;
+                        _selectedCategories = categoryIds;
                       });
-                      // Update BLoC with selected category IDs
-                      context.read<OnboardingBloc>().add(UpdateCategories(categories));
+                      // Update BLoC with selected category IDs as strings
+                      final categoryIdsAsStrings = categoryIds.map((id) => id.toString()).toList();
+                      context.read<OnboardingBloc>().add(UpdateCategories(categoryIdsAsStrings));
                     },
                     theme: widget.theme,
+                    isLoading: widget.loadingCategories,
                   ),
             const SizedBox(height: AppThemes.spaceL),
             

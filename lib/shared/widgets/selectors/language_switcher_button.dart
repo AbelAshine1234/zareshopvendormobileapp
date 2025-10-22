@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/localization_service.dart';
-import '../../theme/theme_provider.dart';
-import '../../theme/app_themes.dart';
+import '../../utils/theme/theme_provider.dart';
+import '../../utils/theme/app_themes.dart';
 
 /// Language switcher button that appears next to the theme selector
 class LanguageSwitcherButton extends StatelessWidget {
@@ -18,21 +18,26 @@ class LanguageSwitcherButton extends StatelessWidget {
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: theme.secondary.withOpacity(0.1),
+              color: theme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: theme.secondary.withOpacity(0.3),
+                color: theme.primary.withOpacity(0.3),
                 width: 1,
               ),
             ),
             child: Icon(
               Icons.language,
-              color: theme.secondary,
+              color: theme.primary,
               size: 20,
             ),
           ),
           onPressed: () => _showLanguageSelector(context, themeProvider),
           tooltip: 'Change Language',
+          alignment: Alignment.center,
+          style: IconButton.styleFrom(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(4),
+          ),
         );
       },
     );

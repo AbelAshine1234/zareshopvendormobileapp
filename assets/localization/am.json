@@ -160,48 +160,19 @@
       "passwordLabel": "የይለፍ ቃል",
       "passwordHint": "የይለፍ ቃልዎን ያስገቡ"
     },
-    "otp": {
-      "title": "ስልክ አረጋግጥ",
-      "subtitle": "ወደ ስልክዎ የተላከውን የማረጋገጫ ኮድ ያስገቡ",
-      "verificationCode": "የማረጋገጫ ኮድ",
-      "resendCode": "ኮድ እንደገና ላክ",
-      "resendIn": "ኮድ እንደገና ላክ በ {seconds} ሰከንድ",
-      "verify": "አረጋግጥ",
-      "otpError": "ትክክል ያልሆነ የማረጋገጫ ኮድ",
-      "didntReceive": "ኮዱ ካልደረሰ የኤስኤስኤምስ መልዕክቶችዎን ያረጋግጡ ወይም እንደገና ይላኩ።",
-      "sentSuccess": "OTP በተሳካ ሁኔታ ተልኳል"
-    },
     "basicInfo": {
       "title": "መሰረታዊ መረጃ",
       "subtitle": "ስለ ንግድዎ ይንገሩን",
-      "firstName": "የመጀመሪያ ስም",
-      "lastName": "የመጨረሻ ስም",
       "businessName": "የንግድ ስም",
-      "email": "ኢሜይል አድራሻ",
-      "businessDescription": "የንግድ መግለጫ",
-      "category": "የንግድ ምድብ",
-      "categories": "የንግድ ምድቦች",
-      "continue": "ቀጥል",
-      "helperDescription": "ጥሩ መግለጫ የሚሸጡትን እቃዎች እና አገልግሎቶች ለደንበኞች እንዲገባ ይረዳል።",
       "nameHint": "የንግድ ስምዎን ያስገቡ",
+      "businessDescription": "የንግድ መግለጫ",
       "descriptionHint": "ስለ ንግድዎ፣ ምርቶች እና አገልግሎቶች ይግለጹ...",
-      "selectedCategories": "የተመረጡ ምድቦች",
-      "selectCategories": "ምድቦች ይምረጡ",
-      "unknown": "ያልታወቀ",
-      "selectAtLeastOne": "ቢያንስ አንድ ምድብ ይምረጡ"
+      "helperDescription": "ጥሩ መግለጫ የሚሸጡትን እቃዎች እና አገልግሎቶች ለደንበኞች እንዲገባ ይረዳል።"
     },
     "documents": {
-      "title": "ሰነዶች",
-      "subtitle": "የሚፈለጉ ሰነዶችን ይጫኑ",
-      "faydaId": "ፋይዳ መለያ ቁጥር",
-      "faydaIdPhoto": "ፋይዳ መለያ ፎቶ",
-      "businessLicense": "የንግድ ፈቃድ",
-      "businessLicensePhoto": "የንግድ ፈቃድ ፎቶ",
-      "taxId": "የግብር መለያ",
-      "uploadDocument": "ሰነድ ይጫኑ",
-      "continue": "ቀጥል",
       "kycTitle": "KYC ማረጋገጫ",
       "kycSubtitle": "ለ እናንተን ደንበኞች ማወቅ (KYC) ማረጋገጫ የሚፈለጉ ሰነዶችን ይጫኑ።",
+      "businessLicense": "የንግድ ፈቃድ",
       "businessLicenseRequired": "የንግድ ፈቃድ *",
       "businessLicenseDesc": "ለ KYC ማረጋገጫ የመመዝገብ ወይም የፈቃድ ሰነድዎን ይጫኑ",
       "coverImage": "የንግድ ሽፋን ምስል",
@@ -216,15 +187,10 @@
     "shippingAddress": {
       "title": "የማጓጓዣ አድራሻ",
       "subtitle": "ትዕዛዞች የት እንዲደርሱ?",
-      "addressLine1": "አድራሻ መስመር 1",
-      "addressLine2": "አድራሻ መስመር 2",
       "city": "ከተማ",
-      "region": "ክልል",
       "subcity": "ንዑስ ከተማ",
       "woreda": "ወረዳ",
-      "kebele": "ቀቤሌ",
-      "postalCode": "የፖስታ ኮድ",
-      "continue": "ቀጥል",
+      "region": "ክልል",
       "location": "አቋም",
       "tapToSelectOnMap": "በካርታ ላይ ለመምረጥ ይንኩ",
       "pickLocation": "አቋም ምረጥ",
@@ -235,10 +201,6 @@
       "regionHint": "ለምሳሌ፣ አዲስ አበባ"
     },
     "subscription": {
-      "title": "የደንበኝነት አገልግሎት ይምረጡ",
-      "subtitle": "ለንግድዎ የሚስማማ እቅድ ይምረጡ",
-      "continue": "ቀጥል",
-      "agreeTerms": "ውሎችን እና ሁኔታዎችን እስማማለሁ",
       "choosePlanTitle": "እቅድዎን ይምረጡ",
       "choosePlanSubtitle": "ለመጀመር የደንበኝነት እቅድ ይምረጡ",
       "loading": "የደንበኝነት እቅዶች በመጫን ላይ...",
@@ -253,25 +215,15 @@
       "benefitsTitle": "የደንበኝነት ጥቅሞች",
       "benefitsBullets": "• እቅድዎን በማንኛውም ጊዜ መሻሻል ወይም መቀነስ ትችላላችሁ\n• ሁሉም እቅዶች የደንበኛ ድጋፍ ያካትታሉ\n• ክፍያ በደህንነት ይተካል\n• ምንም የተሸሸገ ክፍያ የለም",
       "agreeToPrefix": "ከዚህ ጋር እስማማለሁ",
-      "termsLink": "የመመዝገብ ውሎች እና ሁኔታዎች"
+      "termsLink": "ውሎች እና ሁኔታዎች"
     },
     "payout": {
       "title": "የክፍያ መረጃ",
       "subtitle": "ክፍያዎችን እንዴት መቀበል ይፈልጋሉ?",
-      "payoutMethod": "የክፍያ ዘዴ",
-      "bankAccount": "የባንክ ሂሳብ",
-      "mobileWallet": "የሞባይል ቦርሳ",
-      "accountHolderName": "የሂሳብ ባለቤት ስም",
-      "bankName": "የባንክ ስም",
-      "accountNumber": "የሂሳብ ቁጥር",
-      "mobileWalletNumber": "የሞባይል ቦርሳ ቁጥር",
       "confirmDetails": "እነዚህ ዝርዝሮች ትክክል መሆናቸውን አረጋግጣለሁ",
       "authorizePayout": "ዛሬሻፕ ክፍያዎችን እንዲያከናውን እፈቅዳለሁ",
-      "continue": "ቀጥል",
       "accountDetails": "የሂሳብ ዝርዝር",
       "paymentAgreement": "የክፍያ ውል",
-      "confirmDetailsLong": "የቀረቡት የክፍያ ዝርዝሮች ትክክለኛ እና የእኔ መሆናቸውን አረጋግጣለሁ",
-      "authorizePayoutLong": "የተሰጡትን የሂሳብ ዝርዝሮች ላይ ክፍያዎች እንዲደርሱ ዛሬሻፕን እፈቅዳለሁ",
       "secureTitle": "ደህንነቱ የተጠበቀ",
       "secureDesc": "የክፍያ መረጃዎ በመረጃ መሸርሸር ይጠበቃል እና በደህና ይቀመጣል። የፋይናንስ ዝርዝሮችዎን ከሶስተኛ ወገን ጋር አንካፍልም።"
     },
@@ -307,6 +259,22 @@
       "description": "አሁን ንግድዎን ማስተዳደር እና ምርቶችን መጨመር ይችላሉ።",
       "getStarted": "ጀምር"
     },
+    "adminApproval": {
+      "readyTitle": "ለማስፈር ዝግጁ",
+      "reviewIntro": "መረጃዎን ይገምግሙ እና ለአስተዳዳሪ ፍቃድ መተግበሪያዎን ያስገቡ።",
+      "awaitingTitle": "የአስተዳዳሪ ፍቃድ በመጠባበቅ ላይ",
+      "awaitingDesc": "መተግበሪያዎ በአስተዳዳሪያችን ቡድን በ24-48 ሰአታት ውስጥ ይገመገማል። አግባብ ካገኘ ማሳወቂያ ይቀበላሉ።",
+      "whatNext": "ምን ይከሰታል?",
+      "timelineSubmittedTitle": "መተግበሪያ ተልኳል",
+      "timelineSubmittedDesc": "የንግድ መተግበሪያዎ በተሳካ ሁኔታ ተልኳል",
+      "timelineReviewTitle": "የአስተዳዳሪ ግምገማ",
+      "timelineReviewDesc": "ቡድናችን ሰነዶችዎን እና የንግድ መረጃዎን ይገመገማል",
+      "timelineNotifyTitle": "የፍቃድ ማሳወቂያ",
+      "timelineNotifyDesc": "አግባብ ካገኘ ኢሜይል እና የመተግበሪያ ማሳወቂያ ይቀበላሉ",
+      "timelineStartTitle": "መሸጥ ጀምር",
+      "timelineStartDesc": "ምርቶችን መጨመር እና ሱቅዎን ማስተዳደር ጀምር",
+      "submitApplication": "መተግበሪያ አስገባ"
+    },
     "vendorSubmitted": {
       "title": "መተግበሪያዎ ተልኳል!",
       "reviewTitle": "የአስተዳዳሪ ግምገማ ያስፈልጋል",
@@ -326,6 +294,20 @@
       "hint": "እባክዎ መረጃዎን ያረጋግጡ እና እንደገና ይሞክሩ። ችግኙ ከቀጠለ ግን የድጋፍ ቡድናችንን ያግኙ።",
       "tryAgain": "እንደገና ሞክር",
       "contactSupport": "ድጋፍን አግኝ"
+    },
+    "businessNameConflict": {
+      "title": "የንግድ ስም ግጭት",
+      "headerTitle": "የንግድ ስም አስቀድሞ አለ",
+      "headerDesc": "ያስገባኸው የንግድ ስም በሌላ ሻጭ ተወስዷል።",
+      "conflictTitle": "የስም ግጭት",
+      "conflictDesc": "የንግድ ስም '{originalName}' አስቀድሞ ተመዝግቧል። እባክዎ ለንግድዎ የተለየ ስም ይምረጡ።",
+      "newNameLabel": "አዲስ የንግድ ስም",
+      "newNameHint": "አንድ ልዩ የንግድ ስም ያስገቡ",
+      "nameRequired": "የንግድ ስም ያስፈልጋል",
+      "nameTooShort": "የንግድ ስም ቢያንስ 3 ቁምፊ መሆን አለበት",
+      "nameHelp": "ንግድዎን የሚወክል ልዩ ስም ይምረጡ",
+      "retryButton": "በአዲስ ስም አስገባ",
+      "backButton": "ለማስተካከል ተመለስ"
     }
   },
   "dashboard": {
@@ -421,6 +403,7 @@
     "timeoutError": "የጥያቄ ጊዜ አልቋል። እባክዎ እንደገና ይሞክሩ።",
     "userExists": "ተጠቃሚ አስቀድሞ አለ። እባክዎ ይግቡ.",
     "invalidOtp": "የማረጋገጫ ኮድ ትክክል አይደለም.",
+    "otpExpired": "የማረጋገጫ ኮድ ጊዜው አልፎበታል። እባክዎ አዲስ ኮድ ይጠይቁ።",
     "invalidCredentials": "የስልክ ቁጥር ወይም የይለፍ ቃል ትክክል አይደለም.",
     "phoneInUse": "ይህ የስልክ ቁጥር አስቀድሞ ተጠቀምቷል.",
     "userNotFound": "ተጠቃሚ በዚህ የስልክ ቁጥር አልተገኘም።",
@@ -432,6 +415,7 @@
     "required": "ይህ መስኮች ያስፈልጋል",
     "email": "እባክዎ ትክክለኛ ኢሜይል አድራሻ ያስገቡ",
     "phone": "እባክዎ ትክክለኛ የስልክ ቁጥር ያስገቡ",
+    "phone9Digits": "ስልክ ቁጥር 9 አሃዞች መሆን አለበት",
     "password": "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት",
     "confirmPassword": "የይለፍ ቃሎች አይዛመዱም",
     "minLength": "ቢያንስ {min} ቁምፊዎች መሆን አለበት",
@@ -462,5 +446,17 @@
       "basic": "መሠረታዊ"
     },
     "footer": "ነጋዴዎችን ለስኬት መበረታታት"
+  }
+  ,
+  "otp": {
+    "title": "ስልክ አረጋግጥ",
+    "subtitle": "ወደ ስልክዎ የተላከውን የማረጋገጫ ኮድ ያስገቡ",
+    "verificationCode": "የማረጋገጫ ኮድ",
+    "resendCode": "ኮድ እንደገና ላክ",
+    "resendIn": "ኮድ እንደገና ላክ በ {seconds} ሰከንድ",
+    "verify": "አረጋግጥ",
+    "otpError": "ትክክል ያልሆነ የማረጋገጫ ኮድ",
+    "didntReceive": "ኮዱ ካልደረሰ የኤስኤስኤምስ መልዕክቶችዎን ያረጋግጡ ወይም እንደገና ይላኩ።",
+    "sentSuccess": "OTP በተሳካ ሁኔታ ተልኳል"
   }
 }

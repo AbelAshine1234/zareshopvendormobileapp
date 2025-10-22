@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/shared.dart';
-import '../../../shared/widgets/inputs/phone_input.dart';
-import '../../../shared/widgets/inputs/password_input.dart';
-import '../../../shared/widgets/inline_error_banner.dart';
 import '../../../core/services/localization_service.dart';
-import '../../../shared/widgets/language_selector/language_switcher_button.dart';
-import '../../../shared/theme/app_themes.dart';
+import '../../../shared/utils/theme/theme_provider.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -43,15 +40,13 @@ class _LoginViewState extends State<_LoginView> {
   }
 
   Widget _maybeErrorBanner(AppThemeData theme) {
-    if (_inlineErrorMessage == null) return const SizedBox.shrink();
-    return Column(
-      children: [
-        InlineErrorBanner(
-          theme: theme,
-          message: _inlineErrorMessage!,
-        ),
-        const SizedBox(height: 12),
-      ],
+    return GlobalErrorWidget(
+      errorMessage: _inlineErrorMessage,
+      onRetry: _inlineErrorMessage != null ? () {
+        setState(() {
+          _inlineErrorMessage = null;
+        });
+      } : null,
     );
   }
 
@@ -87,13 +82,25 @@ class _LoginViewState extends State<_LoginView> {
         } else if (state is AuthSignupRequested) {
           context.go('/onboarding');
         } else if (state is AuthError) {
-          final lower = state.message.toLowerCase();
-          final msgKey = lower.contains('invalid')
-              ? 'errors.invalidCredentials'
-              : lower.contains('exists')
-                  ? 'errors.userExists'
-                  : 'errors.unknownError';
-          setState(() { _inlineErrorMessage = msgKey.tr(); });
+          // final errorKey = GlobalErrorHandler.getErrorKey(state.message);
+          setState(() { _inlineErrorMessage = "Error occurred"; });
+          // GlobalErrorHandler.showError(
+          //   context,
+          //   state.message,
+          //   onRetry: () {
+          //     setState(() {
+          //       _inlineErrorMessage = null;
+          //     });
+          //   },
+          // );
+        } else if (state is AuthLoginResponse) {
+          final user = state.data['user'] as Map<String, dynamic>?;
+          final vendorVerified = (user?['vendor_verified'] == true) || (user?['vendorApproved'] == true);
+          if (vendorVerified) {
+            context.go('/');
+          } else {
+            context.go('/admin-approval');
+          }
         }
       },
       child: Consumer2<ThemeProvider, LocalizationService>(
@@ -154,6 +161,45 @@ class _LoginViewState extends State<_LoginView> {
 
                       // Inline error banner if any
                       _maybeErrorBanner(theme),
+
+                      // If we have a raw login response, show it for testing
+                      Builder(builder: (_) {
+                        final state = context.read<AuthBloc>().state;
+                        if (state is AuthLoginResponse) {
+                          const encoder = JsonEncoder.withIndent('  ');
+                          final pretty = encoder.convert(state.data);
+                          return Column(children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: theme.info.withValues(alpha: 0.08),
+                                border: Border.all(color: theme.info.withValues(alpha: 0.35), width: 1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.info_outline, color: theme.info, size: 18),
+                                      const SizedBox(width: 6),
+                                      Text('Login Response (testing)', style: TextStyle(color: theme.info, fontWeight: FontWeight.w700)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Text(pretty, style: TextStyle(color: theme.textPrimary, fontSize: 12)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ]);
+                        }
+                        return const SizedBox.shrink();
+                      }),
 
                       // Card with form
                       _buildLoginCard(theme),
@@ -305,6 +351,7 @@ class _LoginViewState extends State<_LoginView> {
                         onChangedDigitsOnly: _validateEthiopianPhone,
                         countryCode: '+251',
                         hintDigits: 'auth.login.phoneHint'.tr(),
+                        label: 'auth.login.phoneLabel'.tr(),
                       ),
 
               const SizedBox(height: 14),
@@ -374,59 +421,31 @@ class _LoginViewState extends State<_LoginView> {
               const SizedBox(height: 14),
 
               // Login Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          if (_phoneError == null &&
-                              _phoneController.text.isNotEmpty &&
-                              _passwordController.text.isNotEmpty) {
-                            context.read<AuthBloc>().add(
-                                  LoginRequested(
-                                    phoneNumber: '+251${_phoneController.text}',
-                                    password: _passwordController.text,
-                                  ),
-                                );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('auth.login.fillFields'.tr()),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.buttonBackground,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor:
-                        theme.buttonBackground.withValues(alpha: 0.6),
-                  ),
-                  icon: isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Icon(Icons.arrow_forward_rounded),
-                  label: Text(
-                    isLoading ? ' ' : 'auth.login.loginButton'.tr(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+              AppPrimaryButton(
+                text: 'auth.login.loginButton'.tr(),
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        if (_phoneError == null &&
+                            _phoneController.text.isNotEmpty &&
+                            _passwordController.text.isNotEmpty) {
+                          context.read<AuthBloc>().add(
+                                LoginRequested(
+                                  phoneNumber: '+251${_phoneController.text}',
+                                  password: _passwordController.text,
+                                ),
+                              );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('auth.login.fillFields'.tr()),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                isLoading: isLoading,
+                icon: Icons.arrow_forward_rounded,
               ),
             ],
           ),

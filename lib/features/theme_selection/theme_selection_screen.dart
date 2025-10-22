@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../shared/theme/theme_provider.dart';
-import '../../shared/theme/app_themes.dart';
+import '../../shared/utils/theme/theme_provider.dart';
+import '../../shared/utils/theme/app_themes.dart';
 import '../../core/services/localization_service.dart';
-import '../../shared/widgets/language_selector/language_switcher_button.dart';
+import '../../shared/widgets/selectors/language_switcher_button.dart';
+import '../../shared/buttons/app_buttons.dart';
 import '../onboarding/screens/onboarding_main_screen.dart';
 
 class ThemeSelectionScreen extends StatefulWidget {
@@ -61,25 +62,25 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(AppThemes.spaceL),
+                padding: EdgeInsets.all(AppThemes.spaceL),
                 child: Column(
                   children: [
                     // Header
                     Column(
                       children: [
-                                const SizedBox(height: AppThemes.spaceXL),
+                                SizedBox(height: AppThemes.spaceXL),
                                 Icon(
                                   Icons.palette_outlined,
                                   size: 64,
                                   color: theme.primary,
                                 ),
-                                const SizedBox(height: AppThemes.spaceL),
+                                SizedBox(height: AppThemes.spaceL),
                                 Text(
                                   'Choose Your Style',
                                   style: AppThemes.displayMedium(theme),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: AppThemes.spaceS),
+                                SizedBox(height: AppThemes.spaceS),
                                 Text(
                                   'Select a theme that matches your personality',
                                   style: AppThemes.bodyMedium(theme),
@@ -89,7 +90,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                             ),
                       ),
                     
-                    const SizedBox(height: AppThemes.spaceXXL),
+                    SizedBox(height: AppThemes.spaceXXL),
                     
                     // Theme Cards
                     Expanded(
@@ -126,28 +127,13 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                     // Continue Button
                     if (_selectedTheme != null)
                       Container(
-                              width: double.infinity,
-                              height: AppThemes.buttonHeight,
-                              margin: const EdgeInsets.only(top: AppThemes.spaceL),
-                              child: ElevatedButton(
-                                onPressed: _continueToOnboarding,
-                                style: AppThemes.primaryButtonStyle(theme),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Continue',
-                                      style: AppThemes.buttonText(theme),
-                                    ),
-                                    const SizedBox(width: AppThemes.spaceS),
-                                    Icon(
-                                      Icons.arrow_forward,
-                                      color: theme.isDark ? theme.textPrimary : Colors.white,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                        width: double.infinity,
+                        margin: EdgeInsets.only(top: AppThemes.spaceL),
+                        child: AppPrimaryButton(
+                          text: 'Continue',
+                          onPressed: _continueToOnboarding,
+                          icon: Icons.arrow_forward,
+                        ),
                       ),
                   ],
                 ),
@@ -165,7 +151,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
     bool isSelected,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppThemes.spaceM),
+      margin: EdgeInsets.only(bottom: AppThemes.spaceM),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -174,7 +160,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            padding: const EdgeInsets.all(AppThemes.spaceL),
+            padding: EdgeInsets.all(AppThemes.spaceL),
             decoration: BoxDecoration(
               gradient: themeData.cardGradient,
               borderRadius: BorderRadius.circular(AppThemes.largeBorderRadius),
@@ -214,7 +200,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                   ),
                 ),
                 
-                const SizedBox(width: AppThemes.spaceL),
+                SizedBox(width: AppThemes.spaceL),
                 
                 // Theme Info
                 Expanded(
@@ -230,7 +216,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                             ),
                           ),
                           if (isSelected) ...[
-                            const SizedBox(width: AppThemes.spaceS),
+                            SizedBox(width: AppThemes.spaceS),
                             Icon(
                               Icons.check_circle,
                               color: themeData.primary,
@@ -239,20 +225,20 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                           ],
                         ],
                       ),
-                      const SizedBox(height: AppThemes.spaceXS),
+                      SizedBox(height: AppThemes.spaceXS),
                       Text(
                         themeData.description,
                         style: AppThemes.bodySmall(themeData),
                       ),
-                      const SizedBox(height: AppThemes.spaceS),
+                      SizedBox(height: AppThemes.spaceS),
                       
                       // Color Preview
                       Row(
                         children: [
                           _buildColorDot(themeData.primary, 'Primary'),
-                          const SizedBox(width: AppThemes.spaceS),
+                          SizedBox(width: AppThemes.spaceS),
                           _buildColorDot(themeData.secondary, 'Secondary'),
-                          const SizedBox(width: AppThemes.spaceS),
+                          SizedBox(width: AppThemes.spaceS),
                           _buildColorDot(themeData.accent, 'Accent'),
                         ],
                       ),

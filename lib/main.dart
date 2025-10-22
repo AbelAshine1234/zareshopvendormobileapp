@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'shared/theme/theme_provider.dart';
+import 'shared/utils/theme/theme_provider.dart';
 import 'core/constants/app_constants.dart';
 import 'core/utils/app_bloc_observer.dart';
 import 'core/navigation/simple_router.dart';
 import 'core/services/localization_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
+import 'core/bloc/app_data.dart';
 
 void main() async {
   // Initialize Flutter binding
@@ -35,6 +36,9 @@ class ZareshopVendorApp extends StatelessWidget {
       providers: [
         BlocProvider<AuthBloc>(
           create: (context) => AuthBloc(),
+        ),
+        BlocProvider<AppDataBloc>(
+          create: (context) => AppDataBloc()..add(const FetchAllAppData()),
         ),
       ],
       child: MultiProvider(

@@ -94,30 +94,36 @@ class OnboardingLoading extends OnboardingState {
   const OnboardingLoading();
 }
 
-/// Error state
-class OnboardingError extends OnboardingState {
-  final String message;
-
-  const OnboardingError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-
-/// User already exists state - should redirect to login
-class OnboardingUserAlreadyExists extends OnboardingState {
+/// Business name conflict state - when vendor name already exists
+class OnboardingBusinessNameConflict extends OnboardingState {
   final OnboardingData data;
-  final String message;
-  final String? phoneNumber;
-  final String? email;
+  final String suggestedName;
+  final String originalName;
 
-  const OnboardingUserAlreadyExists({
+  const OnboardingBusinessNameConflict({
     required this.data,
-    required this.message,
-    this.phoneNumber,
-    this.email,
+    required this.suggestedName,
+    required this.originalName,
   });
 
   @override
-  List<Object?> get props => [data, message, phoneNumber, email];
+  List<Object?> get props => [data, suggestedName, originalName];
+}
+
+/// Error state
+class OnboardingError extends OnboardingState {
+  final String message;
+  final int step;          // which step the error occurred on
+  final String? code;      // machine code e.g. USER_ALREADY_EXISTS, INVALID_OTP
+  final bool recoverable;  // whether to show Retry
+
+  const OnboardingError(
+    this.message, {
+    required this.step,
+    this.code,
+    this.recoverable = true,
+  });
+
+  @override
+  List<Object?> get props => [message, step, code, recoverable];
 }

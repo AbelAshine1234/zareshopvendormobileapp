@@ -3,13 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/theme/theme_provider.dart';
-import '../../../shared/theme/app_themes.dart';
-import '../../../shared/widgets/theme_selector/theme_selector_button.dart';
-import '../../../shared/widgets/language_selector/language_switcher_button.dart';
+import '../../../shared/shared.dart';
 import '../../../core/services/localization_service.dart';
-import '../../../shared/widgets/inputs/phone_input.dart';
-import '../../../shared/widgets/inline_error_banner.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -356,6 +351,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                 onChangedDigitsOnly: _validateEthiopianPhone,
                 countryCode: '+251',
                 hintDigits: 'auth.forgotPassword.phoneHint'.tr(),
+                label: 'auth.forgotPassword.phoneLabel'.tr(),
               ),
               if (_phoneError != null)
                 Padding(
@@ -383,56 +379,28 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
               const SizedBox(height: 24),
 
               // Send Reset Code Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          if (_phoneError == null &&
-                              _phoneController.text.isNotEmpty) {
-                            context.read<AuthBloc>().add(
-                                  ForgotPasswordRequested(
-                                    phoneNumber: '+251${_phoneController.text}',
-                                  ),
-                                );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('auth.forgotPassword.invalidPhone'.tr()),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor: theme.primary.withValues(alpha: 0.6),
-                  ),
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white),
-                          ),
-                        )
-                      : Text(
-                          'auth.forgotPassword.sendCode'.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
+              AppPrimaryButton(
+                text: 'auth.forgotPassword.sendCode'.tr(),
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        if (_phoneError == null &&
+                            _phoneController.text.isNotEmpty) {
+                          context.read<AuthBloc>().add(
+                                ForgotPasswordRequested(
+                                  phoneNumber: '+251${_phoneController.text}',
+                                ),
+                              );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('auth.forgotPassword.invalidPhone'.tr()),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                isLoading: isLoading,
               ),
             ],
           ),

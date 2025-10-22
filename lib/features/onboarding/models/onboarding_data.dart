@@ -1,63 +1,32 @@
 import 'package:equatable/equatable.dart';
 
-/// Model to hold all onboarding data
+/// Model to hold all onboarding data - cleaned up version
 class OnboardingData extends Equatable {
-  // Step 0: Phone Number
+  // Step 0: Phone Number & Password
   final String phoneNumber;
-  final String vendorType; // Always 'business' - kept for compatibility
   final String password;
-  final bool userExists;
-  final bool isOtpVerified;
-  final bool hasVendor;
   
   // Step 1: OTP
   final String otp;
   
-  // Step 2: Basic Info
-  final String firstName;
-  final String lastName;
-  final String fullName;
+  // Step 2: Basic Info (Business only)
   final String businessName;
-  final String email;
-  final String languagePreference; // 'am', 'en', 'om'
-  final String coverPhotoUrl;
-  final String street;
-  final String city;
-  final String region;
-  final String zone;
   final String businessDescription;
-  final String category; // Keep for backward compatibility
-  final List<String> categories; // New field for multiple categories
+  final List<String> categories;
   
-  // Step 4: Documents
-  final String faydaIdNumber;
-  final String faydaIdPhotoUrl;
-  final String businessLicenseNumber;
-  final String businessLicensePhotoUrl;
-  final String taxId;
-  
-  // Step 4: Shipping Address
-  final String addressLine1;
-  final String addressLine2;
-  final String shippingCity;
-  final String state;
-  final String shippingRegion;
+  // Step 3: Shipping Address
+  final String city;
   final String subcity;
   final String woreda;
-  final String kebele;
-  final String postalCode;
-  final String country;
-  final String latitude;
-  final String longitude;
+  final String state;
   
-  // Step 5: Subscription Selection
-  final int? selectedSubscriptionId;
-  final String selectedSubscriptionName;
-  final bool agreeTermsCheck;
+  // Step 4: Documents (Business only)
+  final dynamic businessLicenseFile;
+  final dynamic coverImageFile;
   
-  // Step 6: Payout Information
-  final String preferredPayoutMethod; // 'bank' or 'wallet'
-  final String accountHolderName; // Account holder's full name
+  // Step 5: Payout Information
+  final String preferredPayoutMethod; // 'bank_account' or 'wallet'
+  final String accountHolderName;
   final String bankName;
   final String bankAccountNumber;
   final String accountNumber; // Generic account number field
@@ -65,53 +34,24 @@ class OnboardingData extends Equatable {
   final bool confirmDetailsCheck;
   final bool authorizePayoutCheck;
   
-  // File fields for document uploads
-  final dynamic businessLicenseFile;
-  final dynamic coverImageFile;
-  final dynamic faydaImageFile;
+  // Step 6: Subscription Selection
+  final int? selectedSubscriptionId;
+  final String selectedSubscriptionName;
+  final bool agreeTermsCheck;
 
   const OnboardingData({
     this.phoneNumber = '',
-    this.vendorType = 'business',
     this.password = '',
-    this.userExists = false,
-    this.isOtpVerified = false,
-    this.hasVendor = false,
     this.otp = '',
-    this.firstName = '',
-    this.lastName = '',
-    this.fullName = '',
     this.businessName = '',
-    this.email = '',
-    this.languagePreference = 'en',
-    this.coverPhotoUrl = '',
-    this.street = '',
-    this.city = '',
-    this.region = '',
-    this.zone = '',
     this.businessDescription = '',
-    this.category = '',
     this.categories = const [],
-    this.faydaIdNumber = '',
-    this.faydaIdPhotoUrl = '',
-    this.businessLicenseNumber = '',
-    this.businessLicensePhotoUrl = '',
-    this.taxId = '',
-    this.addressLine1 = '',
-    this.addressLine2 = '',
-    this.shippingCity = '',
-    this.state = '',
-    this.shippingRegion = '',
+    this.city = '',
     this.subcity = '',
     this.woreda = '',
-    this.kebele = '',
-    this.postalCode = '',
-    this.country = 'Ethiopia',
-    this.latitude = '',
-    this.longitude = '',
-    this.selectedSubscriptionId,
-    this.selectedSubscriptionName = '',
-    this.agreeTermsCheck = false,
+    this.state = '',
+    this.businessLicenseFile,
+    this.coverImageFile,
     this.preferredPayoutMethod = 'wallet',
     this.accountHolderName = '',
     this.bankName = '',
@@ -120,53 +60,24 @@ class OnboardingData extends Equatable {
     this.mobileWalletNumber = '',
     this.confirmDetailsCheck = false,
     this.authorizePayoutCheck = false,
-    this.businessLicenseFile,
-    this.coverImageFile,
-    this.faydaImageFile,
+    this.selectedSubscriptionId,
+    this.selectedSubscriptionName = '',
+    this.agreeTermsCheck = false,
   });
 
   OnboardingData copyWith({
     String? phoneNumber,
-    String? vendorType,
     String? password,
-    bool? userExists,
-    bool? isOtpVerified,
-    bool? hasVendor,
     String? otp,
-    String? firstName,
-    String? lastName,
-    String? fullName,
     String? businessName,
-    String? email,
-    String? languagePreference,
-    String? coverPhotoUrl,
-    String? street,
-    String? city,
-    String? region,
-    String? zone,
     String? businessDescription,
-    String? category,
     List<String>? categories,
-    String? faydaIdNumber,
-    String? faydaIdPhotoUrl,
-    String? businessLicenseNumber,
-    String? businessLicensePhotoUrl,
-    String? taxId,
-    String? addressLine1,
-    String? addressLine2,
-    String? shippingCity,
-    String? state,
-    String? shippingRegion,
+    String? city,
     String? subcity,
     String? woreda,
-    String? kebele,
-    String? postalCode,
-    String? country,
-    String? latitude,
-    String? longitude,
-    int? selectedSubscriptionId,
-    String? selectedSubscriptionName,
-    bool? agreeTermsCheck,
+    String? state,
+    dynamic businessLicenseFile,
+    dynamic coverImageFile,
     String? preferredPayoutMethod,
     String? accountHolderName,
     String? bankName,
@@ -175,52 +86,23 @@ class OnboardingData extends Equatable {
     String? mobileWalletNumber,
     bool? confirmDetailsCheck,
     bool? authorizePayoutCheck,
-    dynamic businessLicenseFile,
-    dynamic coverImageFile,
-    dynamic faydaImageFile,
+    int? selectedSubscriptionId,
+    String? selectedSubscriptionName,
+    bool? agreeTermsCheck,
   }) {
     return OnboardingData(
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      vendorType: vendorType ?? this.vendorType,
       password: password ?? this.password,
-      userExists: userExists ?? this.userExists,
-      isOtpVerified: isOtpVerified ?? this.isOtpVerified,
-      hasVendor: hasVendor ?? this.hasVendor,
       otp: otp ?? this.otp,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      fullName: fullName ?? this.fullName,
       businessName: businessName ?? this.businessName,
-      email: email ?? this.email,
-      languagePreference: languagePreference ?? this.languagePreference,
-      coverPhotoUrl: coverPhotoUrl ?? this.coverPhotoUrl,
-      street: street ?? this.street,
-      city: city ?? this.city,
-      region: region ?? this.region,
-      zone: zone ?? this.zone,
       businessDescription: businessDescription ?? this.businessDescription,
-      category: category ?? this.category,
       categories: categories ?? this.categories,
-      faydaIdNumber: faydaIdNumber ?? this.faydaIdNumber,
-      faydaIdPhotoUrl: faydaIdPhotoUrl ?? this.faydaIdPhotoUrl,
-      businessLicenseNumber: businessLicenseNumber ?? this.businessLicenseNumber,
-      businessLicensePhotoUrl: businessLicensePhotoUrl ?? this.businessLicensePhotoUrl,
-      taxId: taxId ?? this.taxId,
-      addressLine1: addressLine1 ?? this.addressLine1,
-      addressLine2: addressLine2 ?? this.addressLine2,
-      shippingCity: shippingCity ?? this.shippingCity,
-      state: state ?? this.state,
-      shippingRegion: shippingRegion ?? this.shippingRegion,
+      city: city ?? this.city,
       subcity: subcity ?? this.subcity,
       woreda: woreda ?? this.woreda,
-      kebele: kebele ?? this.kebele,
-      postalCode: postalCode ?? this.postalCode,
-      country: country ?? this.country,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      selectedSubscriptionId: selectedSubscriptionId ?? this.selectedSubscriptionId,
-      selectedSubscriptionName: selectedSubscriptionName ?? this.selectedSubscriptionName,
-      agreeTermsCheck: agreeTermsCheck ?? this.agreeTermsCheck,
+      state: state ?? this.state,
+      businessLicenseFile: businessLicenseFile ?? this.businessLicenseFile,
+      coverImageFile: coverImageFile ?? this.coverImageFile,
       preferredPayoutMethod: preferredPayoutMethod ?? this.preferredPayoutMethod,
       accountHolderName: accountHolderName ?? this.accountHolderName,
       bankName: bankName ?? this.bankName,
@@ -229,14 +111,11 @@ class OnboardingData extends Equatable {
       mobileWalletNumber: mobileWalletNumber ?? this.mobileWalletNumber,
       confirmDetailsCheck: confirmDetailsCheck ?? this.confirmDetailsCheck,
       authorizePayoutCheck: authorizePayoutCheck ?? this.authorizePayoutCheck,
-      businessLicenseFile: businessLicenseFile ?? this.businessLicenseFile,
-      coverImageFile: coverImageFile ?? this.coverImageFile,
-      faydaImageFile: faydaImageFile ?? this.faydaImageFile,
+      selectedSubscriptionId: selectedSubscriptionId ?? this.selectedSubscriptionId,
+      selectedSubscriptionName: selectedSubscriptionName ?? this.selectedSubscriptionName,
+      agreeTermsCheck: agreeTermsCheck ?? this.agreeTermsCheck,
     );
   }
-
-  bool get isIndividual => vendorType == 'individual';
-  bool get isBusiness => vendorType == 'business';
 
   bool isStepCompleted(int step) {
     switch (step) {
@@ -250,7 +129,7 @@ class OnboardingData extends Equatable {
       case 2: // Basic Info (Business only)
         return businessName.isNotEmpty &&
             businessDescription.isNotEmpty &&
-            (category.isNotEmpty || categories.isNotEmpty);
+            categories.isNotEmpty;
       case 3: // Shipping Address
         return city.isNotEmpty && subcity.isNotEmpty && woreda.isNotEmpty && state.isNotEmpty;
       case 4: // Documents (Business only)
@@ -274,46 +153,17 @@ class OnboardingData extends Equatable {
   @override
   List<Object?> get props => [
         phoneNumber,
-        vendorType,
         password,
-        userExists,
-        isOtpVerified,
-        hasVendor,
         otp,
-        firstName,
-        lastName,
-        fullName,
         businessName,
-        email,
-        languagePreference,
-        coverPhotoUrl,
-        street,
-        city,
-        region,
-        zone,
         businessDescription,
-        category,
         categories,
-        faydaIdNumber,
-        faydaIdPhotoUrl,
-        businessLicenseNumber,
-        businessLicensePhotoUrl,
-        taxId,
-        addressLine1,
-        addressLine2,
-        shippingCity,
-        state,
-        shippingRegion,
+        city,
         subcity,
         woreda,
-        kebele,
-        postalCode,
-        country,
-        latitude,
-        longitude,
-        selectedSubscriptionId,
-        selectedSubscriptionName,
-        agreeTermsCheck,
+        state,
+        businessLicenseFile,
+        coverImageFile,
         preferredPayoutMethod,
         accountHolderName,
         bankName,
@@ -322,8 +172,8 @@ class OnboardingData extends Equatable {
         mobileWalletNumber,
         confirmDetailsCheck,
         authorizePayoutCheck,
-        businessLicenseFile,
-        coverImageFile,
-        faydaImageFile,
+        selectedSubscriptionId,
+        selectedSubscriptionName,
+        agreeTermsCheck,
       ];
 }

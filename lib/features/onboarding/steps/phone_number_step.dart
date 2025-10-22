@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../shared/shared.dart';
-import '../../../shared/widgets/inputs/phone_input.dart';
-import '../../../shared/widgets/inputs/password_input.dart';
 import '../../../core/services/localization_service.dart';
+import '../../../core/utils/validation_utils.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
@@ -27,11 +26,40 @@ class PhoneNumberStep extends StatefulWidget {
 
 class _PhoneNumberStepState extends State<PhoneNumberStep> {
   bool _isPasswordVisible = false;
+  String? _phoneError;
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _initializedFromState = false;
+
+  String? _validatePhoneDigits(String digits) {
+    // Delegate to global validator for consistency and localization
+    return ValidationUtils.validateEthiopianPhone(digits);
+  }
+
+  String _digitsOnlyFromStatePhone(String phoneWithCode) {
+    if (phoneWithCode.startsWith('+251')) {
+      return phoneWithCode.replaceFirst('+251', '');
+    }
+    return phoneWithCode;
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state is! OnboardingInProgress) return const SizedBox.shrink();
+        if (!_initializedFromState) {
+          final digits = _digitsOnlyFromStatePhone(state.data.phoneNumber);
+          _phoneController.text = digits;
+          _passwordController.text = state.data.password;
+          _initializedFromState = true;
+        }
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,50 +119,23 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
               ),
             ),
             const SizedBox(height: AppThemes.spaceL),
-            Text(
-              'onboarding.phoneNumber.title'.tr(),
-              style: AppThemes.titleLarge(widget.theme),
-            ),
-            const SizedBox(height: AppThemes.spaceM),
             PhoneInput(
               theme: widget.theme,
+              controller: _phoneController,
+              label: 'onboarding.phoneNumber.title'.tr(),
               onChangedDigitsOnly: (value) {
+                // Local validation and error display using global theme styles
+                final error = _validatePhoneDigits(value);
+                setState(() {
+                  _phoneError = error;
+                });
                 widget.onValidatePhone(value);
                 context.read<OnboardingBloc>().add(UpdatePhoneNumber('+251$value'));
               },
-              errorText: widget.phoneError,
+              errorText: _phoneError ?? widget.phoneError,
               countryCode: '+251',
               hintDigits: 'onboarding.phoneNumber.phoneHint'.tr(),
-            ),
-            const SizedBox(height: AppThemes.spaceM),
-            if (widget.phoneError != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppThemes.spaceS),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: widget.theme.error,
-                      size: 16,
-                    ),
-                    const SizedBox(width: AppThemes.spaceXS),
-                    Text(
-                      widget.phoneError!,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: widget.theme.error,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Text(
-              'onboarding.phoneNumber.infoText'.tr(),
-              style: TextStyle(
-                fontSize: 14,
-                color: widget.phoneError != null ? widget.theme.error.withOpacity(0.7) : widget.theme.textSecondary,
-              ),
+              helperText: 'onboarding.phoneNumber.infoText'.tr(),
             ),
             const SizedBox(height: AppThemes.spaceL),
             Text(
@@ -144,7 +145,7 @@ class _PhoneNumberStepState extends State<PhoneNumberStep> {
             const SizedBox(height: AppThemes.spaceM),
             PasswordInput(
               theme: widget.theme,
-              controller: null,
+              controller: _passwordController,
               obscureText: !_isPasswordVisible,
               onToggleVisibility: () {
                 setState(() {

@@ -5,7 +5,7 @@ import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/forgot_password_otp_screen.dart';
 import '../../features/onboarding/screens/onboarding_main_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
-import '../../features/onboarding/steps/admin_approval_screen.dart';
+import '../../shared/screens/admin_approval_screen.dart';
 
 class SimpleRouter {
   static final GoRouter router = _createRouter();

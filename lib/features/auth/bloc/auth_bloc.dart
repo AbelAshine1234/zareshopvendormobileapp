@@ -28,8 +28,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       
       if (result['success'] == true) {
-        // Login successful
-        emit(const AuthSuccess());
+        final data = (result['data'] as Map<String, dynamic>?) ?? {};
+        // Log full response already printed in ApiService; also emit raw data for UI/testing
+        emit(AuthLoginResponse(data));
       } else {
         // Login failed
         emit(AuthError(message: result['error'] ?? 'Login failed'));

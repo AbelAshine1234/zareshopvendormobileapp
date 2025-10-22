@@ -3,13 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/theme/theme_provider.dart';
-import '../../../shared/theme/app_themes.dart';
-import '../../../shared/widgets/theme_selector/theme_selector_button.dart';
-import '../../../shared/widgets/language_selector/language_switcher_button.dart';
+import '../../../shared/shared.dart';
 import '../../../core/services/localization_service.dart';
-import '../../../shared/widgets/inputs/password_input.dart';
-import '../../../shared/widgets/inline_error_banner.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -26,29 +21,29 @@ class ForgotPasswordOtpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AuthBloc(),
-      child: _ForgotPasswordOtpView(phoneNumber: phoneNumber),
+      child: _ForgotPasswordOtpView(phoneNumber: phoneNumber, otpCountdown: 60),
     );
   }
 }
 
 class _ForgotPasswordOtpView extends StatefulWidget {
   final String phoneNumber;
+  final int otpCountdown;
 
-  const _ForgotPasswordOtpView({required this.phoneNumber});
+  const _ForgotPasswordOtpView({required this.phoneNumber, this.otpCountdown = 60});
 
   @override
   State<_ForgotPasswordOtpView> createState() => _ForgotPasswordOtpViewState();
 }
 
 class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
-  final List<TextEditingController> _otpControllers = List.generate(6, (index) => TextEditingController());
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String? _passwordError;
   String? _confirmPasswordError;
-  final List<FocusNode> _otpFocusNodes = List.generate(6, (index) => FocusNode());
+  String _otpCode = '';
 
   @override
   void initState() {
@@ -57,12 +52,6 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
 
   @override
   void dispose() {
-    for (var controller in _otpControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in _otpFocusNodes) {
-      focusNode.dispose();
-    }
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -343,71 +332,19 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
               ),
               const SizedBox(height: 10),
               
-              Center(
-                child: Wrap(
-                  spacing: gap,
-                  runSpacing: gap,
-                  children: List.generate(6, (index) {
-                    return SizedBox(
-                      width: boxWidth,
-                      height: 56,
-                      child: TextField(
-                        controller: _otpControllers[index],
-                        focusNode: _otpFocusNodes[index],
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        maxLength: 1,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        onChanged: (value) {
-                          if (value.isNotEmpty) {
-                            if (index < 5) {
-                              _otpFocusNodes[index + 1].requestFocus();
-                            } else {
-                              _otpFocusNodes[index].unfocus();
-                            }
-                          } else {
-                            if (index > 0) {
-                              _otpFocusNodes[index - 1].requestFocus();
-                            }
-                          }
-                        },
-                        decoration: InputDecoration(
-                          counterText: '',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: theme.border,
-                              width: 1.5,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: theme.border,
-                              width: 1.5,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: theme.primary,
-                              width: 2,
-                            ),
-                          ),
-                          filled: true,
-                          fillColor: theme.background,
+              OtpInput(
+                theme: theme,
+                otpCountdown: widget.otpCountdown,
+                onResend: () {
+                  context.read<AuthBloc>().add(
+                        ForgotPasswordRequested(
+                          phoneNumber: widget.phoneNumber,
                         ),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: theme.textPrimary,
-                        ),
-                      ),
-                    );
-                  }),
-                ),
+                      );
+                },
+                onChanged: (otp) {
+                  _otpCode = otp;
+                },
               ),
               const SizedBox(height: 24),
 
@@ -504,87 +441,50 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
               const SizedBox(height: 24),
 
               // Reset Password Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          final otpCode = _otpControllers.map((controller) => controller.text).join('');
-                          if (otpCode.length == 6 &&
-                              _passwordError == null &&
-                              _confirmPasswordError == null &&
-                              _newPasswordController.text.isNotEmpty) {
-                            context.read<AuthBloc>().add(
-                                  ResetPasswordRequested(
-                                    phoneNumber: widget.phoneNumber,
-                                    otp: otpCode,
-                                    newPassword: _newPasswordController.text,
-                                  ),
-                                );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('auth.verifyOtp.fillFields'.tr()),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    disabledBackgroundColor: theme.primary.withValues(alpha: 0.6),
-                  ),
-                  child: isLoading
-                      ? SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white),
-                          ),
-                        )
-                      : Text(
-                          'auth.verifyOtp.resetPassword'.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
+              AppPrimaryButton(
+                text: 'auth.verifyOtp.resetPassword'.tr(),
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        // Read OTP from the global input by focusing its controllers is not necessary.
+                        // Instead, require AuthBloc to keep latest OTP from onChanged if needed.
+                        final otpCode = _otpCode;
+                        if (otpCode.length == 6 &&
+                            _passwordError == null &&
+                            _confirmPasswordError == null &&
+                            _newPasswordController.text.isNotEmpty) {
+                          context.read<AuthBloc>().add(
+                                ResetPasswordRequested(
+                                  phoneNumber: widget.phoneNumber,
+                                  otp: otpCode,
+                                  newPassword: _newPasswordController.text,
+                                ),
+                              );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('auth.verifyOtp.fillFields'.tr()),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                isLoading: isLoading,
               ),
 
               const SizedBox(height: 20),
               Divider(color: theme.border),
               const SizedBox(height: 12),
-              // Resend OTP Button
-              Center(
-                child: TextButton(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          context.read<AuthBloc>().add(
-                                ForgotPasswordRequested(
-                                  phoneNumber: widget.phoneNumber,
-                                ),
-                              );
-                        },
-                  child: Text(
-                    'auth.verifyOtp.resendCode'.tr(),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: theme.primary,
-                    ),
-                  ),
-                ),
+              // Resend OTP Widget
+              OTPTimerWithResendWidget(
+                onResendPressed: () {
+                  context.read<AuthBloc>().add(
+                        ForgotPasswordRequested(
+                          phoneNumber: widget.phoneNumber,
+                        ),
+                      );
+                },
+                initialDuration: widget.otpCountdown,
               ),
             ],
           ),

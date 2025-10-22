@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_themes.dart';
+import '../../utils/theme/app_themes.dart';
 
 class InlineErrorBanner extends StatelessWidget {
   final AppThemeData theme;

@@ -160,48 +160,19 @@
       "passwordLabel": "Jecha Iccitii",
       "passwordHint": "Jecha iccitii kee galchi"
     },
-    "otp": {
-      "title": "Bilbilaa Mirkaneessi",
-      "subtitle": "Koodii mirkaneessaa bilbilaa kee irratti ergame galchi",
-      "verificationCode": "Koodii Mirkaneessaa",
-      "resendCode": "Koodii Hallee Ergi",
-      "resendIn": "Itti deebi'i erguu sekondii {seconds} keessatti",
-      "verify": "Mirkaneessi",
-      "otpError": "Koodii mirkaneessaa dogoggora",
-      "didntReceive": "Koodiin hin dhufne? SMS kee ilaali yookaan irra deebi'i ergii.",
-      "sentSuccess": "OTP milkaa'inaan ergame"
-    },
     "basicInfo": {
       "title": "Hubannoo Jalqabaa",
       "subtitle": "Waa'ee qarshii kee nuu himi",
-      "firstName": "Maqaa Jalqabaa",
-      "lastName": "Maqaa Dhumaa",
       "businessName": "Maqaa Qarshii",
-      "email": "Guyyaa Imeelii",
-      "businessDescription": "Ibsa Qarshii",
-      "category": "Gosa Qarshii",
-      "categories": "Gosa Qarshii",
-      "continue": "Fuuldura deemuu",
-      "helperDescription": "Ibsi gaarii maallaqa ati kennitu akka hubatamu gargaara.",
       "nameHint": "Maqaa qarshii kee galchi",
+      "businessDescription": "Ibsa Qarshii",
       "descriptionHint": "Waa'ee qarshii kee, oomishaa fi tajaajila ibsi...",
-      "selectedCategories": "Gosa Filataman",
-      "selectCategories": "Gosa Filadhu",
-      "unknown": "Hin beekamne",
-      "selectAtLeastOne": "Gosa tokko ol filadhu"
+      "helperDescription": "Ibsi gaarii maallaqa ati kennitu akka hubatamu gargaara."
     },
     "documents": {
-      "title": "Dokumantii",
-      "subtitle": "Dokumantii barbaachisan fuudhu",
-      "faydaId": "Lakkoofsa Fayda ID",
-      "faydaIdPhoto": "Suuraa Fayda ID",
-      "businessLicense": "Hayyama Daldalaa",
-      "businessLicensePhoto": "Suuraa Hayyama Daldalaa",
-      "taxId": "ID Gibiraa",
-      "uploadDocument": "Dokumantii Fe'u",
-      "continue": "Fuuldura deemuu",
       "kycTitle": "Mirkaneessa KYC",
       "kycSubtitle": "Dokumantii barbaachisu Mirkaneessa Beekumsa Maamila (KYC)f fe'i.",
+      "businessLicense": "Hayyama Daldalaa",
       "businessLicenseRequired": "Hayyama Daldalaa *",
       "businessLicenseDesc": "Galmee hojii kee ykn hayyama daldalaa KYCf fe'i",
       "coverImage": "Suuraa Fuula Daldalaa",
@@ -216,15 +187,10 @@
     "shippingAddress": {
       "title": "Teessoo Ergi",
       "subtitle": "Ajajoota eessa geessina?",
-      "addressLine1": "Teessoo Tarkaanfii 1",
-      "addressLine2": "Teessoo Tarkaanfii 2",
       "city": "Magaalaa",
-      "region": "Naannoo",
       "subcity": "Magaalaa Gidduu",
       "woreda": "Woreda",
-      "kebele": "Kebele",
-      "postalCode": "Koodii Poostaa",
-      "continue": "Fuuldura deemuu",
+      "region": "Naannoo",
       "location": "Iddoo",
       "tapToSelectOnMap": "Kaartaa irratti iddoo filachuu irratti tuqi",
       "pickLocation": "Iddoo Fili",
@@ -235,10 +201,6 @@
       "regionHint": "fakkeenyaaf, Finfinnee"
     },
     "subscription": {
-      "title": "Dhaabbata Filadhu",
-      "subtitle": "Qarshii kee irratti hojjatuu qarshii filadhu",
-      "continue": "Fuuldura deemuu",
-      "agreeTerms": "Haala fi shiraa waliin walii gala",
       "choosePlanTitle": "Karoora Kee Fili",
       "choosePlanSubtitle": "Eegaluu fi karoora abbaa-alangaa fili",
       "loading": "Karooraa banuu keessa jirra...",
@@ -253,7 +215,7 @@
       "benefitsTitle": "Faayidaa Karooraa",
       "benefitsBullets": "• Yeroo kamiyyuu fooyyessuu yookiin hir'isuun ni dandeessa\n• Karoora hunda keessa tajaajila deeggartaa ni jira\n• Kaffaltii nagaan ni raawwatama\n• Yeroon kamiyyuu haquu ni dandeessa kaffaltiin dabalataa hin jiru",
       "agreeToPrefix": "Waliigaltee kanaan walii gala",
-      "termsLink": "waliigaltee tajaajilaa fi haala"
+      "termsLink": "Waliigaltee fi Haala"
     },
     "terms": {
       "title": "Waliigaltee fi Haala",
@@ -284,20 +246,10 @@
     "payout": {
       "title": "Hubannoo Kaffaltii",
       "subtitle": "Kaffaltii akkamitti fudhachuu barbaaddu?",
-      "payoutMethod": "Karaa Kaffaltii",
-      "bankAccount": "Herrega Baankii",
-      "mobileWallet": "Waletii Mobilaa",
-      "accountHolderName": "Maqaa Abbaa Herregaa",
-      "bankName": "Maqaa Baankii",
-      "accountNumber": "Lakkoofsi Herregaa",
-      "mobileWalletNumber": "Lakkoofsi Waletii Mobilaa",
       "confirmDetails": "Hubannoo kun sirrii ta'e mirkaneessa",
       "authorizePayout": "Zareshop kaffaltii hojjachuu anaan fayyadama",
-      "continue": "Fuuldura deemuu",
       "accountDetails": "Faayidaa Herregaa",
       "paymentAgreement": "Waliigaltee Kaffaltii",
-      "confirmDetailsLong": "Ibsa kaffaltii kennaman sirrii ta'uu fi kan anaati akka ta'e nan mirkaneessa",
-      "authorizePayoutLong": "Kaffaltii iddoo herregaa kenname irratti akka raawwatamu Zareshop akka hojjetu nan hayyama",
       "secureTitle": "Nageenyaan Kan Eegame",
       "secureDesc": "Odeeffannoon kaffaltii kee tikfamee tursiifama; odeeffannoo maallaqaa kee garee sadaffaa waliin hin qoodamu."
     },
@@ -306,6 +258,22 @@
       "subtitle": "Akkaawuntii kee sirrii ta'een uumame",
       "description": "Amma qarshii kee bulchuu fi qabiyyee dabaluu danda'a.",
       "getStarted": "Jalqabaa"
+    },
+    "adminApproval": {
+      "readyTitle": "Erguu Qophaa'e",
+      "reviewIntro": "Odeeffannoo kee mirkaneessi fi galmee admin eeyyamamuuf ergi.",
+      "awaitingTitle": "Eeyyama Admin Eeguu",
+      "awaitingDesc": "Galmeen kee admin keenyaatiin sa'aatii 24-48 keessatti ilaallama. Yeroo eeyyamamu beeksisa argatta.",
+      "whatNext": "Maal Itti Fufa?",
+      "timelineSubmittedTitle": "Galmee Ergame",
+      "timelineSubmittedDesc": "Galmee qarshii kee sirrii ta'een ergame",
+      "timelineReviewTitle": "Mirkaneessa Admin",
+      "timelineReviewDesc": "Gareen keenya warqee fi odeeffannoo qarshii kee ilaalla",
+      "timelineNotifyTitle": "Beeksisa Eeyyama",
+      "timelineNotifyDesc": "Yeroo eeyyamamu email fi beeksisa app argatta",
+      "timelineStartTitle": "Gurguru Jalqabaa",
+      "timelineStartDesc": "Qabiyyee dabaluu fi dukaana kee bulchuu jalqabaa",
+      "submitApplication": "Galmee Ergi"
     },
     "vendorSubmitted": {
       "title": "Galmeen kee ergame!",
@@ -326,6 +294,20 @@
       "hint": "Mee odeeffannoo kee ilaali fi irra deebi'i. Rakkoon yoo itti fufe, tajaajila deeggartaa quunnami.",
       "tryAgain": "Irra deebi'i yaali",
       "contactSupport": "Deeggarsa Quunnami"
+    },
+    "businessNameConflict": {
+      "title": "Maqaan Daldalaa Walqabatee",
+      "headerTitle": "Maqaan Daldalaa Duraan Jira",
+      "headerDesc": "Maqaan daldalaa kee kan galchite kan daldalaa biraa fudhatee jira.",
+      "conflictTitle": "Walqabatee Maqaa",
+      "conflictDesc": "Maqaan daldalaa '{originalName}' duraan galmaa'ee jira. Mee maqaa daldalaa kee adda addaa filadhu.",
+      "newNameLabel": "Maqaan Daldalaa Haaraa",
+      "newNameHint": "Maqaan daldalaa adda addaa galchi",
+      "nameRequired": "Maqaan daldalaa barbaachisa",
+      "nameTooShort": "Maqaan daldalaa yoo danda'ame 3 qabxii tokko tokkoo ta'uu qaba",
+      "nameHelp": "Maqaan daldalaa kee adda addaa filadhu",
+      "retryButton": "Maqaan Haaraa Waliin Galchi",
+      "backButton": "Fooyya'iif Deebi'i"
     }
   },
   "dashboard": {
@@ -421,6 +403,7 @@
     "timeoutError": "Gaafii guyyaa darbee. Mee hallee.",
     "userExists": "Fayyadamni duraan jiru. Mee seeni.",
     "invalidOtp": "Koodiin mirkaneessaa sirrii miti.",
+    "otpExpired": "Koodiin mirkaneessaa yeroon isaa darbeera. Mee koodii haaraa gaafadhu.",
     "invalidCredentials": "Lakkoofsi bilbilaa ykn jecha iccitii dogoggora.",
     "phoneInUse": "Lakkoofsi bilbilaa kun duraan itti fayyadame.",
     "userNotFound": "Fayyadamaan lakkoofsa bilbilaa kanaan hin argamne.",
@@ -432,6 +415,7 @@
     "required": "Bakka kun barbaachisa",
     "email": "Mee guyyaa imeelii sirrii ta'e galchi",
     "phone": "Mee lakkoofsi bilbilaa sirrii ta'e galchi",
+    "phone9Digits": "Lakkoofsi bilbilaa digiitii 9 ta'uu qaba",
     "password": "Jecha iccitii digiitii 6 ta'uu qaba",
     "confirmPassword": "Jecha iccitii wal hin fakkaatan",
     "minLength": "Digiitii {min} ta'uu qaba",
@@ -462,5 +446,17 @@
       "basic": "Bu'uuraa"
     },
     "footer": "Fudhaatoota milkeessuuf jajjabeessuu"
+  }
+  ,
+  "otp": {
+    "title": "Bilbilaa Mirkaneessi",
+    "subtitle": "Koodii mirkaneessaa bilbilaa kee irratti ergame galchi",
+    "verificationCode": "Koodii Mirkaneessaa",
+    "resendCode": "Koodii Hallee Ergi",
+    "resendIn": "Itti deebi'i erguu sekondii {seconds} keessatti",
+    "verify": "Mirkaneessi",
+    "otpError": "Koodii mirkaneessaa dogoggora",
+    "didntReceive": "Koodiin hin dhufne? SMS kee ilaali yookaan irra deebi'i ergii.",
+    "sentSuccess": "OTP milkaa'inaan ergame"
   }
 }

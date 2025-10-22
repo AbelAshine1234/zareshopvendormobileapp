@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../theme/theme_provider.dart';
-import '../../theme/app_themes.dart';
+import '../../utils/theme/theme_provider.dart';
+import '../../utils/theme/app_themes.dart';
 
 class AppTextField extends StatefulWidget {
   final String label;
@@ -168,52 +168,6 @@ class AppEmailField extends StatelessWidget {
   }
 }
 
-class AppPhoneField extends StatelessWidget {
-  final String label;
-  final Function(String) onChanged;
-  final String? initialValue;
-  final bool required;
-  final bool enabled;
-  final TextEditingController? controller;
-
-  const AppPhoneField({
-    super.key,
-    this.label = 'Phone Number',
-    required this.onChanged,
-    this.initialValue,
-    this.required = true,
-    this.enabled = true,
-    this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppTextField(
-      label: label,
-      hint: '912345678',
-      keyboardType: TextInputType.phone,
-      onChanged: onChanged,
-      initialValue: initialValue,
-      required: required,
-      enabled: enabled,
-      controller: controller,
-      prefixIcon: const Icon(Icons.phone_outlined),
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        LengthLimitingTextInputFormatter(9),
-      ],
-      validator: (value) {
-        if (required && (value == null || value.isEmpty)) {
-          return 'Phone number is required';
-        }
-        if (value != null && value.isNotEmpty && value.length != 9) {
-          return 'Phone number must be 9 digits';
-        }
-        return null;
-      },
-    );
-  }
-}
 
 class AppPasswordField extends StatefulWidget {
   final String label;

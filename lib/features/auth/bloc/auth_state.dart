@@ -55,3 +55,8 @@ class AuthChecking extends AuthState {
 class AuthWaitingApproval extends AuthState {
   const AuthWaitingApproval();
 }
+
+class AuthLoginResponse extends AuthState {
+  final Map<String, dynamic> data;
+  const AuthLoginResponse(this.data);
+}

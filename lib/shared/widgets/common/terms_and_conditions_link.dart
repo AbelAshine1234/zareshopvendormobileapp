@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_themes.dart';
+import '../../utils/theme/app_themes.dart';
 import '../dialogs/terms_and_conditions_dialog.dart';
 import '../../../core/services/localization_service.dart';
 
