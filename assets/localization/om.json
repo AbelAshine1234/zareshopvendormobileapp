@@ -434,6 +434,13 @@
     "themeDescription": "Qarshii kee irratti hojjatuu mata duree filadhu",
     "changeTheme": "Mata Duree Jijjiiraa"
   },
+  "navigation": {
+    "home": "Mana",
+    "portfolio": "Portfolio",
+    "feed": "Qabii",
+    "balance": "Hirmaata",
+    "settings": "Seenuu"
+  },
   "splash": {
     "subtitlePortal": "Poortalii Fudhaataa Keessan",
     "tagline": "Bulchi • Gurguri • Guddiinsi",
@@ -456,7 +463,7 @@
     "resendIn": "Itti deebi'i erguu sekondii {seconds} keessatti",
     "verify": "Mirkaneessi",
     "otpError": "Koodii mirkaneessaa dogoggora",
-    "didntReceive": "Koodiin hin dhufne? SMS kee ilaali yookaan irra deebi'i ergii.",
+    "didntReceive": "Koodiin hin dhufne? SMS kee ilaali. Badhaasni irra deebi'i erguu sekondii 60 booda mul'ata.",
     "sentSuccess": "OTP milkaa'inaan ergame"
   }
 }

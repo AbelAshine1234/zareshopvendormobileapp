@@ -291,6 +291,14 @@ class AppThemes {
     }
   }
 
+  // Get theme type by theme data
+  static AppThemeType getThemeType(AppThemeData theme) {
+    if (theme.name == coffee.name) return AppThemeType.coffee;
+    if (theme.name == green.name) return AppThemeType.green;
+    if (theme.name == basic.name) return AppThemeType.basic;
+    return AppThemeType.basic; // default fallback
+  }
+
   // Text Styles (using current theme)
   static TextStyle displayLarge(AppThemeData theme) => TextStyle(
     fontSize: 32,

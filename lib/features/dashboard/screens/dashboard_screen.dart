@@ -115,10 +115,20 @@ class DashboardView extends StatelessWidget {
                   ),
                 ),
               ),
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: theme.divider,
-                child: Icon(Icons.person, color: theme.textSecondary, size: 24),
+              // Theme and Language Icons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildThemeIcon(context, theme),
+                  const SizedBox(width: 8),
+                  _buildLanguageIcon(context, theme),
+                  const SizedBox(width: 8),
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: theme.divider,
+                    child: Icon(Icons.person, color: theme.textSecondary, size: 24),
+                  ),
+                ],
               ),
             ],
           ),
@@ -536,6 +546,133 @@ class DashboardView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  // Theme change icon
+  Widget _buildThemeIcon(BuildContext context, AppThemeData theme) {
+    return GestureDetector(
+      onTap: () => _showThemeDialog(context),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: theme.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: theme.divider),
+        ),
+        child: Icon(
+          Icons.palette_outlined,
+          color: theme.textPrimary,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
+  // Language change icon
+  Widget _buildLanguageIcon(BuildContext context, AppThemeData theme) {
+    return GestureDetector(
+      onTap: () => _showLanguageDialog(context),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: theme.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: theme.divider),
+        ),
+        child: Icon(
+          Icons.language_outlined,
+          color: theme.textPrimary,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
+  // Show theme selection dialog
+  void _showThemeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Choose Theme'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: AppThemes.allThemes.map((theme) {
+            final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+            final isSelected = themeProvider.currentTheme.name == theme.name;
+            
+            return ListTile(
+              leading: Text(theme.emoji, style: const TextStyle(fontSize: 24)),
+              title: Text(theme.name),
+              subtitle: Text(theme.description),
+              trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+              onTap: () {
+                themeProvider.setTheme(AppThemes.getThemeType(theme));
+                Navigator.of(dialogContext).pop();
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Show language selection dialog
+  void _showLanguageDialog(BuildContext context) {
+    final localization = Provider.of<LocalizationService>(context, listen: false);
+    final currentLang = localization.currentLanguage;
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Choose Language'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Text('🇺🇸', style: TextStyle(fontSize: 24)),
+              title: const Text('English'),
+              trailing: currentLang == 'en' ? const Icon(Icons.check, color: Colors.green) : null,
+              onTap: () {
+                localization.loadLanguage('en');
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            ListTile(
+              leading: const Text('🇪🇹', style: TextStyle(fontSize: 24)),
+              title: const Text('አማርኛ'),
+              trailing: currentLang == 'am' ? const Icon(Icons.check, color: Colors.green) : null,
+              onTap: () {
+                localization.loadLanguage('am');
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            ListTile(
+              leading: const Text('🇪🇹', style: TextStyle(fontSize: 24)),
+              title: const Text('Afaan Oromoo'),
+              trailing: currentLang == 'om' ? const Icon(Icons.check, color: Colors.green) : null,
+              onTap: () {
+                localization.loadLanguage('om');
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
     );
   }
 }

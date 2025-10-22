@@ -241,27 +241,6 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                   _otpCode = otp;
                 },
               ),
-              const SizedBox(height: 16),
-              
-              // Single clean resend button
-              Center(
-                child: OTPTimerWithResendWidget(
-                  onResendPressed: () {
-                    context.read<AuthBloc>().add(
-                          ForgotPasswordRequested(
-                            phoneNumber: widget.phoneNumber,
-                          ),
-                        );
-                  },
-                  initialDuration: widget.otpCountdown,
-                  textStyle: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: theme.primary,
-                  ),
-                ),
-              ),
-              
               const SizedBox(height: 24),
 
               // New Password Input

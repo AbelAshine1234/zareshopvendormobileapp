@@ -434,6 +434,13 @@
     "themeDescription": "ለንግድዎ የሚስማማ ገጽታ ይምረጡ",
     "changeTheme": "ገጽታ ቀይር"
   },
+  "navigation": {
+    "home": "ቤት",
+    "portfolio": "ፖርትፎሊዮ",
+    "feed": "መመገቢያ",
+    "balance": "ሚዛን",
+    "settings": "ቅንብሮች"
+  },
   "splash": {
     "subtitlePortal": "የነጋዴ ፖርታልዎ",
     "tagline": "አስተዳድር • ሽያጭ • እድገት",
@@ -456,7 +463,7 @@
     "resendIn": "ኮድ እንደገና ላክ በ {seconds} ሰከንድ",
     "verify": "አረጋግጥ",
     "otpError": "ትክክል ያልሆነ የማረጋገጫ ኮድ",
-    "didntReceive": "ኮዱ ካልደረሰ የኤስኤስኤምስ መልዕክቶችዎን ያረጋግጡ ወይም እንደገና ይላኩ።",
+    "didntReceive": "ኮዱ ካልደረሰ የኤስኤስኤምስ መልዕክቶችዎን ያረጋግጡ። የእንደገና ላክ ቁልፍ ከ60 ሰከንድ በኋላ ይታያል።",
     "sentSuccess": "OTP በተሳካ ሁኔታ ተልኳል"
   }
 }

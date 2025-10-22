@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
 import '../../../shared/shared.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/services/localization_service.dart';
+import '../../../core/constants/app_constants.dart' as core_constants;
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
 import '../bloc/profile_state.dart';
@@ -194,9 +192,9 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildAccountSection(BuildContext context, vendor, String currentLanguage) {
-    final currentLang = AppConstants.supportedLanguages.firstWhere(
+    final currentLang = core_constants.AppConstants.supportedLanguages.firstWhere(
       (lang) => lang['code'] == currentLanguage,
-      orElse: () => AppConstants.supportedLanguages.first,
+      orElse: () => core_constants.AppConstants.supportedLanguages.first,
     );
 
     return Column(
@@ -407,7 +405,7 @@ class _ProfileViewState extends State<ProfileView> {
         title: const Text('Select Language'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: AppConstants.supportedLanguages.map((lang) {
+          children: core_constants.AppConstants.supportedLanguages.map((lang) {
             final isSelected = lang['code'] == currentLanguage;
             return RadioListTile<String>(
               title: Text(lang['name']!),
@@ -437,12 +435,12 @@ class _ProfileViewState extends State<ProfileView> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(AppConstants.appName),
+        title: Text(core_constants.AppConstants.appName),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Version: ${AppConstants.appVersion}'),
+            Text('Version: ${core_constants.AppConstants.appVersion}'),
             const SizedBox(height: 16),
             const Text(
               'Zareshop Vendor App helps Ethiopian vendors manage their online business efficiently.',

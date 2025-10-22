@@ -434,6 +434,13 @@
     "themeDescription": "Select a theme that matches your business",
     "changeTheme": "Change Theme"
   },
+  "navigation": {
+    "home": "Home",
+    "portfolio": "Portfolio",
+    "feed": "Feed",
+    "balance": "Balance",
+    "settings": "Settings"
+  },
   "splash": {
     "subtitlePortal": "Your Vendor Portal",
     "tagline": "Manage • Sell • Grow",
@@ -482,7 +489,7 @@
     "resendIn": "Resend in {seconds} seconds",
     "verify": "Verify",
     "otpError": "Invalid verification code",
-    "didntReceive": "Didn't receive the code? Check your SMS messages or try resending.",
+    "didntReceive": "Didn't receive the code? Check your SMS messages. A resend button will appear after 60 seconds.",
     "sentSuccess": "OTP sent successfully"
   }
 }

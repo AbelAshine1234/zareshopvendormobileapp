@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/services/localization_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   bool _isPasswordVisible = false;
@@ -32,12 +33,41 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Log full response already printed in ApiService; also emit raw data for UI/testing
         emit(AuthLoginResponse(data));
       } else {
-        // Login failed
-        emit(AuthError(message: result['error'] ?? 'Login failed'));
+        // Login failed - provide specific error message
+        String errorMessage = result['error'] ?? 'Login failed';
+        
+        // Map common backend errors to user-friendly messages
+        if (errorMessage.toLowerCase().contains('invalid credentials') || 
+            errorMessage.toLowerCase().contains('invalid phone') ||
+            errorMessage.toLowerCase().contains('invalid password') ||
+            errorMessage.toLowerCase().contains('incorrect password') ||
+            errorMessage.toLowerCase().contains('phone number') ||
+            errorMessage.toLowerCase().contains('password')) {
+          errorMessage = 'errors.invalidCredentials'.tr();
+        } else if (errorMessage.toLowerCase().contains('user not found') ||
+                   errorMessage.toLowerCase().contains('phone number not found')) {
+          errorMessage = 'errors.userNotFound'.tr();
+        } else if (errorMessage.toLowerCase().contains('network') ||
+                   errorMessage.toLowerCase().contains('connection')) {
+          errorMessage = 'errors.networkError'.tr();
+        } else if (errorMessage.toLowerCase().contains('server') ||
+                   errorMessage.toLowerCase().contains('internal')) {
+          errorMessage = 'errors.serverError'.tr();
+        }
+        
+        emit(AuthError(message: errorMessage));
         emit(AuthInitial(isPasswordVisible: _isPasswordVisible));
       }
     } catch (e) {
-      emit(AuthError(message: 'Network error: ${e.toString()}'));
+      // Handle network and other errors
+      String errorMessage = 'errors.networkError'.tr();
+      if (e.toString().toLowerCase().contains('timeout')) {
+        errorMessage = 'errors.timeoutError'.tr();
+      } else if (e.toString().toLowerCase().contains('connection')) {
+        errorMessage = 'errors.networkError'.tr();
+      }
+      
+      emit(AuthError(message: errorMessage));
       emit(AuthInitial(isPasswordVisible: _isPasswordVisible));
     }
   }

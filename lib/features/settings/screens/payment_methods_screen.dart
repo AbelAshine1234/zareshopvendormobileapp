@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../shared/theme/theme_provider.dart';
-import '../../../shared/theme/app_themes.dart';
+import '../../../shared/shared.dart';
 import '../../../core/services/localization_service.dart';
-import '../../../shared/widgets/language_selector/language_switcher_button.dart';
 import '../../../core/services/api_service.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
@@ -143,7 +140,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: method['isVerified'] 
-                                ? AppTheme.successColor.withOpacity(0.1)
+                                ? AppTheme.successColor.withValues(alpha: 0.1)
                                 : Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
@@ -505,10 +502,10 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.successColor.withOpacity(0.1),
+                    color: AppTheme.successColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppTheme.successColor.withOpacity(0.3),
+                      color: AppTheme.successColor.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(

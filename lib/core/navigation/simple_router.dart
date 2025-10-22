@@ -5,7 +5,12 @@ import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/forgot_password_otp_screen.dart';
 import '../../features/onboarding/screens/onboarding_main_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
+import '../../features/orders/screens/orders_screen.dart';
+import '../../features/products/screens/products_screen.dart';
+import '../../features/wallet/screens/wallet_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
 import '../../shared/screens/admin_approval_screen.dart';
+import 'main_navigation.dart';
 
 class SimpleRouter {
   static final GoRouter router = _createRouter();
@@ -74,7 +79,39 @@ class SimpleRouter {
           name: 'dashboard',
           builder: (context, state) {
             print('🏠 [SIMPLE_ROUTER] Dashboard route (/) accessed');
-            return const DashboardScreen();
+            return const MainNavigation(child: DashboardScreen());
+          },
+        ),
+        GoRoute(
+          path: '/orders',
+          name: 'orders',
+          builder: (context, state) {
+            print('📦 [SIMPLE_ROUTER] Orders route accessed');
+            return const MainNavigation(child: OrdersScreen());
+          },
+        ),
+        GoRoute(
+          path: '/products',
+          name: 'products',
+          builder: (context, state) {
+            print('🛍️ [SIMPLE_ROUTER] Products route accessed');
+            return const MainNavigation(child: ProductsScreen());
+          },
+        ),
+        GoRoute(
+          path: '/wallet',
+          name: 'wallet',
+          builder: (context, state) {
+            print('💰 [SIMPLE_ROUTER] Wallet route accessed');
+            return const MainNavigation(child: WalletScreen());
+          },
+        ),
+        GoRoute(
+          path: '/profile',
+          name: 'profile',
+          builder: (context, state) {
+            print('👤 [SIMPLE_ROUTER] Profile route accessed');
+            return const MainNavigation(child: ProfileScreen());
           },
         ),
       ],

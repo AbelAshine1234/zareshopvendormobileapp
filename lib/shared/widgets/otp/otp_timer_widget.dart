@@ -172,11 +172,34 @@ class OTPTimerWithResendWidget extends StatefulWidget {
 
 class _OTPTimerWithResendWidgetState extends State<OTPTimerWithResendWidget> {
   final GlobalKey<_OTPTimerWidgetState> _timerKey = GlobalKey<_OTPTimerWidgetState>();
+  bool _showResendButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Set up a timer to check when countdown finishes
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      if (mounted) {
+        final timerState = _timerKey.currentState;
+        if (timerState != null && !timerState.isActive && !_showResendButton) {
+          setState(() {
+            _showResendButton = true;
+          });
+          timer.cancel();
+        }
+      } else {
+        timer.cancel();
+      }
+    });
+  }
 
   /// Reset the timer and call the resend callback
   void _handleResend() {
-    if (widget.isResendEnabled && !_timerKey.currentState!.isActive) {
+    if (widget.isResendEnabled && _showResendButton) {
       _timerKey.currentState!.resetTimer();
+      setState(() {
+        _showResendButton = false;
+      });
       widget.onResendPressed?.call();
     }
   }
@@ -194,24 +217,38 @@ class _OTPTimerWithResendWidgetState extends State<OTPTimerWithResendWidget> {
           showResendText: false,
           autoStart: widget.autoStart,
         ),
-        if (!(_timerKey.currentState?.isActive ?? false))
+        if (_showResendButton) ...[
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: _handleResend,
-            child: Text(
-              widget.resendText,
-              style: widget.textStyle ?? 
-                TextStyle(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: widget.isResendEnabled 
+                  ? (widget.textColor ?? Theme.of(context).primaryColor).withValues(alpha: 0.1)
+                  : Colors.grey[100],
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
                   color: widget.isResendEnabled 
-                    ? (widget.textColor ?? Theme.of(context).primaryColor)
-                    : Colors.grey[400],
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  decoration: widget.isResendEnabled 
-                    ? TextDecoration.underline 
-                    : TextDecoration.none,
+                    ? (widget.textColor ?? Theme.of(context).primaryColor).withValues(alpha: 0.3)
+                    : Colors.grey[300]!,
+                  width: 1,
                 ),
+              ),
+              child: Text(
+                widget.resendText,
+                style: widget.textStyle ?? 
+                  TextStyle(
+                    color: widget.isResendEnabled 
+                      ? (widget.textColor ?? Theme.of(context).primaryColor)
+                      : Colors.grey[400],
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+              ),
             ),
           ),
+        ],
       ],
     );
   }

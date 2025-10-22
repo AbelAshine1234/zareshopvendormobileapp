@@ -81,7 +81,7 @@ class _LoginViewState extends State<_LoginView> {
         } else if (state is AuthSignupRequested) {
           context.go('/onboarding');
         } else if (state is AuthError) {
-          setState(() { _inlineErrorMessage = 'errors.unknownError'.tr(); });
+          setState(() { _inlineErrorMessage = state.message; });
         } else if (state is AuthLoginResponse) {
           final user = state.data['user'] as Map<String, dynamic>?;
           final vendorVerified = (user?['vendor_verified'] == true) || (user?['vendorApproved'] == true);
