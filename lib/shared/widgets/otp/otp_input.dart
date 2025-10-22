@@ -11,6 +11,9 @@ class OtpInput extends StatefulWidget {
   final int otpCountdown; // seconds
   final VoidCallback? onResend;
   final ValueChanged<String>? onChanged; // emits combined OTP when any box changes
+  // Display controls for reuse in different contexts
+  final bool showTitleSubtitle;
+  final bool showVerificationLabel;
 
   /// Optional error string or code. If [errorCode] is provided as 'OTP_EXPIRED' or 'INVALID_OTP',
   /// it will be localized here; otherwise [errorText] will be shown as-is.
@@ -26,6 +29,8 @@ class OtpInput extends StatefulWidget {
     this.onChanged,
     this.errorText,
     this.errorCode,
+    this.showTitleSubtitle = true,
+    this.showVerificationLabel = true,
   });
 
   @override
@@ -78,21 +83,25 @@ class _OtpInputState extends State<OtpInput> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'otp.title'.tr(),
-          style: AppThemes.headlineLarge(widget.theme),
-        ),
-        const SizedBox(height: AppThemes.spaceM),
-        Text(
-          'otp.subtitle'.tr(),
-          style: AppThemes.bodyLarge(widget.theme),
-        ),
-        const SizedBox(height: AppThemes.spaceXL),
-        Text(
-          'otp.verificationCode'.tr(),
-          style: AppThemes.titleLarge(widget.theme),
-        ),
-        const SizedBox(height: AppThemes.spaceM),
+        if (widget.showTitleSubtitle) ...[
+          Text(
+            'otp.title'.tr(),
+            style: AppThemes.headlineLarge(widget.theme),
+          ),
+          const SizedBox(height: AppThemes.spaceM),
+          Text(
+            'otp.subtitle'.tr(),
+            style: AppThemes.bodyLarge(widget.theme),
+          ),
+          const SizedBox(height: AppThemes.spaceXL),
+        ],
+        if (widget.showVerificationLabel) ...[
+          Text(
+            'otp.verificationCode'.tr(),
+            style: AppThemes.titleLarge(widget.theme),
+          ),
+          const SizedBox(height: AppThemes.spaceM),
+        ],
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(widget.length, (index) {

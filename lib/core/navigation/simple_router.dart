@@ -64,7 +64,9 @@ class SimpleRouter {
           name: 'admin-approval',
           builder: (context, state) {
             print('⏳ [SIMPLE_ROUTER] Admin approval route accessed');
-            return const AdminApprovalScreen();
+            final fromParam = state.uri.queryParameters['from'];
+            final showBack = fromParam == 'login';
+            return AdminApprovalScreen(showBack: showBack);
           },
         ),
         GoRoute(

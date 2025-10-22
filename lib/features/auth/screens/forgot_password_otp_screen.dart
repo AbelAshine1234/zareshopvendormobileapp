@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -216,125 +215,21 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
     );
   }
 
-  Widget _buildHeader(AppThemeData theme) {
-    return Column(
-      children: [
-        // Header row with back button and title
-        Row(
-          children: [
-            const SizedBox(width: 0),
-            // Title (left-aligned, pushed further down)
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: Text(
-                      'auth.verifyOtp.title'.tr(),
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: theme.primary,
-                        letterSpacing: 1,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(
-                      'auth.verifyOtp.subtitle'.tr(params: {'phoneNumber': widget.phoneNumber}),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: theme.textSecondary,
-                        letterSpacing: 0.5,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDescription(AppThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'auth.verifyOtp.description'.tr(),
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: theme.textPrimary,
-            height: 1.3,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'auth.verifyOtp.descriptionText'.tr(),
-          style: TextStyle(
-            fontSize: 16,
-            color: theme.textSecondary,
-            height: 1.5,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildOtpVerificationCard(AppThemeData theme) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
-        final screenWidth = MediaQuery.of(context).size.width;
-        final horizontalPadding = 28.0; // matches container padding
-        final gap = 10.0; // Wrap spacing
-        final available = screenWidth - (24 * 2) - (horizontalPadding * 2); // page horizontal padding + card padding
-        final computedWidth = (available - gap * 5) / 6;
-        final boxWidth = computedWidth.clamp(44.0, 56.0);
 
-        return Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: theme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: theme.border,
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadow,
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
+        return AppCard(
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top label and inputs
-              Text(
-                'auth.verifyOtp.verificationCode'.tr(),
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: theme.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 10),
-              
               OtpInput(
                 theme: theme,
                 otpCountdown: widget.otpCountdown,
+                showTitleSubtitle: false,
+                showVerificationLabel: true,
                 onResend: () {
                   context.read<AuthBloc>().add(
                         ForgotPasswordRequested(
@@ -346,6 +241,27 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                   _otpCode = otp;
                 },
               ),
+              const SizedBox(height: 16),
+              
+              // Single clean resend button
+              Center(
+                child: OTPTimerWithResendWidget(
+                  onResendPressed: () {
+                    context.read<AuthBloc>().add(
+                          ForgotPasswordRequested(
+                            phoneNumber: widget.phoneNumber,
+                          ),
+                        );
+                  },
+                  initialDuration: widget.otpCountdown,
+                  textStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: theme.primary,
+                  ),
+                ),
+              ),
+              
               const SizedBox(height: 24),
 
               // New Password Input
@@ -472,20 +388,6 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                 isLoading: isLoading,
               ),
 
-              const SizedBox(height: 20),
-              Divider(color: theme.border),
-              const SizedBox(height: 12),
-              // Resend OTP Widget
-              OTPTimerWithResendWidget(
-                onResendPressed: () {
-                  context.read<AuthBloc>().add(
-                        ForgotPasswordRequested(
-                          phoneNumber: widget.phoneNumber,
-                        ),
-                      );
-                },
-                initialDuration: widget.otpCountdown,
-              ),
             ],
           ),
         );

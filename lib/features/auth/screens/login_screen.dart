@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -82,24 +81,14 @@ class _LoginViewState extends State<_LoginView> {
         } else if (state is AuthSignupRequested) {
           context.go('/onboarding');
         } else if (state is AuthError) {
-          // final errorKey = GlobalErrorHandler.getErrorKey(state.message);
-          setState(() { _inlineErrorMessage = "Error occurred"; });
-          // GlobalErrorHandler.showError(
-          //   context,
-          //   state.message,
-          //   onRetry: () {
-          //     setState(() {
-          //       _inlineErrorMessage = null;
-          //     });
-          //   },
-          // );
+          setState(() { _inlineErrorMessage = 'errors.unknownError'.tr(); });
         } else if (state is AuthLoginResponse) {
           final user = state.data['user'] as Map<String, dynamic>?;
           final vendorVerified = (user?['vendor_verified'] == true) || (user?['vendorApproved'] == true);
           if (vendorVerified) {
             context.go('/');
           } else {
-            context.go('/admin-approval');
+            context.go('/admin-approval?from=login');
           }
         }
       },
@@ -162,44 +151,7 @@ class _LoginViewState extends State<_LoginView> {
                       // Inline error banner if any
                       _maybeErrorBanner(theme),
 
-                      // If we have a raw login response, show it for testing
-                      Builder(builder: (_) {
-                        final state = context.read<AuthBloc>().state;
-                        if (state is AuthLoginResponse) {
-                          const encoder = JsonEncoder.withIndent('  ');
-                          final pretty = encoder.convert(state.data);
-                          return Column(children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: theme.info.withValues(alpha: 0.08),
-                                border: Border.all(color: theme.info.withValues(alpha: 0.35), width: 1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.info_outline, color: theme.info, size: 18),
-                                      const SizedBox(width: 6),
-                                      Text('Login Response (testing)', style: TextStyle(color: theme.info, fontWeight: FontWeight.w700)),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Text(pretty, style: TextStyle(color: theme.textPrimary, fontSize: 12)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                          ]);
-                        }
-                        return const SizedBox.shrink();
-                      }),
+                      // Testing panel removed
 
                       // Card with form
                       _buildLoginCard(theme),
@@ -335,15 +287,6 @@ class _LoginViewState extends State<_LoginView> {
               const SizedBox(height: 16),
 
                       // Phone Number Input
-                      Text(
-                        'auth.login.phoneNumber'.tr(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: theme.labelText,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       PhoneInput(
                         theme: theme,
                         controller: _phoneController,
@@ -351,7 +294,7 @@ class _LoginViewState extends State<_LoginView> {
                         onChangedDigitsOnly: _validateEthiopianPhone,
                         countryCode: '+251',
                         hintDigits: 'auth.login.phoneHint'.tr(),
-                        label: 'auth.login.phoneLabel'.tr(),
+                        label: 'auth.login.phoneNumber'.tr(),
                       ),
 
               const SizedBox(height: 14),

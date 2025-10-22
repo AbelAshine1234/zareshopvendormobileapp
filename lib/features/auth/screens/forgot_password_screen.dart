@@ -152,24 +152,8 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
 
                       const SizedBox(height: 24),
 
-                      // Brand header (reuse pattern from login)
-                      SizedBox(
-                        height: 64,
-                        child: Image.asset(
-                          'assets/logo/logo-green.png',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'ZareShop',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: theme.primary,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                      // Brand header (theme-aware)
+                      _buildBrandHeader(theme, themeProvider.currentThemeType),
 
                       const SizedBox(height: 16),
 
@@ -335,15 +319,6 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
               const SizedBox(height: 24),
               
               // Phone Number Input
-              Text(
-                'auth.forgotPassword.phoneNumber'.tr(),
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: theme.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 8),
               PhoneInput(
                 theme: theme,
                 controller: _phoneController,
@@ -351,7 +326,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                 onChangedDigitsOnly: _validateEthiopianPhone,
                 countryCode: '+251',
                 hintDigits: 'auth.forgotPassword.phoneHint'.tr(),
-                label: 'auth.forgotPassword.phoneLabel'.tr(),
+                label: 'auth.forgotPassword.phoneNumber'.tr(),
               ),
               if (_phoneError != null)
                 Padding(
@@ -406,6 +381,40 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBrandHeader(AppThemeData theme, AppThemeType themeType) {
+    String _logoForTheme(AppThemeType t) {
+      switch (t) {
+        case AppThemeType.coffee:
+          return 'assets/logo/logo-coffe.png';
+        case AppThemeType.green:
+          return 'assets/logo/logo-green.png';
+        case AppThemeType.basic:
+          return 'assets/logo/logo-basic.png';
+      }
+    }
+    return Column(
+      children: [
+        SizedBox(
+          height: 64,
+          child: Image.asset(
+            _logoForTheme(themeType),
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'ZareShop',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: theme.primary,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
     );
   }
 

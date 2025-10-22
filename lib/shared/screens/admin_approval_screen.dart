@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../shared.dart';
 import '../../core/services/localization_service.dart';
@@ -7,7 +8,9 @@ import '../../features/onboarding/bloc/onboarding_bloc.dart';
 import '../../features/onboarding/bloc/onboarding_event.dart';
 
 class AdminApprovalScreen extends StatelessWidget {
-  const AdminApprovalScreen({super.key});
+  const AdminApprovalScreen({super.key, this.showBack = false});
+
+  final bool showBack;
 
   @override
   Widget build(BuildContext context) {
@@ -23,12 +26,22 @@ class AdminApprovalScreen extends StatelessWidget {
       child: Scaffold(
       backgroundColor: theme.background,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
           'onboarding.adminApproval.readyTitle'.tr(),
           style: AppThemes.titleLarge(theme),
         ),
         backgroundColor: theme.surface,
         elevation: 0,
+        leading: showBack
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  // Navigate explicitly since admin-approval was opened via context.go
+                  context.go('/login');
+                },
+              )
+            : null,
         // Removed theme and language selectors
       ),
       body: SafeArea(
