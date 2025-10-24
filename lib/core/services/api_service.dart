@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mime/mime.dart';
 import 'dart:io' as io if (dart.library.io) 'dart:io';
-import 'dart:html' as html if (dart.library.html) 'dart:html';
+// Removed dart:html import as it's not used and causes mobile compilation issues
+import 'user_service.dart';
+import 'storage_service.dart';
 
 class ApiService {
   // Backend API URL
@@ -18,7 +20,6 @@ class ApiService {
   
   // Auth endpoints
   static const String loginEndpoint = '$baseUrl/auth/login';
-  static const String registerClientEndpoint = '$baseUrl/auth/register-client';
   static const String registerVendorOwnerEndpoint = '$baseUrl/auth/register-vendor-owner';
   static const String verifyOtpEndpoint = '$baseUrl/auth/verify-otp';
   static const String resendOtpEndpoint = '$baseUrl/auth/resend-otp';
@@ -28,70 +29,84 @@ class ApiService {
   static const String meEndpoint = '$baseUrl/auth/me';
   
   // Vendor endpoints
-  static const String createIndividualVendorEndpoint = '$baseUrl/vendor/individual';
   static const String registerBusinessVendorEndpoint = '$baseUrl/vendors/register-business';
+  static const String vendorCompleteInfoEndpoint = '$baseUrl/vendors/my-complete-info';
+  static const String vendorUpdateEndpoint = '$baseUrl/vendors/update';
+  
+  // Contact endpoints
+  static const String vendorContactsEndpoint = '$baseUrl/vendors/contacts';
+  static const String vendorContactsByTypeEndpoint = '$baseUrl/vendors/contacts/type';
+  static const String vendorContactsBulkEndpoint = '$baseUrl/vendors/contacts/bulk';
   
   // Category endpoints
   static const String categoriesEndpoint = '$baseUrl/category';
   
   // Subscription endpoints
   static const String subscriptionsEndpoint = '$baseUrl/subscription/plans';
+  
+  // Payment endpoints
+  static const String createPaymentEndpoint = '$baseUrl/payments';
+  static const String createMobilePaymentEndpoint = '$baseUrl/payments/mobile';
+  static const String getPaymentByIdEndpoint = '$baseUrl/payments';
+  static const String getMyPaymentsEndpoint = '$baseUrl/payments/my';
+  static const String updatePaymentStatusEndpoint = '$baseUrl/payments';
+  static const String processIntegratedPaymentEndpoint = '$baseUrl/payments/process-integrated';
+  static const String uploadPaymentProofEndpoint = '$baseUrl/payments/upload-proof';
+  static const String uploadPaymentProofFileEndpoint = '$baseUrl/payments/upload-proof-file';
+  static const String proceedToNextStepEndpoint = '$baseUrl/payments/proceed-to-next-step';
+  static const String generateQrCodeEndpoint = '$baseUrl/payments/generate-qr';
+  static const String adminGetAllPaymentsEndpoint = '$baseUrl/admin/payments';
+  
+  static const String adminGetPendingPaymentsEndpoint = '$baseUrl/admin/payments/pending';
+  static const String adminVerifyManualPaymentEndpoint = '$baseUrl/admin/payments/verify-manual';
+  static const String adminGetPaymentStatsEndpoint = '$baseUrl/admin/payments/statistics';
+  static const String adminGetVendorApplicationsEndpoint = '$baseUrl/admin/vendor-applications';
+  static const String adminReviewVendorApplicationEndpoint = '$baseUrl/admin/vendor-applications';
+  
+  // Wallet endpoints
+  static const String walletEndpoint = '$baseUrl/wallet';
+  static const String vendorWalletEndpoint = '$baseUrl/vendor-wallet';
 
   // Convert image path to bytes
   static Future<Uint8List> _convertImageToBytes(String imagePath) async {
     try {
-      print('🔄 [API_SERVICE] Converting image to bytes...');
-      print('   Path: $imagePath');
-      print('   Platform: ${kIsWeb ? "Web" : "Mobile/Desktop"}');
-      
       if (kIsWeb) {
         if (imagePath.startsWith('blob:')) {
-          print('📦 [API_SERVICE] Handling blob URL...');
           // Handle blob URLs from file picker - fetch the blob data
           try {
             final response = await http.get(Uri.parse(imagePath));
             if (response.statusCode == 200) {
-              print('✅ [API_SERVICE] Blob fetched successfully (${response.bodyBytes.length} bytes)');
               return response.bodyBytes;
             }
             throw Exception('Failed to fetch blob: ${response.statusCode}');
           } catch (e) {
-            print('❌ [API_SERVICE] Error fetching blob: $e');
             rethrow;
           }
         } 
         else if (imagePath.startsWith('data:image')) {
-          print('📦 [API_SERVICE] Handling data URL...');
           // Handle data URLs
           final bytes = base64Decode(imagePath.split(',').last);
-          print('✅ [API_SERVICE] Data URL decoded (${bytes.length} bytes)');
           return Uint8List.fromList(bytes);
         }
         else if (imagePath.startsWith('http')) {
-          print('📦 [API_SERVICE] Handling HTTP URL...');
           // Handle direct URLs
           final response = await http.get(Uri.parse(imagePath));
           if (response.statusCode == 200) {
-            print('✅ [API_SERVICE] HTTP image fetched (${response.bodyBytes.length} bytes)');
             return response.bodyBytes;
           }
           throw Exception('Failed to fetch image: ${response.statusCode}');
         }
-        print('❌ [API_SERVICE] Unsupported image source format');
         throw Exception('Unsupported image source: $imagePath');
       } else {
-        print('📦 [API_SERVICE] Handling file path...');
         // For mobile/desktop, read file directly
         final file = io.File(imagePath);
         if (await file.exists()) {
           final bytes = await file.readAsBytes();
-          print('✅ [API_SERVICE] File read successfully (${bytes.length} bytes)');
           return bytes;
         }
         throw Exception('Image file not found: $imagePath');
       }
     } catch (e) {
-      print('❌ [API_SERVICE] Error converting image to bytes: $e');
       rethrow;
     }
   }
@@ -144,14 +159,12 @@ class ApiService {
           return mimeType;
         }
       } catch (e) {
-        print('⚠️ [API_SERVICE] Error using mime package: $e');
+        // Error using mime package
       }
 
       // Default fallback
-      print('⚠️ [API_SERVICE] Could not determine MIME type, defaulting to octet-stream');
       return 'application/octet-stream';
     } catch (e) {
-      print('❌ [API_SERVICE] Error detecting MIME type: $e');
       return 'application/octet-stream';
     }
   }
@@ -202,24 +215,7 @@ class ApiService {
         }),
       );
 
-      // Log raw backend response for testing/debugging
-      print('🔍 [API_SERVICE] Raw Login Response:');
-      print('   Status Code: ${response.statusCode}');
-      print('   Body: ${response.body}');
-
       final data = jsonDecode(response.body);
-      try {
-        print('📦 [API_SERVICE] Parsed Login Data Keys: ${data is Map ? data.keys.toList() : data.runtimeType}');
-        if (data is Map && data['user'] is Map) {
-          final user = data['user'] as Map<String, dynamic>;
-          print('👤 [API_SERVICE] User keys: ${user.keys.toList()}');
-          if (user['vendor'] is Map) {
-            final vendor = user['vendor'] as Map<String, dynamic>;
-            print('🏪 [API_SERVICE] Vendor keys: ${vendor.keys.toList()}');
-            print('🏪 [API_SERVICE] Vendor status fields: approved=${vendor['approved']}, is_verified=${vendor['is_verified']}, status=${vendor['status']}');
-          }
-        }
-      } catch (_) {}
 
       if (response.statusCode == 200) {
         // Save token and user data
@@ -228,6 +224,13 @@ class ApiService {
         }
         if (data['user'] != null) {
           await saveUserData(data['user']);
+          // Save phone number globally for OTP purposes
+          final user = data['user'] as Map<String, dynamic>;
+          final phoneNumber = user['phone_number'] ?? user['name'];
+          if (phoneNumber != null) {
+            await UserService.instance.setPhoneNumber(phoneNumber);
+            await UserService.instance.setUserData(user);
+          }
         }
         return {'success': true, 'data': data};
       } else {
@@ -259,18 +262,11 @@ class ApiService {
         }),
       );
 
-      // Log raw backend response
-      print('🔍 Raw Backend Response (register-vendor-owner):');
-      print('   Status Code: ${response.statusCode}');
-      print('   Headers: ${response.headers}');
-      print('   Body: ${response.body}');
-
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
         // Save token if returned for new users
         if (data['token'] != null) {
-          print('💾 Saving token from registration...');
           await saveToken(data['token']);
         }
         return {'success': true, 'data': data};
@@ -279,13 +275,9 @@ class ApiService {
         if (data['has_vendor'] == false) {
           // User exists but doesn't have vendor account - allow to proceed
           bool isOtpVerified = data['is_otp_verified'] ?? false;
-          print('✅ User exists but no vendor account.');
-          print('   OTP Verified: $isOtpVerified');
-          print('   Token in response: ${data['token'] != null}');
           
           // Save token if present (for already verified users)
           if (data['token'] != null) {
-            print('💾 Saving token for existing user...');
             await saveToken(data['token']);
           }
           
@@ -322,25 +314,12 @@ class ApiService {
         }),
       );
 
-      // Log raw backend response
-      print('🔍 Raw Backend Response (verify-otp):');
-      print('   Status Code: ${response.statusCode}');
-      print('   Body: ${response.body}');
-      
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        print('✅ OTP Verified!');
-        print('   Token present: ${data['token'] != null}');
-        print('   User present: ${data['user'] != null}');
-        
         // Save token and user data if present (implicit login)
         if (data['token'] != null) {
-          print('💾 Saving token from OTP verification...');
           await saveToken(data['token']);
-          print('   Token saved successfully!');
-        } else {
-          print('⚠️  WARNING: No token returned from OTP verification!');
         }
         if (data['user'] != null) {
           await saveUserData(data['user']);
@@ -407,7 +386,7 @@ class ApiService {
 
   // Verify Reset OTP
   static Future<Map<String, dynamic>> verifyResetOtp({
-    required String phoneNumber,
+required String phoneNumber,
     required String code,
   }) async {
     try {
@@ -425,7 +404,8 @@ class ApiService {
       if (response.statusCode == 200) {
         return {'success': true, 'data': data};
       } else {
-        return {'success': false, 'error': data['error'] ?? 'OTP verification failed'};
+        final errorMessage = data['error'] ?? data['message'] ?? 'OTP verification failed';
+        return {'success': false, 'error': errorMessage};
       }
     } catch (e) {
       return {'success': false, 'error': 'Network error: ${e.toString()}'};
@@ -488,38 +468,59 @@ class ApiService {
     }
   }
 
-  // Logout
+  // Logout - Clear ALL user data but preserve theme and language preferences
   static Future<void> logout() async {
-    await removeToken();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('user_data');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Save theme and language preferences before clearing
+      final savedTheme = prefs.getInt('selected_theme');
+      final savedLanguage = prefs.getString('selected_language');
+      
+      // Clear ALL SharedPreferences data
+      await prefs.clear();
+      
+      // Restore theme and language preferences
+      if (savedTheme != null) {
+        await prefs.setInt('selected_theme', savedTheme);
+      }
+      if (savedLanguage != null) {
+        await prefs.setString('selected_language', savedLanguage);
+      }
+      
+      // Clear global user data
+      await UserService.instance.clearUserData();
+      
+      // Clear storage service data
+      final storageService = StorageService();
+      await storageService.clearAll();
+      
+      print('🚪 LOGOUT: All user data cleared successfully');
+    } catch (e) {
+      print('❌ LOGOUT ERROR: ${e.toString()}');
+      // Even if there's an error, try to clear critical data
+      await removeToken();
+      await UserService.instance.clearUserData();
+    }
   }
 
   // Fetch Categories
   static Future<Map<String, dynamic>> fetchCategories() async {
     try {
-      print('📂 Fetching categories from backend...');
       
       final response = await http.get(
         Uri.parse(categoriesEndpoint),
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('🔍 Categories Response:');
-      print('   Status Code: ${response.statusCode}');
-      print('   Body: ${response.body}');
-
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        print('✅ Categories fetched successfully!');
         return {'success': true, 'categories': data};
       } else {
-        print('❌ Failed to fetch categories');
         return {'success': false, 'error': 'Failed to fetch categories'};
       }
     } catch (e) {
-      print('💥 Exception fetching categories: $e');
       return {'success': false, 'error': 'Network error: ${e.toString()}'};
     }
   }
@@ -527,101 +528,51 @@ class ApiService {
   // Fetch Subscriptions (Public - no auth required)
   static Future<Map<String, dynamic>> fetchSubscriptions() async {
     try {
-      print('📋 [API_SERVICE] Fetching subscriptions from backend...');
-      print('🌐 [API_SERVICE] Endpoint: $subscriptionsEndpoint');
-      print('🌐 [API_SERVICE] Base URL: $baseUrl');
-      
       final uri = Uri.parse(subscriptionsEndpoint);
-      print('🔗 [API_SERVICE] Parsed URI: $uri');
-      print('🔗 [API_SERVICE] URI Host: ${uri.host}');
-      print('🔗 [API_SERVICE] URI Port: ${uri.port}');
-      print('🔗 [API_SERVICE] URI Path: ${uri.path}');
-      
       final headers = {'Content-Type': 'application/json'};
-      print('📤 [API_SERVICE] Request headers: $headers');
       
-      print('⏳ [API_SERVICE] Making HTTP GET request...');
       final response = await http.get(uri, headers: headers);
-      
-      print('📥 [API_SERVICE] Response received!');
-      print('🔍 [API_SERVICE] Status Code: ${response.statusCode}');
-      print('🔍 [API_SERVICE] Response Headers: ${response.headers}');
-      print('🔍 [API_SERVICE] Response Body Length: ${response.body.length}');
-      print('🔍 [API_SERVICE] Response Body: ${response.body}');
 
       if (response.body.isEmpty) {
-        print('⚠️ [API_SERVICE] Response body is empty!');
         return {'success': false, 'error': 'Empty response from server'};
       }
 
       dynamic data;
       try {
         data = jsonDecode(response.body);
-        print('✅ [API_SERVICE] JSON decoded successfully');
-        print('📊 [API_SERVICE] Decoded data type: ${data.runtimeType}');
-        print('📊 [API_SERVICE] Decoded data: $data');
       } catch (jsonError) {
-        print('💥 [API_SERVICE] JSON decode error: $jsonError');
-        print('📄 [API_SERVICE] Raw response body: ${response.body}');
         return {'success': false, 'error': 'Invalid JSON response: $jsonError'};
       }
 
       if (response.statusCode == 200) {
-        print('✅ [API_SERVICE] Subscriptions fetched successfully!');
-        
         // Check if response has plans array or is direct array
         dynamic plans;
         if (data is List) {
           plans = data;
-          print('📦 [API_SERVICE] Response is direct array');
         } else if (data is Map && data.containsKey('plans')) {
           plans = data['plans'] as List<dynamic>;
-          print('📦 [API_SERVICE] Response has plans key');
         } else if (data is Map && data.containsKey('subscriptions')) {
           plans = data['subscriptions'] as List<dynamic>;
-          print('📦 [API_SERVICE] Response has subscriptions key');
         } else {
           plans = data;
-          print('📦 [API_SERVICE] Using data as-is');
         }
         
-        print('📦 [API_SERVICE] Plans type: ${plans.runtimeType}');
-        print('📦 [API_SERVICE] Plans count: ${plans is List ? plans.length : 'Not a list'}');
-        print('📦 [API_SERVICE] Plans data: $plans');
-        
         if (plans is! List) {
-          print('⚠️ [API_SERVICE] Plans is not a list, converting...');
           plans = [plans];
         }
         
         return {'success': true, 'subscriptions': plans};
       } else {
-        print('❌ [API_SERVICE] Failed to fetch subscriptions');
-        print('❌ [API_SERVICE] Status code: ${response.statusCode}');
         final error = (data is Map && data.containsKey('error')) 
             ? data['error'] 
             : 'Failed to fetch subscriptions (Status: ${response.statusCode})';
-        print('❌ [API_SERVICE] Error message: $error');
         return {'success': false, 'error': error};
       }
     } catch (e, stackTrace) {
-      print('💥 [API_SERVICE] Exception fetching subscriptions: $e');
-      print('💥 [API_SERVICE] Stack trace: $stackTrace');
       return {'success': false, 'error': 'Network error: ${e.toString()}'};
     }
   }
 
-
-  // Helper method to convert image URLs to bytes (legacy method - kept for backward compatibility)
-  static Future<List<int>> _convertImageToBytesLegacy(String imagePath) async {
-    final bytes = await _convertImageToBytes(imagePath);
-    return bytes.toList();
-  }
-
-  // Helper method to determine MIME type from image bytes (legacy method - kept for backward compatibility)
-  static String _getMimeTypeFromBytesLegacy(List<int> bytes) {
-    return _getMimeTypeFromBytes(Uint8List.fromList(bytes));
-  }
 
   // Register Business Vendor (Unified - handles payment + vendor creation)
   static Future<Map<String, dynamic>> registerBusinessVendor({
@@ -653,39 +604,15 @@ class ApiService {
     String? paymentProvider,
     String? currency,
   }) async {
-    print('\n');
-    print('═══════════════════════════════════════════════════════════');
-    print('🚀 [API_SERVICE] STARTING BUSINESS VENDOR REGISTRATION');
-    print('═══════════════════════════════════════════════════════════');
     
     try {
-      print('\n📍 [API_SERVICE] STAGE 1: Authentication Check');
-      print('─────────────────────────────────────────────────────────');
       final token = await getToken();
       if (token == null) {
-        print('❌ [API_SERVICE] CLIENT ERROR: No auth token found');
-        print('❌ [API_SERVICE] Error Source: CLIENT SIDE');
         return {'success': false, 'error': 'Authentication required', 'error_source': 'client'};
       }
-      print('✅ [API_SERVICE] Auth token found: ${token.substring(0, 20)}...');
 
-      print('\n📍 [API_SERVICE] STAGE 2: Request Preparation');
-      print('─────────────────────────────────────────────────────────');
-      print('🏢 [API_SERVICE] Registering business vendor (unified)...');
-      print('🌐 [API_SERVICE] Endpoint: $registerBusinessVendorEndpoint');
-      print('📊 [API_SERVICE] Request Data:');
-      print('   • Business Name: $name');
-      print('   • Description: ${description.length > 50 ? description.substring(0, 50) + "..." : description}');
-      print('   • Full Name: $fullName');
-      print('   • Email: $email');
-      print('   • Phone: $phoneNumber');
-      print('   • Categories: $categoryIds');
-      print('   • Payment Method Type: $paymentMethodType');
-      print('   • Account Holder: $accountHolderName');
-      print('   • Subscription ID: $subscriptionId');
 
       final uri = Uri.parse(registerBusinessVendorEndpoint);
-      print('🔗 [API_SERVICE] Parsed URI: $uri');
 
       var request = http.MultipartRequest('POST', uri);
 
@@ -695,7 +622,6 @@ class ApiService {
         'Accept': 'application/json',
       });
 
-      print('📤 [API_SERVICE] Request headers: ${request.headers}');
 
       // ===== REGISTRATION PAYMENT FIELDS =====
       request.fields['payment_amount'] = (paymentAmount ?? 150.0).toString();
@@ -740,8 +666,6 @@ class ApiService {
       }
       
       // ===== CATEGORY FIELDS =====
-      print('🏷️ [API_SERVICE] Category IDs to send: $categoryIds');
-      print('🏷️ [API_SERVICE] Category IDs JSON: ${jsonEncode(categoryIds)}');
       request.fields['category_ids'] = jsonEncode(categoryIds);
       
       // ===== VENDOR PAYMENT METHOD (separate field) =====
@@ -757,19 +681,12 @@ class ApiService {
       // ===== ADDITIONAL FIELDS =====
       // keepImages field removed from backend - no longer needed
 
-      print('📝 [API_SERVICE] Request fields: ${request.fields}');
 
       // ===== FILES =====
-      print('\n📍 [API_SERVICE] STAGE 3: Image Processing');
-      print('─────────────────────────────────────────────────────────');
       if (kIsWeb) {
-        print('📱 [API_SERVICE] Platform: WEB');
-        print('🖼️ [API_SERVICE] Cover image path: $coverImagePath');
-        print('📄 [API_SERVICE] License image path: $businessLicenseImagePath');
         
         try {
           // Convert blob URLs to bytes and add as files
-          print('\n🔄 [API_SERVICE] Processing cover image...');
           final coverImageBytes = await _convertImageToBytes(coverImagePath);
           final coverMimeType = _getMimeTypeFromBytes(coverImageBytes);
           
@@ -783,9 +700,7 @@ class ApiService {
             filename: 'cover_image.${coverMimeType.split('/').last}',
             contentType: MediaType.parse(coverMimeType),
           ));
-          print('✅ [API_SERVICE] Cover image processed successfully ($coverMimeType)');
           
-          print('📄 [API_SERVICE] Processing license image...');
           final licenseImageBytes = await _convertImageToBytes(businessLicenseImagePath);
           final licenseMimeType = _getMimeTypeFromBytes(licenseImageBytes);
           
@@ -799,27 +714,14 @@ class ApiService {
             filename: 'business_license.${licenseMimeType.split('/').last}',
             contentType: MediaType.parse(licenseMimeType),
           ));
-          print('✅ [API_SERVICE] License image processed successfully ($licenseMimeType)');
           
         } catch (e, stackTrace) {
-          print('\n💥 [API_SERVICE] ========================================');
-          print('💥 [API_SERVICE] CLIENT ERROR: Image Processing Failed');
-          print('💥 [API_SERVICE] ========================================');
-          print('💥 [API_SERVICE] Error Source: CLIENT SIDE (Web Image Processing)');
-          print('💥 [API_SERVICE] Platform: WEB');
-          print('💥 [API_SERVICE] Exception: $e');
-          print('💥 [API_SERVICE] Stack Trace: $stackTrace');
-          print('💥 [API_SERVICE] ========================================');
           return {'success': false, 'error': 'Failed to process images: $e', 'error_source': 'client'};
         }
       } else {
         // Mobile/Desktop platform: Use file path
-        print('📱 [API_SERVICE] Platform: MOBILE/DESKTOP');
-        print('🖼️ [API_SERVICE] Cover image path: $coverImagePath');
-        print('📄 [API_SERVICE] License image path: $businessLicenseImagePath');
         
         try {
-          print('\n🔄 [API_SERVICE] Validating file paths...');
           // Check cover image
           final coverFile = io.File(coverImagePath);
           if (!await coverFile.exists()) {
@@ -860,82 +762,30 @@ class ApiService {
             contentType: MediaType.parse(licenseMimeType),
           ));
           
-          print('✅ [API_SERVICE] Files added successfully');
-          print('   - Cover: $coverMimeType');
-          print('   - License: $licenseMimeType');
           
         } catch (e, stackTrace) {
-          print('\n💥 [API_SERVICE] ========================================');
-          print('💥 [API_SERVICE] CLIENT ERROR: File Processing Failed');
-          print('💥 [API_SERVICE] ========================================');
-          print('💥 [API_SERVICE] Error Source: CLIENT SIDE (Mobile File Processing)');
-          print('💥 [API_SERVICE] Platform: MOBILE/DESKTOP');
-          print('💥 [API_SERVICE] Exception: $e');
-          print('💥 [API_SERVICE] Stack Trace: $stackTrace');
-          print('💥 [API_SERVICE] ========================================');
           return {'success': false, 'error': 'Failed to process files: $e', 'error_source': 'client'};
         }
       }
 
-      print('\n✅ [API_SERVICE] Image processing completed');
-      print('📦 [API_SERVICE] Total files attached: ${request.files.length}');
       
-      print('\n📍 [API_SERVICE] STAGE 4: Sending HTTP Request');
-      print('─────────────────────────────────────────────────────────');
-      print('⏳ [API_SERVICE] Sending multipart request to API...');
-      print('🌐 [API_SERVICE] Target: $registerBusinessVendorEndpoint');
       
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       
-      print('\n📍 [API_SERVICE] STAGE 5: Processing API Response');
-      print('─────────────────────────────────────────────────────────');
-      print('📥 [API_SERVICE] Response received from API');
-      print('🔍 [API_SERVICE] Status Code: ${response.statusCode}');
-      print('🔍 [API_SERVICE] Response Headers: ${response.headers}');
-      print('🔍 [API_SERVICE] Response Body Length: ${response.body.length} bytes');
-      print('🔍 [API_SERVICE] Response Body: ${response.body}');
 
       if (response.body.isEmpty) {
-        print('\n⚠️ [API_SERVICE] ========================================');
-        print('⚠️ [API_SERVICE] API ERROR: Empty Response');
-        print('⚠️ [API_SERVICE] ========================================');
-        print('⚠️ [API_SERVICE] Error Source: BACKEND API');
-        print('⚠️ [API_SERVICE] Status Code: ${response.statusCode}');
-        print('⚠️ [API_SERVICE] Issue: Server returned empty response body');
-        print('⚠️ [API_SERVICE] ========================================');
         return {'success': false, 'error': 'Empty response from server', 'error_source': 'api'};
       }
 
       dynamic data;
       try {
         data = jsonDecode(response.body);
-        print('✅ [API_SERVICE] JSON decoded successfully');
-        print('📊 [API_SERVICE] Decoded data type: ${data.runtimeType}');
-        print('📊 [API_SERVICE] Decoded data: $data');
       } catch (jsonError, stackTrace) {
-        print('\n💥 [API_SERVICE] ========================================');
-        print('💥 [API_SERVICE] API ERROR: Invalid JSON Response');
-        print('💥 [API_SERVICE] ========================================');
-        print('💥 [API_SERVICE] Error Source: BACKEND API (Invalid Response Format)');
-        print('💥 [API_SERVICE] Status Code: ${response.statusCode}');
-        print('💥 [API_SERVICE] JSON Error: $jsonError');
-        print('💥 [API_SERVICE] Raw Response Body: ${response.body}');
-        print('💥 [API_SERVICE] Stack Trace: $stackTrace');
-        print('💥 [API_SERVICE] ========================================');
         return {'success': false, 'error': 'Invalid JSON response: $jsonError', 'error_source': 'api'};
       }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('\n✅ [API_SERVICE] ========================================');
-        print('✅ [API_SERVICE] SUCCESS: Business Vendor Registered');
-        print('✅ [API_SERVICE] ========================================');
-        print('✅ [API_SERVICE] Status Code: ${response.statusCode}');
-        print('✅ [API_SERVICE] Vendor ID: ${data['vendor']?['id'] ?? 'N/A'}');
-        print('✅ [API_SERVICE] Vendor Name: ${data['vendor']?['name'] ?? name}');
-        print('✅ [API_SERVICE] Payment Status: ${data['payment']?['status'] ?? 'N/A'}');
-        print('✅ [API_SERVICE] ========================================');
-        print('\n');
         return {
           'success': true,
           'vendor': data['vendor'] ?? data,
@@ -943,14 +793,6 @@ class ApiService {
           'message': data['message'] ?? 'Business vendor registered successfully'
         };
       } else {
-        print('\n');
-        print('❌ [API_SERVICE] ========================================');
-        print('❌ [API_SERVICE] API ERROR - Business vendor registration failed');
-        print('❌ [API_SERVICE] ========================================');
-        print('❌ [API_SERVICE] Error Source: BACKEND API');
-        print('❌ [API_SERVICE] Status Code: ${response.statusCode}');
-        print('❌ [API_SERVICE] Response Headers: ${response.headers}');
-        print('❌ [API_SERVICE] Response Body: ${response.body}');
         
         final error = (data is Map && data.containsKey('error'))
             ? data['error']
@@ -958,45 +800,1538 @@ class ApiService {
                 ? data['message']
                 : 'Failed to register business vendor (Status: ${response.statusCode})';
         
-        print('❌ [API_SERVICE] Error Message: $error');
         
         // Log detailed error information if available
         if (data is Map) {
           if (data.containsKey('details')) {
-            print('❌ [API_SERVICE] Error Details: ${data['details']}');
           }
           if (data.containsKey('validation_errors')) {
-            print('❌ [API_SERVICE] Validation Errors: ${data['validation_errors']}');
           }
           if (data.containsKey('field_errors')) {
-            print('❌ [API_SERVICE] Field Errors: ${data['field_errors']}');
           }
         }
         
-        print('❌ [API_SERVICE] ========================================');
-        print('\n');
         return {'success': false, 'error': error, 'error_source': 'api', 'status_code': response.statusCode};
       }
     } catch (e, stackTrace) {
-      print('\n');
-      print('💥 [API_SERVICE] ========================================');
-      print('💥 [API_SERVICE] CLIENT ERROR - Exception During Registration');
-      print('💥 [API_SERVICE] ========================================');
-      print('💥 [API_SERVICE] Error Source: CLIENT SIDE');
-      print('💥 [API_SERVICE] Exception Type: ${e.runtimeType}');
-      print('💥 [API_SERVICE] Exception Message: $e');
-      print('💥 [API_SERVICE] Possible Causes:');
-      print('   • Network connectivity issues');
-      print('   • Timeout during request');
-      print('   • Invalid file paths or permissions');
-      print('   • Memory issues with large files');
-      print('💥 [API_SERVICE] Stack Trace:');
-      print('$stackTrace');
-      print('💥 [API_SERVICE] ========================================');
-      print('\n');
       return {'success': false, 'error': 'Network error: ${e.toString()}', 'error_source': 'client'};
     }
   }
 
+  // Get vendor complete info
+  Future<Map<String, dynamic>> getVendorCompleteInfo() async {
+    try {
+      
+      // Get JWT token from SharedPreferences
+      final token = await getToken();
+      
+      if (token == null) {
+        return {'success': false, 'error': 'No authentication token found'};
+      }
+      
+      
+      // Make the API request
+      final response = await http.get(
+        Uri.parse(vendorCompleteInfoEndpoint),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      
+      
+      final data = json.decode(response.body);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        
+        final error = (data is Map && data.containsKey('error'))
+            ? data['error']
+            : (data is Map && data.containsKey('message'))
+                ? data['message']
+                : 'Failed to get vendor info (Status: ${response.statusCode})';
+        
+        return {'success': false, 'error': error};
+      }
+    } catch (e, stackTrace) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Update vendor information
+  Future<Map<String, dynamic>> updateVendorInfo({
+    required String token,
+    String? name,
+    String? description,
+    String? coverImagePath,
+    String? faydaImagePath,
+    String? businessLicenseImagePath,
+  }) async {
+    try {
+      
+      // Create multipart request
+      final request = http.MultipartRequest('PUT', Uri.parse(vendorUpdateEndpoint));
+      
+      // Add headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+      
+      // Add text fields if provided
+      if (name != null && name.isNotEmpty) {
+        request.fields['name'] = name;
+      }
+      
+      if (description != null && description.isNotEmpty) {
+        request.fields['description'] = description;
+      }
+      
+      // Add image files if provided
+      if (coverImagePath != null && coverImagePath.isNotEmpty) {
+        
+        if (kIsWeb) {
+          // For web, convert image to bytes first
+          try {
+            final imageBytes = await _convertImageToBytes(coverImagePath);
+            final coverImageFile = http.MultipartFile.fromBytes(
+              'cover_image',
+              imageBytes,
+              filename: 'cover_image.jpg',
+              contentType: MediaType('image', 'jpeg'),
+            );
+            request.files.add(coverImageFile);
+          } catch (e) {
+            return {'success': false, 'error': 'Failed to process cover image: $e'};
+          }
+        } else {
+          // For mobile, use file path directly
+          try {
+            final coverImageFile = await http.MultipartFile.fromPath('cover_image', coverImagePath);
+            request.files.add(coverImageFile);
+          } catch (e) {
+            return {'success': false, 'error': 'Failed to process cover image: $e'};
+          }
+        }
+      }
+      
+      if (faydaImagePath != null && faydaImagePath.isNotEmpty) {
+        
+        if (kIsWeb) {
+          final imageBytes = await _convertImageToBytes(faydaImagePath);
+          final faydaImageFile = http.MultipartFile.fromBytes(
+            'fayda_image',
+            imageBytes,
+            filename: 'fayda_image.jpg',
+            contentType: MediaType('image', 'jpeg'),
+          );
+          request.files.add(faydaImageFile);
+        } else {
+          final faydaImageFile = await http.MultipartFile.fromPath('fayda_image', faydaImagePath);
+          request.files.add(faydaImageFile);
+        }
+      }
+      
+      if (businessLicenseImagePath != null && businessLicenseImagePath.isNotEmpty) {
+        
+        if (kIsWeb) {
+          final imageBytes = await _convertImageToBytes(businessLicenseImagePath);
+          final businessLicenseImageFile = http.MultipartFile.fromBytes(
+            'business_license_image',
+            imageBytes,
+            filename: 'business_license_image.jpg',
+            contentType: MediaType('image', 'jpeg'),
+          );
+          request.files.add(businessLicenseImageFile);
+        } else {
+          final businessLicenseImageFile = await http.MultipartFile.fromPath('business_license_image', businessLicenseImagePath);
+          request.files.add(businessLicenseImageFile);
+        }
+      }
+      
+      // Check if at least one field is provided
+      if (request.fields.isEmpty && request.files.isEmpty) {
+        return {'success': false, 'error': 'No valid fields provided for update'};
+      }
+      
+      
+      final response = await request.send();
+      
+      
+      final responseBody = await response.stream.bytesToString();
+      
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        
+        final error = (data is Map && data.containsKey('error'))
+            ? data['error']
+            : (data is Map && data.containsKey('message'))
+                ? data['message']
+                : 'Failed to update vendor (Status: ${response.statusCode})';
+        
+        return {'success': false, 'error': error};
+      }
+    } catch (e, stackTrace) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // ========================================
+  // VENDOR CONTACTS API METHODS
+  // ========================================
+
+  // Get all vendor contacts
+  static Future<Map<String, dynamic>> getVendorContacts({required String token}) async {
+    try {
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/vendors/contacts'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get vendor contacts'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Get vendor contacts by type
+  static Future<Map<String, dynamic>> getVendorContactsByType({
+    required String token,
+    required String type,
+  }) async {
+    try {
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/vendors/contacts/type/$type'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get vendor contacts by type'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Create a single vendor contact
+  static Future<Map<String, dynamic>> createVendorContact({
+    required String token,
+    required Map<String, dynamic> contactData,
+  }) async {
+    try {
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/vendors/contacts'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(contactData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 201) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to create vendor contact'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Create multiple vendor contacts (bulk)
+  static Future<Map<String, dynamic>> createVendorContactsBulk({
+    required String token,
+    required List<Map<String, dynamic>> contacts,
+  }) async {
+    try {
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/vendors/contacts/bulk'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'contacts': contacts}),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 201) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to create vendor contacts in bulk'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Update a vendor contact
+  static Future<Map<String, dynamic>> updateVendorContact({
+    required String token,
+    required int contactId,
+    required Map<String, dynamic> updateData,
+  }) async {
+    try {
+      
+      final response = await http.put(
+        Uri.parse('$baseUrl/vendors/contacts/$contactId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updateData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to update vendor contact'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Set vendor contact as primary
+  static Future<Map<String, dynamic>> setVendorContactAsPrimary({
+    required String token,
+    required int contactId,
+  }) async {
+    try {
+      
+      final response = await http.patch(
+        Uri.parse('$baseUrl/vendors/contacts/$contactId/set-primary'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'contact_id': contactId}),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to set vendor contact as primary'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Delete a vendor contact
+  static Future<Map<String, dynamic>> deleteVendorContact({
+    required String token,
+    required int contactId,
+  }) async {
+    try {
+      
+      final response = await http.delete(
+        Uri.parse('$baseUrl/vendors/contacts/$contactId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to delete vendor contact'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // ========================================
+  // VENDOR SHIPPING ADDRESSES API METHODS
+  // ========================================
+
+  // Get my shipping addresses (Vendor)
+  static Future<Map<String, dynamic>> getMyShippingAddresses({
+    required String token,
+  }) async {
+    try {
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/vendor/shipping-addresses'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return {'success': true, 'addresses': data['addresses']};
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get my shipping addresses'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Create my shipping address (Vendor)
+  static Future<Map<String, dynamic>> createMyShippingAddress({
+    required String token,
+    required Map<String, dynamic> addressData,
+  }) async {
+    try {
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/vendor/shipping-addresses'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(addressData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 201) {
+        return {'success': true, 'address': data['address']};
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to create my shipping address'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Update my shipping address (Vendor)
+  static Future<Map<String, dynamic>> updateMyShippingAddress({
+    required String token,
+    required int addressId,
+    required Map<String, dynamic> updateData,
+  }) async {
+    try {
+      
+      final response = await http.put(
+        Uri.parse('$baseUrl/vendor/shipping-addresses/$addressId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updateData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return {'success': true, 'address': data['address']};
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to update my shipping address'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Delete my shipping address (Vendor)
+  static Future<Map<String, dynamic>> deleteMyShippingAddress({
+    required String token,
+    required int addressId,
+  }) async {
+    try {
+      
+      final response = await http.delete(
+        Uri.parse('$baseUrl/vendor/shipping-addresses/$addressId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': data['message'], 'id': data['id']};
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to delete my shipping address'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Set primary shipping address (Vendor)
+  static Future<Map<String, dynamic>> setMyPrimaryShippingAddress({
+    required String token,
+    required int addressId,
+  }) async {
+    try {
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/vendor/shipping-addresses/$addressId/set-primary'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return {'success': true, 'address': data['address']};
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to set my shipping address as primary'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // ========================================
+  // VENDOR PAYMENT API METHODS
+  // ========================================
+
+  // Create payment
+  static Future<Map<String, dynamic>> createPayment({
+    required String token,
+    required double amount,
+    required String paymentMethod,
+    required String paymentProvider,
+    String currency = 'ETB',
+  }) async {
+    try {
+      
+      final paymentData = {
+        'amount': amount,
+        'payment_method': paymentMethod,
+        'payment_provider': paymentProvider,
+        'currency': currency,
+      };
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/vendor-registration/payment'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(paymentData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 201) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to create payment'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Get payment by ID
+  static Future<Map<String, dynamic>> getPaymentById({
+    required String token,
+    required int paymentId,
+  }) async {
+    try {
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/vendor-registration/payment/$paymentId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get payment'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Get my payments
+  static Future<Map<String, dynamic>> getMyPayments({
+    required String token,
+    String? status,
+    String? paymentMethod,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      
+      final queryParams = <String, String>{};
+      if (status != null) queryParams['status'] = status;
+      if (paymentMethod != null) queryParams['payment_method'] = paymentMethod;
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      final uri = Uri.parse('$baseUrl/vendor-registration/my-payments').replace(
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get my payments'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Update payment status
+  static Future<Map<String, dynamic>> updatePaymentStatus({
+    required String token,
+    required int paymentId,
+    required String status,
+    String? externalPaymentId,
+    String? paymentReference,
+  }) async {
+    try {
+      
+      final updateData = {
+        'status': status,
+        if (externalPaymentId != null) 'external_payment_id': externalPaymentId,
+        if (paymentReference != null) 'payment_reference': paymentReference,
+      };
+      
+      final response = await http.put(
+        Uri.parse('$baseUrl/vendor-registration/payment/$paymentId/status'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updateData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to update payment status'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Process integrated payment
+  static Future<Map<String, dynamic>> processIntegratedPayment({
+    required String token,
+    required int paymentId,
+    required String externalPaymentId,
+    required String paymentReference,
+  }) async {
+    try {
+      
+      final processData = {
+        'external_payment_id': externalPaymentId,
+        'payment_reference': paymentReference,
+      };
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/vendor-registration/payment/$paymentId/process'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(processData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to process integrated payment'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Upload payment proof
+  static Future<Map<String, dynamic>> uploadPaymentProof({
+    required String token,
+    required int paymentId,
+    required int imageId,
+  }) async {
+    try {
+      
+      final proofData = {
+        'image_id': imageId,
+      };
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/vendor-registration/payment/$paymentId/proof'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(proofData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to upload payment proof'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Mobile app - Create payment
+  static Future<Map<String, dynamic>> createMobilePayment({
+    required String token,
+    required double amount,
+    required String paymentMethod,
+    required String paymentProvider,
+    String currency = 'ETB',
+  }) async {
+    try {
+      
+      final paymentData = {
+        'amount': amount,
+        'payment_method': paymentMethod,
+        'payment_provider': paymentProvider,
+        'currency': currency,
+      };
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/mobile/vendor-registration/payment'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(paymentData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 201) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to create mobile payment'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Mobile app - Upload payment proof file
+  static Future<Map<String, dynamic>> uploadPaymentProofFile({
+    required String token,
+    required int paymentId,
+    required String filePath,
+  }) async {
+    try {
+      
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/mobile/vendor-registration/payment/$paymentId/upload-proof'),
+      );
+      
+      request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(await http.MultipartFile.fromPath('proof_image', filePath));
+      
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to upload payment proof file'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Mobile app - Proceed to next step
+  static Future<Map<String, dynamic>> proceedToNextStep({
+    required String token,
+    required int paymentId,
+    bool forceProceed = false,
+  }) async {
+    try {
+      
+      final proceedData = {
+        'force_proceed': forceProceed,
+      };
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/mobile/vendor-registration/payment/$paymentId/proceed'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(proceedData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to proceed to next step'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Mobile app - Generate QR code
+  static Future<Map<String, dynamic>> generateQRCode({
+    required String token,
+    required int paymentId,
+  }) async {
+    try {
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/mobile/vendor-registration/payment/$paymentId/qr'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to generate QR code'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Admin - Get all payments
+  static Future<Map<String, dynamic>> getAllPayments({
+    required String token,
+    String? status,
+    String? paymentMethod,
+    String? paymentProvider,
+    String? startDate,
+    String? endDate,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      
+      final queryParams = <String, String>{};
+      if (status != null) queryParams['status'] = status;
+      if (paymentMethod != null) queryParams['payment_method'] = paymentMethod;
+      if (paymentProvider != null) queryParams['payment_provider'] = paymentProvider;
+      if (startDate != null) queryParams['start_date'] = startDate;
+      if (endDate != null) queryParams['end_date'] = endDate;
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      final uri = Uri.parse('$baseUrl/admin/vendor-payments').replace(
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get all payments'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Admin - Get pending payments
+  static Future<Map<String, dynamic>> getPendingPayments({
+    required String token,
+  }) async {
+    try {
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/admin/vendor-payments/pending'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get pending payments'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Admin - Verify manual payment
+  static Future<Map<String, dynamic>> verifyManualPayment({
+    required String token,
+    required int paymentId,
+    required bool approved,
+    String? adminNotes,
+  }) async {
+    try {
+      
+      final verifyData = {
+        'approved': approved,
+        if (adminNotes != null) 'admin_notes': adminNotes,
+      };
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/admin/vendor-payments/$paymentId/verify'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(verifyData),
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to verify manual payment'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Admin - Get payment statistics
+  static Future<Map<String, dynamic>> getPaymentStatistics({
+    required String token,
+  }) async {
+    try {
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/admin/vendor-payments/statistics'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final responseBody = response.body;
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to get payment statistics'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // ============================================
+  // WALLET METHODS
+  // ============================================
+
+  /// Get wallet data including balance and transaction history
+  /// 
+  /// [vendorId] - The vendor ID
+  /// 
+  /// Returns wallet data with balance and transactions
+  static Future<Map<String, dynamic>> getWalletData({
+    required String vendorId,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'error': 'Authentication required. Please login again.',
+        };
+      }
+      
+      final url = Uri.parse('$vendorWalletEndpoint/$vendorId');
+      
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Request timeout - please check your connection');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else if (response.statusCode == 401) {
+        return {
+          'success': false,
+          'error': 'Session expired. Please login again.',
+          'status_code': response.statusCode,
+        };
+      } else {
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 
+                           errorData['error'] ?? 
+                           'Failed to load wallet data';
+        
+        return {
+          'success': false,
+          'error': errorMessage,
+          'status_code': response.statusCode,
+        };
+      }
+    } on TimeoutException catch (e) {
+      return {
+        'success': false,
+        'error': 'Request timeout - please check your connection',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Failed to load wallet data: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Get vendor wallet balance
+  static Future<Map<String, dynamic>> getVendorWalletBalance({
+    required String vendorId,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      final response = await http.get(
+        Uri.parse('$vendorWalletEndpoint/$vendorId/balance'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to fetch balance',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Add funds to vendor wallet
+  static Future<Map<String, dynamic>> addFundsToWallet({
+    required String vendorId,
+    required double amount,
+    String? reason,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      final url = Uri.parse('$vendorWalletEndpoint/$vendorId/add-funds');
+      final requestBody = {
+        'amount': amount,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      };
+      
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(requestBody),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        try {
+          final errorData = json.decode(response.body);
+          return {
+            'success': false,
+            'error': errorData['error'] ?? errorData['message'] ?? 'Failed to add funds (Status: ${response.statusCode})',
+            'status_code': response.statusCode,
+          };
+        } catch (e) {
+          return {
+            'success': false,
+            'error': 'Server error (${response.statusCode}): ${response.body}',
+            'status_code': response.statusCode,
+          };
+        }
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Get payment methods
+  static Future<Map<String, dynamic>> getPaymentMethods({
+    required String vendorId,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      final response = await http.get(
+        Uri.parse('$vendorWalletEndpoint/payment-methods/$vendorId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to fetch payment methods',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Create payment method
+  static Future<Map<String, dynamic>> createPaymentMethod({
+    required String vendorId,
+    required String name,
+    required String accountNumber,
+    required String accountHolder,
+    String? type,
+    Map<String, dynamic>? details,
+  }) async {
+    try {
+      debugPrint('🔄 [ApiService] Creating payment method');
+      
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      final body = {
+        'name': name,
+        'account_number': accountNumber,
+        'account_holder': accountHolder,
+        if (type != null) 'type': type,
+        if (details != null) 'details': details,
+      };
+
+      final response = await http.post(
+        Uri.parse('$vendorWalletEndpoint/payment-methods/$vendorId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to create payment method',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Update payment method
+  static Future<Map<String, dynamic>> updatePaymentMethod({
+    required int paymentMethodId,
+    String? name,
+    String? accountNumber,
+    String? accountHolder,
+    String? type,
+    Map<String, dynamic>? details,
+  }) async {
+    try {
+      debugPrint('🔄 [ApiService] Updating payment method: $paymentMethodId');
+      
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      final body = <String, dynamic>{};
+      if (name != null) body['name'] = name;
+      if (accountNumber != null) body['account_number'] = accountNumber;
+      if (accountHolder != null) body['account_holder'] = accountHolder;
+      if (type != null) body['type'] = type;
+      if (details != null) body['details'] = details;
+
+      final response = await http.patch(
+        Uri.parse('$vendorWalletEndpoint/payment-methods/update/$paymentMethodId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to update payment method',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Delete payment method
+  static Future<Map<String, dynamic>> deletePaymentMethod({
+    required int paymentMethodId,
+  }) async {
+    try {
+      debugPrint('🔄 [ApiService] Deleting payment method: $paymentMethodId');
+      
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+
+      final response = await http.delete(
+        Uri.parse('$vendorWalletEndpoint/payment-methods/delete/$paymentMethodId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to delete payment method',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Create cashout request
+  static Future<Map<String, dynamic>> createCashoutRequest({
+    required String vendorId,
+    required double amount,
+    String? reason,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      final body = {
+        'amount': amount,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      };
+
+      final response = await http.post(
+        Uri.parse('$vendorWalletEndpoint/cashout-request/$vendorId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to create cashout request',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Get cashout requests
+  static Future<Map<String, dynamic>> getCashoutRequests({
+    required String vendorId,
+    int page = 1,
+    int limit = 20,
+    String? status,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      var url = '$vendorWalletEndpoint/cashout-request/$vendorId?page=$page&limit=$limit';
+      if (status != null) {
+        url += '&status=$status';
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to fetch cashout requests',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Get cashout request details
+  static Future<Map<String, dynamic>> getCashoutRequestDetails({
+    required int requestId,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+
+      final response = await http.get(
+        Uri.parse('$vendorWalletEndpoint/cashout-request/details/$requestId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to fetch request details',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Get transaction history
+  static Future<Map<String, dynamic>> getTransactionHistory({
+    required String vendorId,
+    int page = 1,
+    int limit = 20,
+    String? status,
+  }) async {
+    try {
+      debugPrint('🔄 [ApiService] Fetching transaction history');
+      
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+      
+      var url = '$vendorWalletEndpoint/$vendorId/transactions?page=$page&limit=$limit';
+      if (status != null) {
+        url += '&status=$status';
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'error': errorData['error'] ?? 'Failed to fetch transactions',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Export transactions as CSV
+  static Future<Map<String, dynamic>> exportTransactions({
+    required String vendorId,
+  }) async {
+    try {
+      debugPrint('🔄 [ApiService] Exporting transactions');
+      
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+
+      final response = await http.get(
+        Uri.parse('$vendorWalletEndpoint/$vendorId/export/csv'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': response.bodyBytes,
+          'filename': 'transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Failed to export transactions',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 
 }

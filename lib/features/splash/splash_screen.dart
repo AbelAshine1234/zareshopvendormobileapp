@@ -25,18 +25,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    print('🎯 [SPLASH_SCREEN] Initializing new vendor-focused splash screen');
-    print('🎯 [SPLASH_SCREEN] Using theme-specific logos from assets/logo/');
+    
+    // Check authentication status immediately
+    context.read<AuthBloc>().add(const CheckAuthenticationStatus());
     
     _initializeLoading();
-    
-    // Check authentication status after a delay to ensure splash screen is shown first
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        print('🎯 [SPLASH_SCREEN] Checking authentication status after delay');
-        context.read<AuthBloc>().add(const CheckAuthenticationStatus());
-      }
-    });
   }
 
   void _initializeLoading() async {
@@ -67,12 +60,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   void _navigateToLogin() {
-    print('🎯 [SPLASH_SCREEN] Login button pressed, navigating to /login');
     context.go('/login');
   }
 
   void _navigateToSignup() {
-    print('🎯 [SPLASH_SCREEN] Sign up button pressed, navigating to /onboarding');
     context.go('/onboarding');
   }
 
@@ -82,32 +73,22 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       AppThemeType.green => 'assets/logo/logo-green.png',
       AppThemeType.basic => 'assets/logo/logo-basic.png',
     };
-    print('🎯 [SPLASH_SCREEN] Selected logo path: $path for theme: $themeType');
     return path;
   }
 
 
   @override
   Widget build(BuildContext context) {
-    print('🎯 [SPLASH_SCREEN] Building splash screen widget');
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        print('🎯 [SPLASH_SCREEN] Auth state changed: ${state.runtimeType}');
-        
-        // Only auto-navigate if we're not already on the splash screen
-        // This allows users to manually navigate back to splash screen
-        final currentLocation = GoRouterState.of(context).uri.path;
-        if (currentLocation != '/splash') {
-          if (state is AuthAuthenticated) {
-            print('🎯 [SPLASH_SCREEN] User is authenticated and approved, navigating to dashboard');
-            context.go('/');
-          } else if (state is AuthWaitingApproval) {
-            print('🎯 [SPLASH_SCREEN] User is authenticated but waiting for approval, navigating to admin approval');
-            context.go('/admin-approval');
-          }
-        } else {
-          print('🎯 [SPLASH_SCREEN] Already on splash screen, not auto-navigating');
+        // Auto-navigate based on auth state
+        if (state is AuthAuthenticated) {
+          // User is logged in, go directly to B2B market
+          context.go('/b2b-market');
+        } else if (state is AuthWaitingApproval) {
+          context.go('/admin-approval');
         }
+        // If not authenticated, stay on splash screen to show login/signup options
       },
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
@@ -182,7 +163,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               _getThemeLogoPath(themeProvider.currentThemeType),
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
-                                print('❌ [SPLASH_SCREEN] Error loading asset: $error');
                                 return Container(
                                   width: 160,
                                   height: 160,
@@ -408,7 +388,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     
     return GestureDetector(
       onTap: () {
-        print('🎨 [SPLASH_SCREEN] Theme changed to: $label');
         themeProvider.setTheme(themeType);
       },
       child: AnimatedContainer(

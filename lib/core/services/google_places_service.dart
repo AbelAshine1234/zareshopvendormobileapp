@@ -28,7 +28,6 @@ class GooglePlacesService {
       
       return [];
     } catch (e) {
-      print('Error searching places: $e');
       return [];
     }
   }
@@ -89,7 +88,6 @@ class GooglePlacesService {
       
       return null;
     } catch (e) {
-      print('Error getting place details: $e');
       return null;
     }
   }

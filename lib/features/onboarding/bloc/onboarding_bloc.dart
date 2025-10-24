@@ -60,19 +60,10 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   // Helper methods for common operations
   void _logInfo(String message, {String? details}) {
     developer.log(message, name: 'OnboardingBloc');
-    if (details != null) {
-      print('$message\n$details');
-    } else {
-      print(message);
-    }
   }
 
   void _logError(String message, {Object? error, StackTrace? stackTrace}) {
     developer.log(message, name: 'OnboardingBloc', error: error, stackTrace: stackTrace);
-    print('❌ $message');
-    if (error != null) {
-      print('   Error: $error');
-    }
   }
 
   void _handleApiError(Emitter<OnboardingState> emit, OnboardingInProgress currentState, 
@@ -99,6 +90,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       
       if (loginResult['success'] == true) {
         _logInfo('✅ Login successful! Token saved.');
+        // Emit authentication state to trigger WebSocket connection in UI
+        emit(const OnboardingUserAuthenticated());
         return;
       } else {
         _handleApiError(emit, currentState, loginResult['error'] ?? 'Login failed');
@@ -537,6 +530,16 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       
       if (result['success'] == true) {
         _logInfo('Business vendor created successfully!');
+        
+        // Extract vendor ID from response for WebSocket subscription
+        // Note: The global SocketBloc will be used to subscribe in the UI layer
+        final vendorId = result['data']?['vendor']?['id'] ?? result['vendor_id'];
+        if (vendorId != null) {
+          _logInfo('📡 Vendor ID: $vendorId - UI will subscribe to WebSocket updates');
+        } else {
+          _logInfo('⚠️ No vendor ID found in response');
+        }
+        
         emit(OnboardingVendorSubmitted(
           data: currentState.data,
           apiResponse: result,

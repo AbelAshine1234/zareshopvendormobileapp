@@ -8,6 +8,16 @@ import 'core/navigation/simple_router.dart';
 import 'core/services/localization_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'core/bloc/app_data.dart';
+import 'features/settings/bloc/vendor_update_bloc.dart';
+import 'features/settings/bloc/vendor_info_bloc.dart';
+import 'features/contacts/bloc/contacts_bloc.dart';
+import 'features/addresses/bloc/address_bloc.dart';
+import 'features/change_password/bloc/change_password_bloc.dart';
+import 'features/wallet_management/bloc/wallet_bloc.dart';
+import 'core/services/api_service.dart';
+import 'core/services/storage_service.dart';
+import 'core/services/cart_service.dart';
+import 'core/bloc/socket_bloc.dart';
 
 void main() async {
   // Initialize Flutter binding
@@ -18,11 +28,6 @@ void main() async {
   
   // Set up BlocObserver for debugging
   Bloc.observer = AppBlocObserver();
-  
-  print('🚀 [MAIN] App Starting...');
-  print('🔍 [MAIN] BlocObserver Registered: ${Bloc.observer.runtimeType}');
-  print('🌐 [MAIN] Localization initialized with language: ${LocalizationService.instance.currentLanguage}');
-  print('🚀 [MAIN] Initial route should be: /splash');
   
   runApp(const ZareshopVendorApp());
 }
@@ -40,17 +45,63 @@ class ZareshopVendorApp extends StatelessWidget {
         BlocProvider<AppDataBloc>(
           create: (context) => AppDataBloc()..add(const FetchAllAppData()),
         ),
+        BlocProvider<VendorUpdateBloc>(
+          create: (context) => VendorUpdateBloc(
+            apiService: ApiService(),
+            authBloc: context.read<AuthBloc>(),
+          ),
+        ),
+        BlocProvider<VendorInfoBloc>(
+          create: (context) {
+            return VendorInfoBloc(
+              apiService: ApiService(),
+              authBloc: context.read<AuthBloc>(),
+            );
+          },
+        ),
+        BlocProvider<ContactsBloc>(
+          create: (context) {
+            return ContactsBloc(
+              apiService: ApiService(),
+              authBloc: context.read<AuthBloc>(),
+            );
+          },
+        ),
+        BlocProvider<AddressBloc>(
+          create: (context) {
+            return AddressBloc(
+              apiService: ApiService(),
+              authBloc: context.read<AuthBloc>(),
+            );
+          },
+        ),
+        BlocProvider<ChangePasswordBloc>(
+          create: (context) {
+            return ChangePasswordBloc(
+              apiService: ApiService(),
+              storageService: StorageService(),
+            );
+          },
+        ),
+        // Global WebSocket BLoC - will connect after authentication
+        BlocProvider<SocketBloc>(
+          create: (context) => SocketBloc(),
+        ),
+        // Global Wallet BLoC - with WebSocket integration
+        BlocProvider<WalletBloc>(
+          create: (context) => WalletBloc(
+            socketBloc: context.read<SocketBloc>(),
+          ),
+        ),
       ],
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
           ChangeNotifierProvider.value(value: LocalizationService.instance),
+          ChangeNotifierProvider(create: (_) => CartService()),
         ],
         child: Consumer2<ThemeProvider, LocalizationService>(
           builder: (context, themeProvider, localization, child) {
-            print('🎨 [MAIN] Building MaterialApp.router with theme: ${themeProvider.currentTheme.runtimeType}');
-            print('🌐 [MAIN] Current language: ${localization.currentLanguage}');
-            print('🎨 [MAIN] Router config: ${SimpleRouter.router.runtimeType}');
             return MaterialApp.router(
               title: AppConstants.appName,
               debugShowCheckedModeBanner: false,

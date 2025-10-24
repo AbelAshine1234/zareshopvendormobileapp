@@ -46,7 +46,6 @@ class OnboardingCompactHeader extends StatelessWidget {
                   // Back button
                   IconButton(
                     onPressed: () {
-                      print('🔙 [ONBOARDING] Back button pressed, navigating to splash');
                       context.go('/splash');
                     },
                     icon: Icon(

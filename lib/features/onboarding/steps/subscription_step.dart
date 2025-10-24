@@ -31,9 +31,6 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
   @override
   void initState() {
     super.initState();
-    print('🎯 [SUBSCRIPTION_STEP] Widget initialized');
-    print('🎯 [SUBSCRIPTION_STEP] Selected subscription: $_selectedSubscriptionId');
-    print('🎯 [SUBSCRIPTION_STEP] Agree terms: $_agreeTermsCheck');
   }
 
   @override
@@ -57,15 +54,10 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
     
     return GestureDetector(
       onTap: () {
-        print('🎯 [SUBSCRIPTION_STEP] Subscription card tapped');
-        print('🎯 [SUBSCRIPTION_STEP] Subscription ID: ${subscription['id']}');
-        print('🎯 [SUBSCRIPTION_STEP] Subscription name: ${subscription['name']}');
         setState(() {
           _selectedSubscriptionId = subscription['id'];
         });
-        print('🎯 [SUBSCRIPTION_STEP] Updated selected subscription: $_selectedSubscriptionId');
         context.read<OnboardingBloc>().add(UpdateSubscription(subscription['id']));
-        print('🎯 [SUBSCRIPTION_STEP] UpdateSubscription event dispatched');
       },
       child: Container(
         padding: const EdgeInsets.all(AppThemes.spaceL),
@@ -229,29 +221,23 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                 child: Column(
                   children: [
                     Icon(
-                      Icons.error_outline,
+                      Icons.info_outline,
                       size: 48,
-                      color: widget.theme.error,
+                      color: widget.theme.info,
                     ),
                     const SizedBox(height: AppThemes.spaceM),
                     Text(
-                      'onboarding.subscription.loadFailed'.tr(),
+                      'onboarding.subscription.noPlansAvailable'.tr(),
                       style: AppThemes.titleMedium(widget.theme).copyWith(
-                        color: widget.theme.error,
+                        color: widget.theme.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppThemes.spaceS),
                     Text(
-                      'onboarding.subscription.checkInternet'.tr(),
+                      'onboarding.subscription.noPlansMessage'.tr(),
                       style: AppThemes.bodyMedium(widget.theme),
                       textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppThemes.spaceM),
-                    AppPrimaryButton(
-                      text: 'common.retry'.tr(),
-                      onPressed: widget.onFetchSubscriptions,
-                      width: 120,
                     ),
                   ],
                 ),
@@ -288,13 +274,10 @@ class _SubscriptionStepState extends State<SubscriptionStep> {
                   Checkbox(
                     value: _agreeTermsCheck,
                     onChanged: (value) {
-                      print('🎯 [SUBSCRIPTION_STEP] Terms checkbox changed: $value');
                       setState(() {
                         _agreeTermsCheck = value ?? false;
                       });
-                      print('🎯 [SUBSCRIPTION_STEP] Updated agree terms: $_agreeTermsCheck');
                       context.read<OnboardingBloc>().add(ToggleTermsAgreement(_agreeTermsCheck));
-                      print('🎯 [SUBSCRIPTION_STEP] ToggleTermsAgreement event dispatched');
                     },
                     activeColor: widget.theme.primary,
                   ),

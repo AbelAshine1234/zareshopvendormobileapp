@@ -150,56 +150,49 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   void _onCheckAuthenticationStatus(
       CheckAuthenticationStatus event, Emitter<AuthState> emit) async {
-    print('🔐 [AUTH_BLOC] CheckAuthenticationStatus event received');
     emit(const AuthChecking());
-    print('🔐 [AUTH_BLOC] Emitted AuthChecking state');
     
     try {
-      print('🔐 [AUTH_BLOC] Getting token from storage...');
       final token = await ApiService.getToken();
-      print('🔐 [AUTH_BLOC] Token result: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
       
       if (token != null) {
-        print('🔐 [AUTH_BLOC] Token found, verifying with server...');
         // Verify token is still valid by getting current user
         final userResult = await ApiService.getCurrentUser();
-        print('🔐 [AUTH_BLOC] User verification result: ${userResult['success']}');
         
         if (userResult['success'] == true) {
-          print('🔐 [AUTH_BLOC] Token is valid, checking approval status...');
           final userData = userResult['data'];
           
           // Check if user is waiting for approval
           if (userData != null && userData['vendor_status'] == 'pending') {
-            print('🔐 [AUTH_BLOC] User is waiting for approval, emitting AuthWaitingApproval');
             emit(const AuthWaitingApproval());
           } else {
-            print('🔐 [AUTH_BLOC] User is authenticated and approved, emitting AuthAuthenticated');
             emit(const AuthAuthenticated());
           }
         } else {
-          print('🔐 [AUTH_BLOC] Token is invalid, clearing and emitting AuthUnauthenticated');
           // Token is invalid, clear it
           await ApiService.removeToken();
           emit(const AuthUnauthenticated());
         }
       } else {
-        print('🔐 [AUTH_BLOC] No token found, emitting AuthUnauthenticated');
         emit(const AuthUnauthenticated());
       }
     } catch (e) {
-      print('🔐 [AUTH_BLOC] Error checking auth: $e, emitting AuthUnauthenticated');
       // Error checking auth, assume unauthenticated
       emit(const AuthUnauthenticated());
     }
   }
 
   void _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
+    emit(const AuthLoading());
     try {
+      // Clear all user data
       await ApiService.logout();
+      
+      // Emit unauthenticated state to trigger navigation
       emit(const AuthUnauthenticated());
     } catch (e) {
-      // Even if logout fails, assume unauthenticated
+      // Even if logout fails, clear local data and mark as unauthenticated
+      print('❌ Logout error: ${e.toString()}');
       emit(const AuthUnauthenticated());
     }
   }

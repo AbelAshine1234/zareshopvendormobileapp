@@ -186,13 +186,11 @@ class ContactHelpDialog extends StatelessWidget {
   Future<void> _makePhoneCall(String phoneNumber) async {
     // TODO: Implement phone call functionality
     // For now, just show a message
-    print('Making phone call to: $phoneNumber');
   }
 
   Future<void> _sendEmail(String email) async {
     // TODO: Implement email functionality
     // For now, just show a message
-    print('Sending email to: $email');
   }
 
   static void show(BuildContext context, AppThemeData theme) {
