@@ -8,6 +8,9 @@ import 'core/navigation/simple_router.dart';
 import 'core/services/localization_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'core/bloc/app_data.dart';
+import 'features/settings/bloc/vendor_update_bloc.dart';
+import 'features/settings/bloc/vendor_info_bloc.dart';
+import 'core/services/api_service.dart';
 
 void main() async {
   // Initialize Flutter binding
@@ -39,6 +42,21 @@ class ZareshopVendorApp extends StatelessWidget {
         ),
         BlocProvider<AppDataBloc>(
           create: (context) => AppDataBloc()..add(const FetchAllAppData()),
+        ),
+        BlocProvider<VendorUpdateBloc>(
+          create: (context) => VendorUpdateBloc(
+            apiService: ApiService(),
+            authBloc: context.read<AuthBloc>(),
+          ),
+        ),
+        BlocProvider<VendorInfoBloc>(
+          create: (context) {
+            print('🚀 [MAIN] Creating VendorInfoBloc...');
+            return VendorInfoBloc(
+              apiService: ApiService(),
+              authBloc: context.read<AuthBloc>(),
+            );
+          },
         ),
       ],
       child: MultiProvider(

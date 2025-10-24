@@ -11,6 +11,18 @@ class ThemeProvider extends ChangeNotifier {
   AppThemeData get currentTheme => _currentTheme;
   AppThemeType get currentThemeType => _currentThemeType;
   
+  // Get current theme name as string for UI compatibility
+  String get currentThemeName {
+    switch (_currentThemeType) {
+      case AppThemeType.basic:
+        return 'basic';
+      case AppThemeType.coffee:
+        return 'coffee';
+      case AppThemeType.green:
+        return 'green';
+    }
+  }
+  
   ThemeProvider() {
     _loadTheme();
   }

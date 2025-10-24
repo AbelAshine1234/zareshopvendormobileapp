@@ -388,7 +388,87 @@
     "notifications": "Beeksisa",
     "privacy": "Iccitii",
     "security": "Nageenya",
-    "about": "Waa'ee"
+    "about": "Waa'ee",
+    "account": {
+      "title": "Akkaawuntii",
+      "storeLogo": "Logo Dukaanaa",
+      "storeLogoDesc": "Logo dukaanaa kee fe'i",
+      "contactInfo": "Hubannoo Qunnamii",
+      "contactInfoDesc": "Hubannoo qunnamii kee bulchi",
+      "addressManagement": "Bulchiinsa Teessoo",
+      "addressManagementDesc": "Teessoo daldalaa kee fooyyessi",
+      "changePassword": "Jecha Iccitii Jijjiiraa",
+      "changePasswordDesc": "Jecha iccitii akkaawuntii kee fooyyessi"
+    },
+    "payment": {
+      "title": "Kaffaltii",
+      "paymentMethods": "Karaa Kaffaltii",
+      "paymentMethodsDesc": "Filannoo kaffaltii kee bulchi",
+      "walletBalance": "Walakkaa Waletii",
+      "walletBalanceDesc": "Walakkaa ammaa kee ilaali",
+      "payoutHistory": "Seenaa Kaffaltii",
+      "payoutHistoryDesc": "Seenaa kaffaltii kee hordofii",
+      "invoiceManagement": "Bulchiinsa Faayilii",
+      "invoiceManagementDesc": "Faayilii kee bulchi"
+    },
+    "orders": {
+      "title": "Ajajaa",
+      "pushNotifications": "Beeksisa Dhiibbaa",
+      "pushNotificationsDesc": "Beeksisa ajajaa fudhachuu",
+      "smsNotifications": "Beeksisa SMS",
+      "smsNotificationsDesc": "Beeksisa SMS ajajaa irratti argachuu",
+      "emailNotifications": "Beeksisa Imeelii",
+      "emailNotificationsDesc": "Fooyya'iinsa imeelii fudhachuu",
+      "notificationLanguage": "Afaan Beeksisa",
+      "notificationLanguageDesc": "Afaan beeksisa filadhu"
+    },
+    "products": {
+      "title": "Qabiyyee",
+      "defaultCategories": "Gosa Dhaabaa",
+      "defaultCategoriesDesc": "Gosa qabiyyee dhaabaa sirreessi",
+      "stockManagement": "Bulchiinsa Qabaa",
+      "stockManagementDesc": "Qabaa qabiyyee bulchi",
+      "discountDefaults": "Dhaabaa Hir'isaa",
+      "discountDefaultsDesc": "Qindaa'ina hir'isaa dhaabaa sirreessi"
+    },
+    "analytics": {
+      "title": "Qorannoo",
+      "vendorPerformance": "Hojii Fudhaataa",
+      "vendorPerformanceDesc": "Qorannoo gatii kee ilaali",
+      "exportReports": "Ripootii Baasu",
+      "exportReportsDesc": "Ripootii gatii buufadhu"
+    },
+    "subscription": {
+      "title": "Tajaajilaa",
+      "currentPlan": "Karoora Ammaa",
+      "currentPlanDesc": "Hubannoo tajaajilaa kee ilaali",
+      "upgradePlan": "Karoora Fooyya'i",
+      "upgradePlanDesc": "Tajaajilaa kee fooyya'i",
+      "paymentHistory": "Seenaa Kaffaltii",
+      "paymentHistoryDesc": "Kaffaltii tajaajilaa ilaali",
+      "renewalAlerts": "Beeksisa Hallee",
+      "renewalAlertsDesc": "Beeksisa hallee argachuu"
+    },
+    "help": {
+      "title": "Gargaarsa",
+      "faq": "Gaaffii Dubbifamaa",
+      "faqDesc": "Gaaffii yeroo baay'ee gaafataman",
+      "supportTickets": "Tikkeettii Deeggarsaa",
+      "supportTicketsDesc": "Gaaffii deeggarsaa bulchi",
+      "contactSupport": "Deeggarsa Quunnami",
+      "contactSupportDesc": "Gareen keenya irraa gargaarsa argadhu",
+      "feedback": "Deebii",
+      "feedbackDesc": "Deebii kee qoodi"
+    },
+    "security": {
+      "title": "Nageenya",
+      "logout": "Ba'i",
+      "logoutDesc": "Akkaawuntii kee irraa ba'i",
+      "dataExport": "Daataa Baasu",
+      "dataExportDesc": "Daataa daldalaa kee baasu",
+      "appVersion": "Fooyya'ii Appii",
+      "appVersionDesc": "Fooyya'ii appii ammaa"
+    }
   },
   "errors": {
     "networkError": "Dogoggora netwoorkii. Mee walqabatee kee mirkaneessi.",

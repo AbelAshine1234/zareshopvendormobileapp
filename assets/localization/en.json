@@ -388,7 +388,87 @@
     "notifications": "Notifications",
     "privacy": "Privacy",
     "security": "Security",
-    "about": "About"
+    "about": "About",
+    "account": {
+      "title": "Account",
+      "storeLogo": "Store Logo",
+      "storeLogoDesc": "Upload your store logo",
+      "contactInfo": "Contact Information",
+      "contactInfoDesc": "Manage your contact details",
+      "addressManagement": "Address Management",
+      "addressManagementDesc": "Update your business address",
+      "changePassword": "Change Password",
+      "changePasswordDesc": "Update your account password"
+    },
+    "payment": {
+      "title": "Payment",
+      "paymentMethods": "Payment Methods",
+      "paymentMethodsDesc": "Manage your payment options",
+      "walletBalance": "Wallet Balance",
+      "walletBalanceDesc": "View your current balance",
+      "payoutHistory": "Payout History",
+      "payoutHistoryDesc": "Track your payment history",
+      "invoiceManagement": "Invoice Management",
+      "invoiceManagementDesc": "Manage your invoices"
+    },
+    "orders": {
+      "title": "Orders",
+      "pushNotifications": "Push Notifications",
+      "pushNotificationsDesc": "Receive order notifications",
+      "smsNotifications": "SMS Notifications",
+      "smsNotificationsDesc": "Get SMS alerts for orders",
+      "emailNotifications": "Email Notifications",
+      "emailNotificationsDesc": "Receive email updates",
+      "notificationLanguage": "Notification Language",
+      "notificationLanguageDesc": "Choose notification language"
+    },
+    "products": {
+      "title": "Products",
+      "defaultCategories": "Default Categories",
+      "defaultCategoriesDesc": "Set default product categories",
+      "stockManagement": "Stock Management",
+      "stockManagementDesc": "Manage product inventory",
+      "discountDefaults": "Discount Defaults",
+      "discountDefaultsDesc": "Set default discount settings"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "vendorPerformance": "Vendor Performance",
+      "vendorPerformanceDesc": "View your sales analytics",
+      "exportReports": "Export Reports",
+      "exportReportsDesc": "Download sales reports"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "currentPlan": "Current Plan",
+      "currentPlanDesc": "View your subscription details",
+      "upgradePlan": "Upgrade Plan",
+      "upgradePlanDesc": "Upgrade your subscription",
+      "paymentHistory": "Payment History",
+      "paymentHistoryDesc": "View subscription payments",
+      "renewalAlerts": "Renewal Alerts",
+      "renewalAlertsDesc": "Get renewal notifications"
+    },
+    "help": {
+      "title": "Help",
+      "faq": "FAQ",
+      "faqDesc": "Frequently asked questions",
+      "supportTickets": "Support Tickets",
+      "supportTicketsDesc": "Manage support requests",
+      "contactSupport": "Contact Support",
+      "contactSupportDesc": "Get help from our team",
+      "feedback": "Feedback",
+      "feedbackDesc": "Share your feedback"
+    },
+    "security": {
+      "title": "Security",
+      "logout": "Logout",
+      "logoutDesc": "Sign out of your account",
+      "dataExport": "Data Export",
+      "dataExportDesc": "Export your business data",
+      "appVersion": "App Version",
+      "appVersionDesc": "Current app version"
+    }
   },
   "errors": {
     "networkError": "Network error. Please check your connection.",

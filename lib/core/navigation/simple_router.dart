@@ -8,7 +8,9 @@ import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/orders/screens/orders_screen.dart';
 import '../../features/products/screens/products_screen.dart';
 import '../../features/wallet/screens/wallet_screen.dart';
-import '../../features/profile/screens/profile_screen.dart';
+import '../../features/settings/screens/settings_screen.dart';
+import '../../features/b2b/screens/b2b_market_screen.dart';
+import '../../features/analytics/screens/analytics_screen.dart';
 import '../../shared/screens/admin_approval_screen.dart';
 import 'main_navigation.dart';
 
@@ -107,11 +109,27 @@ class SimpleRouter {
           },
         ),
         GoRoute(
+          path: '/b2b-market',
+          name: 'b2b-market',
+          builder: (context, state) {
+            print('🏬 [SIMPLE_ROUTER] B2B Market route accessed');
+            return const MainNavigation(child: B2BMarketScreen());
+          },
+        ),
+        GoRoute(
+          path: '/analytics',
+          name: 'analytics',
+          builder: (context, state) {
+            print('📈 [SIMPLE_ROUTER] Analytics route accessed');
+            return const MainNavigation(child: AnalyticsScreen());
+          },
+        ),
+        GoRoute(
           path: '/profile',
           name: 'profile',
           builder: (context, state) {
-            print('👤 [SIMPLE_ROUTER] Profile route accessed');
-            return const MainNavigation(child: ProfileScreen());
+            print('⚙️ [SIMPLE_ROUTER] Settings route accessed');
+            return const MainNavigation(child: SettingsScreen());
           },
         ),
       ],

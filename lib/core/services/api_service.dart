@@ -30,6 +30,8 @@ class ApiService {
   // Vendor endpoints
   static const String createIndividualVendorEndpoint = '$baseUrl/vendor/individual';
   static const String registerBusinessVendorEndpoint = '$baseUrl/vendors/register-business';
+  static const String vendorCompleteInfoEndpoint = '$baseUrl/vendors/my-complete-info';
+  static const String vendorUpdateEndpoint = '$baseUrl/vendors/update';
   
   // Category endpoints
   static const String categoriesEndpoint = '$baseUrl/category';
@@ -995,6 +997,228 @@ class ApiService {
       print('💥 [API_SERVICE] ========================================');
       print('\n');
       return {'success': false, 'error': 'Network error: ${e.toString()}', 'error_source': 'client'};
+    }
+  }
+
+  // Get vendor complete info
+  Future<Map<String, dynamic>> getVendorCompleteInfo() async {
+    try {
+      print('\n');
+      print('🔄 [API_SERVICE] ========================================');
+      print('🔄 [API_SERVICE] GETTING VENDOR COMPLETE INFO');
+      print('🔄 [API_SERVICE] ========================================');
+      print('🔄 [API_SERVICE] Endpoint: $vendorCompleteInfoEndpoint');
+      
+      // Get JWT token from SharedPreferences
+      final token = await getToken();
+      
+      if (token == null) {
+        print('❌ [API_SERVICE] No JWT token found');
+        return {'success': false, 'error': 'No authentication token found'};
+      }
+      
+      print('🔄 [API_SERVICE] Token found: ${token.substring(0, 20)}...');
+      print('🔄 [API_SERVICE] Full JWT Token: $token');
+      
+      // Make the API request
+      final response = await http.get(
+        Uri.parse(vendorCompleteInfoEndpoint),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      
+      print('🔄 [API_SERVICE] Response Status: ${response.statusCode}');
+      print('🔄 [API_SERVICE] Response Headers: ${response.headers}');
+      
+      final data = json.decode(response.body);
+      
+      if (response.statusCode == 200) {
+        print('✅ [API_SERVICE] Vendor info retrieved successfully');
+        print('✅ [API_SERVICE] Response Data: $data');
+        return data;
+      } else {
+        print('❌ [API_SERVICE] Failed to get vendor info');
+        print('❌ [API_SERVICE] Status Code: ${response.statusCode}');
+        print('❌ [API_SERVICE] Response Body: ${response.body}');
+        
+        final error = (data is Map && data.containsKey('error'))
+            ? data['error']
+            : (data is Map && data.containsKey('message'))
+                ? data['message']
+                : 'Failed to get vendor info (Status: ${response.statusCode})';
+        
+        return {'success': false, 'error': error};
+      }
+    } catch (e, stackTrace) {
+      print('\n');
+      print('💥 [API_SERVICE] ========================================');
+      print('💥 [API_SERVICE] ERROR GETTING VENDOR INFO');
+      print('💥 [API_SERVICE] ========================================');
+      print('💥 [API_SERVICE] Exception: $e');
+      print('💥 [API_SERVICE] Stack Trace: $stackTrace');
+      print('💥 [API_SERVICE] ========================================');
+      print('\n');
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Update vendor information
+  Future<Map<String, dynamic>> updateVendorInfo({
+    required String token,
+    String? name,
+    String? description,
+    String? coverImagePath,
+    String? faydaImagePath,
+    String? businessLicenseImagePath,
+  }) async {
+    try {
+      print('\n');
+      print('🔄 [API_SERVICE] ========================================');
+      print('🔄 [API_SERVICE] UPDATING VENDOR INFO');
+      print('🔄 [API_SERVICE] ========================================');
+      print('🔄 [API_SERVICE] Endpoint: $vendorUpdateEndpoint');
+      print('🔄 [API_SERVICE] Token: ${token.substring(0, 20)}...');
+      
+      // Create multipart request
+      final request = http.MultipartRequest('PUT', Uri.parse(vendorUpdateEndpoint));
+      
+      // Add headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+      
+      // Add text fields if provided
+      if (name != null && name.isNotEmpty) {
+        request.fields['name'] = name;
+        print('🔄 [API_SERVICE] Adding name: $name');
+      }
+      
+      if (description != null && description.isNotEmpty) {
+        request.fields['description'] = description;
+        print('🔄 [API_SERVICE] Adding description: $description');
+      }
+      
+      // Add image files if provided
+      if (coverImagePath != null && coverImagePath.isNotEmpty) {
+        print('🔄 [API_SERVICE] Adding cover image: $coverImagePath');
+        print('🔄 [API_SERVICE] Platform: ${kIsWeb ? "Web" : "Mobile"}');
+        
+        if (kIsWeb) {
+          // For web, convert image to bytes first
+          try {
+            final imageBytes = await _convertImageToBytes(coverImagePath);
+            print('🔄 [API_SERVICE] Image converted to bytes: ${imageBytes.length} bytes');
+            final coverImageFile = http.MultipartFile.fromBytes(
+              'cover_image',
+              imageBytes,
+              filename: 'cover_image.jpg',
+              contentType: MediaType('image', 'jpeg'),
+            );
+            request.files.add(coverImageFile);
+            print('✅ [API_SERVICE] Cover image file added to request');
+          } catch (e) {
+            print('❌ [API_SERVICE] Error converting cover image to bytes: $e');
+            return {'success': false, 'error': 'Failed to process cover image: $e'};
+          }
+        } else {
+          // For mobile, use file path directly
+          try {
+            final coverImageFile = await http.MultipartFile.fromPath('cover_image', coverImagePath);
+            request.files.add(coverImageFile);
+            print('✅ [API_SERVICE] Cover image file added to request');
+          } catch (e) {
+            print('❌ [API_SERVICE] Error creating cover image file: $e');
+            return {'success': false, 'error': 'Failed to process cover image: $e'};
+          }
+        }
+      }
+      
+      if (faydaImagePath != null && faydaImagePath.isNotEmpty) {
+        print('🔄 [API_SERVICE] Adding fayda image: $faydaImagePath');
+        
+        if (kIsWeb) {
+          final imageBytes = await _convertImageToBytes(faydaImagePath);
+          final faydaImageFile = http.MultipartFile.fromBytes(
+            'fayda_image',
+            imageBytes,
+            filename: 'fayda_image.jpg',
+            contentType: MediaType('image', 'jpeg'),
+          );
+          request.files.add(faydaImageFile);
+        } else {
+          final faydaImageFile = await http.MultipartFile.fromPath('fayda_image', faydaImagePath);
+          request.files.add(faydaImageFile);
+        }
+      }
+      
+      if (businessLicenseImagePath != null && businessLicenseImagePath.isNotEmpty) {
+        print('🔄 [API_SERVICE] Adding business license image: $businessLicenseImagePath');
+        
+        if (kIsWeb) {
+          final imageBytes = await _convertImageToBytes(businessLicenseImagePath);
+          final businessLicenseImageFile = http.MultipartFile.fromBytes(
+            'business_license_image',
+            imageBytes,
+            filename: 'business_license_image.jpg',
+            contentType: MediaType('image', 'jpeg'),
+          );
+          request.files.add(businessLicenseImageFile);
+        } else {
+          final businessLicenseImageFile = await http.MultipartFile.fromPath('business_license_image', businessLicenseImagePath);
+          request.files.add(businessLicenseImageFile);
+        }
+      }
+      
+      // Check if at least one field is provided
+      if (request.fields.isEmpty && request.files.isEmpty) {
+        print('❌ [API_SERVICE] No fields provided for update');
+        return {'success': false, 'error': 'No valid fields provided for update'};
+      }
+      
+      print('🔄 [API_SERVICE] Sending request...');
+      print('🔄 [API_SERVICE] Request fields: ${request.fields}');
+      print('🔄 [API_SERVICE] Request files count: ${request.files.length}');
+      
+      final response = await request.send();
+      
+      print('🔄 [API_SERVICE] Response Status: ${response.statusCode}');
+      print('🔄 [API_SERVICE] Response Headers: ${response.headers}');
+      
+      final responseBody = await response.stream.bytesToString();
+      print('🔄 [API_SERVICE] Response Body: $responseBody');
+      
+      final data = json.decode(responseBody);
+      
+      if (response.statusCode == 200) {
+        print('✅ [API_SERVICE] Vendor updated successfully');
+        print('✅ [API_SERVICE] Response Data: $data');
+        return data;
+      } else {
+        print('❌ [API_SERVICE] Failed to update vendor');
+        print('❌ [API_SERVICE] Status Code: ${response.statusCode}');
+        print('❌ [API_SERVICE] Response Body: $responseBody');
+        
+        final error = (data is Map && data.containsKey('error'))
+            ? data['error']
+            : (data is Map && data.containsKey('message'))
+                ? data['message']
+                : 'Failed to update vendor (Status: ${response.statusCode})';
+        
+        return {'success': false, 'error': error};
+      }
+    } catch (e, stackTrace) {
+      print('\n');
+      print('💥 [API_SERVICE] ========================================');
+      print('💥 [API_SERVICE] ERROR UPDATING VENDOR');
+      print('💥 [API_SERVICE] ========================================');
+      print('💥 [API_SERVICE] Exception: $e');
+      print('💥 [API_SERVICE] Stack Trace: $stackTrace');
+      print('💥 [API_SERVICE] ========================================');
+      print('\n');
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
     }
   }
 

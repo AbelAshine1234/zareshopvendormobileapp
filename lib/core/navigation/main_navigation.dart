@@ -18,8 +18,9 @@ class _MainNavigationState extends State<MainNavigation> {
     final String location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/orders')) return 1;
     if (location.startsWith('/products')) return 2;
-    if (location.startsWith('/wallet')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/b2b-market')) return 3;
+    if (location.startsWith('/analytics')) return 4;
+    if (location.startsWith('/profile')) return 5;
     return 0;
   }
 
@@ -80,46 +81,55 @@ class _MainNavigationState extends State<MainNavigation> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(
-              icon: Icons.home_outlined,
-              selectedIcon: Icons.home,
-              label: _getLocalizedText('navigation.home', 'Home'),
+              icon: Icons.dashboard_outlined,
+              selectedIcon: Icons.dashboard,
+              label: _getLocalizedText('navigation.dashboard', 'Dashboard'),
               index: 0,
               currentIndex: currentIndex,
               theme: theme,
               onTap: () => context.go('/'),
             ),
             _buildNavItem(
-              icon: Icons.pie_chart_outline,
-              selectedIcon: Icons.pie_chart,
-              label: _getLocalizedText('navigation.portfolio', 'Portfolio'),
+              icon: Icons.shopping_cart_outlined,
+              selectedIcon: Icons.shopping_cart,
+              label: _getLocalizedText('navigation.orders', 'Orders'),
               index: 1,
               currentIndex: currentIndex,
               theme: theme,
               onTap: () => context.go('/orders'),
             ),
             _buildNavItem(
-              icon: Icons.work_outline,
-              selectedIcon: Icons.work,
-              label: _getLocalizedText('navigation.feed', 'Feed'),
+              icon: Icons.inventory_outlined,
+              selectedIcon: Icons.inventory,
+              label: _getLocalizedText('navigation.products', 'Products'),
               index: 2,
               currentIndex: currentIndex,
               theme: theme,
               onTap: () => context.go('/products'),
             ),
             _buildNavItem(
-              icon: Icons.account_balance_wallet_outlined,
-              selectedIcon: Icons.account_balance_wallet,
-              label: _getLocalizedText('navigation.balance', 'Balance'),
+              icon: Icons.store_outlined,
+              selectedIcon: Icons.store,
+              label: _getLocalizedText('navigation.b2bMarket', 'B2B Market'),
               index: 3,
               currentIndex: currentIndex,
               theme: theme,
-              onTap: () => context.go('/wallet'),
+              onTap: () => context.go('/b2b-market'),
+            ),
+            _buildNavItem(
+              icon: Icons.analytics_outlined,
+              selectedIcon: Icons.analytics,
+              label: _getLocalizedText('navigation.analytics', 'Analytics'),
+              index: 4,
+              currentIndex: currentIndex,
+              theme: theme,
+              onTap: () => context.go('/analytics'),
             ),
             _buildNavItem(
               icon: Icons.settings_outlined,
               selectedIcon: Icons.settings,
               label: _getLocalizedText('navigation.settings', 'Settings'),
-              index: 4,
+              index: 5,
               currentIndex: currentIndex,
               theme: theme,
               onTap: () => context.go('/profile'),

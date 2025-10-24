@@ -388,7 +388,87 @@
     "notifications": "ማሳወቂያዎች",
     "privacy": "ግላዊነት",
     "security": "ደህንነት",
-    "about": "ስለ"
+    "about": "ስለ",
+    "account": {
+      "title": "መለያ",
+      "storeLogo": "የሱቅ ሎጎ",
+      "storeLogoDesc": "የሱቅ ሎጎዎን ይጫኑ",
+      "contactInfo": "የአግኝነት መረጃ",
+      "contactInfoDesc": "የአግኝነት ዝርዝሮችዎን ያስተዳድሩ",
+      "addressManagement": "የአድራሻ አስተዳደር",
+      "addressManagementDesc": "የንግድ አድራሻዎን ያዘምኑ",
+      "changePassword": "የይለፍ ቃል ቀይር",
+      "changePasswordDesc": "የመለያ የይለፍ ቃልዎን ያዘምኑ"
+    },
+    "payment": {
+      "title": "ክፍያ",
+      "paymentMethods": "የክፍያ ዘዴዎች",
+      "paymentMethodsDesc": "የክፍያ አማራጮችዎን ያስተዳድሩ",
+      "walletBalance": "የቦርሳ ቀሪ ሂሳብ",
+      "walletBalanceDesc": "የአሁኑ ቀሪ ሂሳብዎን ይመልከቱ",
+      "payoutHistory": "የክፍያ ታሪክ",
+      "payoutHistoryDesc": "የክፍያ ታሪክዎን ይከታተሉ",
+      "invoiceManagement": "የፋክተር አስተዳደር",
+      "invoiceManagementDesc": "ፋክተሮችዎን ያስተዳድሩ"
+    },
+    "orders": {
+      "title": "ትዕዛዞች",
+      "pushNotifications": "የግፋ ማሳወቂያዎች",
+      "pushNotificationsDesc": "የትዕዛዝ ማሳወቂያዎችን ይቀበሉ",
+      "smsNotifications": "የኤስኤስኤስ ማሳወቂያዎች",
+      "smsNotificationsDesc": "ለትዕዛዞች የኤስኤስኤስ ማስጠንቀቂያዎችን ያግኙ",
+      "emailNotifications": "የኢሜይል ማሳወቂያዎች",
+      "emailNotificationsDesc": "የኢሜይል ዝማኔዎችን ይቀበሉ",
+      "notificationLanguage": "የማሳወቂያ ቋንቋ",
+      "notificationLanguageDesc": "የማሳወቂያ ቋንቋ ይምረጡ"
+    },
+    "products": {
+      "title": "ምርቶች",
+      "defaultCategories": "ነባሪ ምድቦች",
+      "defaultCategoriesDesc": "ነባሪ የምርት ምድቦችን ያዋቅሩ",
+      "stockManagement": "የክምችት አስተዳደር",
+      "stockManagementDesc": "የምርት ክምችትን ያስተዳድሩ",
+      "discountDefaults": "ነባሪ ቅናሾች",
+      "discountDefaultsDesc": "ነባሪ የቅናሽ ቅንብሮችን ያዋቅሩ"
+    },
+    "analytics": {
+      "title": "ትንታኔ",
+      "vendorPerformance": "የነጋዴ አፈጻጸም",
+      "vendorPerformanceDesc": "የሽያጭ ትንታኔዎን ይመልከቱ",
+      "exportReports": "ሪፖርቶችን ወደ ውጭ ላክ",
+      "exportReportsDesc": "የሽያጭ ሪፖርቶችን ያውርዱ"
+    },
+    "subscription": {
+      "title": "የደንበኝነት",
+      "currentPlan": "አሁኑ እቅድ",
+      "currentPlanDesc": "የደንበኝነት ዝርዝሮችዎን ይመልከቱ",
+      "upgradePlan": "እቅድ አሻሽል",
+      "upgradePlanDesc": "የደንበኝነትዎን አሻሽል",
+      "paymentHistory": "የክፍያ ታሪክ",
+      "paymentHistoryDesc": "የደንበኝነት ክፍያዎችን ይመልከቱ",
+      "renewalAlerts": "የእንደገና ማስጠንቀቂያዎች",
+      "renewalAlertsDesc": "የእንደገና ማሳወቂያዎችን ያግኙ"
+    },
+    "help": {
+      "title": "እርዳታ",
+      "faq": "ተደጋግሞ የሚጠየቁ ጥያቄዎች",
+      "faqDesc": "ተደጋግሞ የሚጠየቁ ጥያቄዎች",
+      "supportTickets": "የድጋፍ ትኬቶች",
+      "supportTicketsDesc": "የድጋፍ ጥያቄዎችን ያስተዳድሩ",
+      "contactSupport": "ድጋፍን አግኝ",
+      "contactSupportDesc": "ከቡድናችን እርዳታ ያግኙ",
+      "feedback": "ግብረ መልስ",
+      "feedbackDesc": "ግብረ መልስዎን ያጋሩ"
+    },
+    "security": {
+      "title": "ደህንነት",
+      "logout": "ውጣ",
+      "logoutDesc": "ከመለያዎ ውጣ",
+      "dataExport": "ውሂብ ወደ ውጭ ላክ",
+      "dataExportDesc": "የንግድ ውሂብዎን ወደ ውጭ ያስሉ",
+      "appVersion": "የመተግበሪያ ሥሪት",
+      "appVersionDesc": "አሁኑ የመተግበሪያ ሥሪት"
+    }
   },
   "errors": {
     "networkError": "የኔትዎርክ ስህተት። እባክዎ ግንኙነትዎን ያረጋግጡ።",
