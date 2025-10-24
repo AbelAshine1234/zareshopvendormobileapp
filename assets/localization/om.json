@@ -1,10 +1,8 @@
 {
   "@@locale": "om",
-  "app": {
-    "name": "Zareshop Fudhaataa",
-    "version": "1.0.0",
-    "description": "Appii Zareshop Fudhaataa fudhaataa Itoophiyaa qarshii isaanii online ta'ee gargaarsa ta'uun haala sirrii ta'een bulchiinsa."
-  },
+  "appName": "Zareshop Fudhaataa",
+  "appVersion": "1.0.0",
+  "appDescription": "Appii Zareshop Fudhaataa fudhaataa Itoophiyaa qarshii isaanii online ta'ee gargaarsa ta'uun haala sirrii ta'een bulchiinsa.",
   "paymentMethods": {
     "title": "Karaa Kaffaltii",
     "setDefault": "Akka karaatti kaffaltii durtii kaa'i",

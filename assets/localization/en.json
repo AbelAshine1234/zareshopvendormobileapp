@@ -1,10 +1,8 @@
 {
   "@@locale": "en",
-  "app": {
-    "name": "Zareshop Vendor",
-    "version": "1.0.0",
-    "description": "Zareshop Vendor App helps Ethiopian vendors manage their online business efficiently."
-  },
+  "appName": "Zareshop Vendor",
+  "appVersion": "1.0.0",
+  "appDescription": "Zareshop Vendor App helps Ethiopian vendors manage their online business efficiently.",
   "common": {
     "loading": "Loading...",
     "error": "Error",
