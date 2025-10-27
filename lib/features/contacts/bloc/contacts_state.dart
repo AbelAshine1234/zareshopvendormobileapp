@@ -15,15 +15,17 @@ class ContactsLoaded extends ContactsState {
   final List<Map<String, dynamic>> contacts;
   final int count;
   final String? type;
+  final Map<String, dynamic>? vendor;
 
   const ContactsLoaded({
     required this.contacts,
     required this.count,
     this.type,
+    this.vendor,
   });
 
   @override
-  List<Object?> get props => [contacts, count, type];
+  List<Object?> get props => [contacts, count, type, vendor];
 }
 
 class ContactsError extends ContactsState {

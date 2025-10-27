@@ -16,11 +16,11 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _getCurrentIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
-    if (location == '/dashboard') return 5; // Dashboard is now last
+    if (location == '/dashboard') return 4; // Dashboard is now second to last
     if (location.startsWith('/orders')) return 1;
     if (location.startsWith('/products')) return 2;
     if (location.startsWith('/analytics')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/profile')) return 5; // Settings is now last
     return 0; // B2B Market is now first (default for '/')
   }
 
@@ -117,22 +117,22 @@ class _MainNavigationState extends State<MainNavigation> {
               onTap: () => context.go('/analytics'),
             ),
             _buildNavItem(
-              icon: Icons.settings_outlined,
-              selectedIcon: Icons.settings,
-              label: _getLocalizedText('navigation.settings', 'Settings'),
-              index: 4,
-              currentIndex: currentIndex,
-              theme: theme,
-              onTap: () => context.go('/profile'),
-            ),
-            _buildNavItem(
               icon: Icons.dashboard_outlined,
               selectedIcon: Icons.dashboard,
               label: _getLocalizedText('navigation.dashboard', 'Dashboard'),
-              index: 5,
+              index: 4,
               currentIndex: currentIndex,
               theme: theme,
               onTap: () => context.go('/dashboard'),
+            ),
+            _buildNavItem(
+              icon: Icons.settings_outlined,
+              selectedIcon: Icons.settings,
+              label: _getLocalizedText('navigation.settings', 'Settings'),
+              index: 5,
+              currentIndex: currentIndex,
+              theme: theme,
+              onTap: () => context.go('/profile'),
             ),
           ],
         ),

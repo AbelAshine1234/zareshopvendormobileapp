@@ -34,6 +34,11 @@ class ApiService {
   static const String vendorCompleteInfoEndpoint = '$baseUrl/vendors/my-complete-info';
   static const String vendorUpdateEndpoint = '$baseUrl/vendors/update';
   
+  // Contact endpoints
+  static const String vendorContactsEndpoint = '$baseUrl/vendors/contacts';
+  static const String vendorContactsByTypeEndpoint = '$baseUrl/vendors/contacts/type';
+  static const String vendorContactsBulkEndpoint = '$baseUrl/vendors/contacts/bulk';
+  
   // Category endpoints
   static const String categoriesEndpoint = '$baseUrl/category';
   
@@ -1279,10 +1284,18 @@ required String phoneNumber,
       );
       
       final responseBody = response.body;
+      print('📥 [API_SERVICE] Response Status Code: ${response.statusCode}');
+      print('📥 [API_SERVICE] Response Body: $responseBody');
+      
       final data = json.decode(responseBody);
+      print('📥 [API_SERVICE] Parsed data: $data');
+      print('📥 [API_SERVICE] Data keys: ${data.keys.toList()}');
       
       if (response.statusCode == 200) {
         print('✅ [API_SERVICE] Vendor contacts retrieved successfully');
+        print('✅ [API_SERVICE] Response has success: ${data.containsKey('success')}');
+        print('✅ [API_SERVICE] Response has contacts: ${data.containsKey('contacts')}');
+        print('✅ [API_SERVICE] Contacts value: ${data['contacts']}');
         return data;
       } else {
         print('❌ [API_SERVICE] Failed to get vendor contacts');

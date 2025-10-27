@@ -43,11 +43,36 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
       
       final result = await ApiService.getVendorContacts(token: token);
       
+      print('📥 [CONTACTS_BLOC] Raw API response: $result');
+      print('📥 [CONTACTS_BLOC] Response success: ${result['success']}');
+      print('📥 [CONTACTS_BLOC] Response contacts: ${result['contacts']}');
+      print('📥 [CONTACTS_BLOC] Response count: ${result['count']}');
+      
       if (result['success'] == true) {
+        // Extract contacts from vendor.contacts
+        final vendor = result['vendor'] as Map<String, dynamic>?;
+        List<Map<String, dynamic>> contactsList = [];
+        
+        if (vendor != null && vendor['contacts'] != null) {
+          contactsList = List<Map<String, dynamic>>.from(vendor['contacts'] as List);
+        }
+        
+        // Get count from contact_stats
+        final contactStats = result['contact_stats'] as Map<String, dynamic>?;
+        final contactCount = contactStats != null 
+            ? (contactStats['total_contacts'] as int? ?? 0)
+            : contactsList.length;
+        
         print('✅ [CONTACTS_BLOC] Contacts loaded successfully');
+        print('✅ [CONTACTS_BLOC] Number of contacts: $contactCount');
+        print('✅ [CONTACTS_BLOC] Contacts list length: ${contactsList.length}');
+        print('✅ [CONTACTS_BLOC] Contacts data: $contactsList');
+        print('✅ [CONTACTS_BLOC] Vendor data: $vendor');
+        
         emit(ContactsLoaded(
-          contacts: List<Map<String, dynamic>>.from(result['contacts'] ?? []),
-          count: result['count'] ?? 0,
+          contacts: contactsList,
+          count: contactCount,
+          vendor: vendor,
         ));
       } else {
         print('❌ [CONTACTS_BLOC] Failed to load contacts: ${result['error']}');
