@@ -78,9 +78,17 @@ class SimpleRouter {
         ),
         GoRoute(
           path: '/',
+          name: 'b2b-market-home',
+          builder: (context, state) {
+            print('🏬 [SIMPLE_ROUTER] B2B Market (home) route (/) accessed');
+            return const MainNavigation(child: B2BMarketScreen());
+          },
+        ),
+        GoRoute(
+          path: '/dashboard',
           name: 'dashboard',
           builder: (context, state) {
-            print('🏠 [SIMPLE_ROUTER] Dashboard route (/) accessed');
+            print('🏠 [SIMPLE_ROUTER] Dashboard route accessed');
             return const MainNavigation(child: DashboardScreen());
           },
         ),

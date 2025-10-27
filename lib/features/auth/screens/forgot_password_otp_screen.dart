@@ -93,6 +93,14 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
           );
           context.go('/login');
         } else if (state is AuthError) {
+          // Show error message in snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
           setState(() {});
         }
       },
@@ -225,20 +233,43 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              OtpInput(
-                theme: theme,
-                otpCountdown: widget.otpCountdown,
-                showTitleSubtitle: false,
-                showVerificationLabel: true,
-                onResend: () {
-                  context.read<AuthBloc>().add(
-                        ForgotPasswordRequested(
-                          phoneNumber: widget.phoneNumber,
-                        ),
-                      );
-                },
-                onChanged: (otp) {
-                  _otpCode = otp;
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  String? errorCode;
+                  if (state is AuthError) {
+                    if (state.message.toLowerCase().contains('invalid') || 
+                        state.message.toLowerCase().contains('otp')) {
+                      errorCode = 'INVALID_OTP';
+                    } else if (state.message.toLowerCase().contains('expired')) {
+                      errorCode = 'OTP_EXPIRED';
+                    }
+                  }
+                  
+                  return OtpInput(
+                    theme: theme,
+                    otpCountdown: widget.otpCountdown,
+                    showTitleSubtitle: false,
+                    showVerificationLabel: true,
+                    errorCode: errorCode,
+                    onResend: () {
+                      context.read<AuthBloc>().add(
+                            ForgotPasswordRequested(
+                              phoneNumber: widget.phoneNumber,
+                            ),
+                          );
+                    },
+                    onChanged: (otp) {
+                      _otpCode = otp;
+                      // Clear any existing errors when user starts typing
+                      if (otp.isNotEmpty) {
+                        final currentState = context.read<AuthBloc>().state;
+                        if (currentState is AuthError) {
+                          // Clear the error state by emitting a neutral state
+                          context.read<AuthBloc>().add(const CheckAuthenticationStatus());
+                        }
+                      }
+                    },
+                  );
                 },
               ),
               const SizedBox(height: 24),
@@ -356,10 +387,22 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
                                 ),
                               );
                         } else {
+                          String errorMessage = 'auth.verifyOtp.fillFields'.tr();
+                          if (otpCode.length != 6) {
+                            errorMessage = 'Please enter a valid 6-digit OTP';
+                          } else if (_newPasswordController.text.isEmpty) {
+                            errorMessage = 'Please enter a new password';
+                          } else if (_passwordError != null) {
+                            errorMessage = _passwordError!;
+                          } else if (_confirmPasswordError != null) {
+                            errorMessage = _confirmPasswordError!;
+                          }
+                          
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('auth.verifyOtp.fillFields'.tr()),
+                              content: Text(errorMessage),
                               backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 3),
                             ),
                           );
                         }
@@ -376,16 +419,23 @@ class _ForgotPasswordOtpViewState extends State<_ForgotPasswordOtpView> {
   Widget _maybeErrorBanner(AppThemeData theme) {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthError) {
-      final msgKey = authState.message.contains('invalid')
-          ? 'errors.invalidOtp'
-          : authState.message.contains('exists')
-              ? 'errors.userExists'
-              : 'errors.unknownError';
+      String errorMessage;
+      if (authState.message.toLowerCase().contains('invalid') || 
+          authState.message.toLowerCase().contains('otp')) {
+        errorMessage = 'errors.invalidOtp'.tr();
+      } else if (authState.message.toLowerCase().contains('expired')) {
+        errorMessage = 'errors.otpExpired'.tr();
+      } else if (authState.message.toLowerCase().contains('network')) {
+        errorMessage = 'errors.networkError'.tr();
+      } else {
+        errorMessage = authState.message; // Show the actual error message
+      }
+      
       return Column(
         children: [
           InlineErrorBanner(
             theme: theme,
-            message: msgKey.tr(),
+            message: errorMessage,
           ),
           const SizedBox(height: 12),
         ],

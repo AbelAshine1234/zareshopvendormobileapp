@@ -387,7 +387,6 @@
     "general": "አጠቃላይ",
     "notifications": "ማሳወቂያዎች",
     "privacy": "ግላዊነት",
-    "security": "ደህንነት",
     "about": "ስለ",
     "account": {
       "title": "መለያ",
@@ -460,6 +459,15 @@
       "feedback": "ግብረ መልስ",
       "feedbackDesc": "ግብረ መልስዎን ያጋሩ"
     },
+    "auth": {
+      "title": "ማረጋገጫ",
+      "changePassword": "የይለፍ ቃል ቀይር",
+      "changePasswordDesc": "የመለያዎ የይለፍ ቃል ያዘምኑ",
+      "twoFactorAuth": "ሁለት-ደረጃ ማረጋገጫ",
+      "twoFactorAuthDesc": "ለመለያዎ ተጨማሪ ደህንነት ያክሉ",
+      "loginHistory": "የግባት ታሪክ",
+      "loginHistoryDesc": "የቅርብ ግባት እንቅስቃሴዎን ይመልከቱ"
+    },
     "security": {
       "title": "ደህንነት",
       "logout": "ውጣ",
@@ -517,7 +525,12 @@
     "portfolio": "ፖርትፎሊዮ",
     "feed": "መመገቢያ",
     "balance": "ሚዛን",
-    "settings": "ቅንብሮች"
+    "settings": "ቅንብሮች",
+    "dashboard": "ዳሽቦርድ",
+    "orders": "ትዕዛዞች",
+    "products": "ምርቶች",
+    "b2bMarket": "B2B ገበያ",
+    "analytics": "ትንታኔ"
   },
   "splash": {
     "subtitlePortal": "የነጋዴ ፖርታልዎ",
@@ -543,5 +556,71 @@
     "otpError": "ትክክል ያልሆነ የማረጋገጫ ኮድ",
     "didntReceive": "ኮዱ ካልደረሰ የኤስኤስኤምስ መልዕክቶችዎን ያረጋግጡ። የእንደገና ላክ ቁልፍ ከ60 ሰከንድ በኋላ ይታያል።",
     "sentSuccess": "OTP በተሳካ ሁኔታ ተልኳል"
+  },
+  "b2b": {
+    "title": "B2B ገበያ",
+    "searchHint": "ከሌሎች ነጋዴዎች ምርቶችን ይፈልጉ...",
+    "categories": {
+      "all": "ሁሉም",
+      "electronics": "ኤሌክትሮኒክስ",
+      "foodBeverages": "ምግብ እና መጠጥ",
+      "clothingTextiles": "ልብስ እና ጨርቆች"
+    },
+    "stats": {
+      "totalProducts": "ጠቅላላ ምርቶች",
+      "activeVendors": "ንቁ ነጋዴዎች",
+      "categories": "ምድቦች"
+    },
+    "sections": {
+      "featuredProducts": "ተመራጭ ምርቶች",
+      "allProducts": "ሁሉም ምርቶች ({count})",
+      "viewAll": "ሁሉንም እይ"
+    },
+    "sort": {
+      "byName": "በስም ደርድር",
+      "byPrice": "በዋጋ ደርድር",
+      "byRating": "በደረጃ ደርድር",
+      "byNewest": "በአዲስነት ደርድር"
+    },
+    "search": {
+      "title": "ምርቶችን ፈልግ",
+      "hint": "የምርት ስም፣ መግለጫ ወይም ነጋዴ ያስገቡ..."
+    },
+    "filter": {
+      "title": "ምርቶችን አጣራ",
+      "category": "ምድብ",
+      "apply": "ተግብር"
+    },
+    "product": {
+      "verifiedVendor": "የተረጋገጠ ነጋዴ",
+      "viewStore": "ሱቅ እይ",
+      "description": "መግለጫ",
+      "specifications": "ዝርዝሮች",
+      "contactVendor": "ነጋዴን አግኝ",
+      "requestQuote": "ዋጋ ጠይቅ",
+      "reviews": "ግምገማዎች",
+      "inStock": "በእቃ ቤት ውስጥ",
+      "outOfStock": "ከእቃ ቤት ውጭ",
+      "addToCart": "ወደ ዝርያ ጨምር",
+      "quantity": "ብዛት",
+      "minOrder": "ዝቅተኛ ትዕዛዝ",
+      "wholesalePrice": "የጅምላ ዋጋ",
+      "wholesaleMin": "የጅምላ ዝቅተኛ",
+      "unit": "ክፍል",
+      "category": "ምድብ",
+      "vendor": "ነጋዴ",
+      "rating": "ደረጃ",
+      "stock": "ክምችት",
+      "share": "አጋራ",
+      "favorite": "ወደ ተመራጭ ጨምር",
+      "removeFavorite": "ከተመራጭ አስወግድ",
+      "cartAdded": "ወደ ዝርያ ተጨመረ",
+      "cartError": "ወደ ዝርያ መጨመር አልተሳካም",
+      "selectQuantity": "ብዛት ይምረጡ",
+      "totalPrice": "ጠቅላላ ዋጋ",
+      "wholesaleAvailable": "የጅምላ ይገኛል",
+      "contactForQuote": "ለዋጋ አግኝ",
+      "viewAllImages": "ሁሉንም ምስሎች እይ"
+    }
   }
 }

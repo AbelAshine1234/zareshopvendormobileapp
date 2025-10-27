@@ -16,12 +16,12 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _getCurrentIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
+    if (location == '/dashboard') return 5; // Dashboard is now last
     if (location.startsWith('/orders')) return 1;
     if (location.startsWith('/products')) return 2;
-    if (location.startsWith('/b2b-market')) return 3;
-    if (location.startsWith('/analytics')) return 4;
-    if (location.startsWith('/profile')) return 5;
-    return 0;
+    if (location.startsWith('/analytics')) return 3;
+    if (location.startsWith('/profile')) return 4;
+    return 0; // B2B Market is now first (default for '/')
   }
 
   String _getLocalizedText(String key, String fallback) {
@@ -81,13 +81,13 @@ class _MainNavigationState extends State<MainNavigation> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(
-              icon: Icons.dashboard_outlined,
-              selectedIcon: Icons.dashboard,
-              label: _getLocalizedText('navigation.dashboard', 'Dashboard'),
+              icon: Icons.store_outlined,
+              selectedIcon: Icons.store,
+              label: _getLocalizedText('navigation.b2bMarket', 'B2B Market'),
               index: 0,
               currentIndex: currentIndex,
               theme: theme,
-              onTap: () => context.go('/'),
+              onTap: () => context.go('/b2b-market'),
             ),
             _buildNavItem(
               icon: Icons.shopping_cart_outlined,
@@ -108,19 +108,10 @@ class _MainNavigationState extends State<MainNavigation> {
               onTap: () => context.go('/products'),
             ),
             _buildNavItem(
-              icon: Icons.store_outlined,
-              selectedIcon: Icons.store,
-              label: _getLocalizedText('navigation.b2bMarket', 'B2B Market'),
-              index: 3,
-              currentIndex: currentIndex,
-              theme: theme,
-              onTap: () => context.go('/b2b-market'),
-            ),
-            _buildNavItem(
               icon: Icons.analytics_outlined,
               selectedIcon: Icons.analytics,
               label: _getLocalizedText('navigation.analytics', 'Analytics'),
-              index: 4,
+              index: 3,
               currentIndex: currentIndex,
               theme: theme,
               onTap: () => context.go('/analytics'),
@@ -129,10 +120,19 @@ class _MainNavigationState extends State<MainNavigation> {
               icon: Icons.settings_outlined,
               selectedIcon: Icons.settings,
               label: _getLocalizedText('navigation.settings', 'Settings'),
-              index: 5,
+              index: 4,
               currentIndex: currentIndex,
               theme: theme,
               onTap: () => context.go('/profile'),
+            ),
+            _buildNavItem(
+              icon: Icons.dashboard_outlined,
+              selectedIcon: Icons.dashboard,
+              label: _getLocalizedText('navigation.dashboard', 'Dashboard'),
+              index: 5,
+              currentIndex: currentIndex,
+              theme: theme,
+              onTap: () => context.go('/dashboard'),
             ),
           ],
         ),

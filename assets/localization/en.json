@@ -387,7 +387,6 @@
     "general": "General",
     "notifications": "Notifications",
     "privacy": "Privacy",
-    "security": "Security",
     "about": "About",
     "account": {
       "title": "Account",
@@ -460,6 +459,15 @@
       "feedback": "Feedback",
       "feedbackDesc": "Share your feedback"
     },
+    "auth": {
+      "title": "Authentication",
+      "changePassword": "Change Password",
+      "changePasswordDesc": "Update your account password",
+      "twoFactorAuth": "Two-Factor Authentication",
+      "twoFactorAuthDesc": "Add extra security to your account",
+      "loginHistory": "Login History",
+      "loginHistoryDesc": "View your recent login activity"
+    },
     "security": {
       "title": "Security",
       "logout": "Logout",
@@ -517,7 +525,12 @@
     "portfolio": "Portfolio",
     "feed": "Feed",
     "balance": "Balance",
-    "settings": "Settings"
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "products": "Products",
+    "b2bMarket": "B2B Market",
+    "analytics": "Analytics"
   },
   "splash": {
     "subtitlePortal": "Your Vendor Portal",
@@ -569,5 +582,71 @@
     "otpError": "Invalid verification code",
     "didntReceive": "Didn't receive the code? Check your SMS messages. A resend button will appear after 60 seconds.",
     "sentSuccess": "OTP sent successfully"
+  },
+  "b2b": {
+    "title": "B2B Market",
+    "searchHint": "Search products from other vendors...",
+    "categories": {
+      "all": "All",
+      "electronics": "Electronics",
+      "foodBeverages": "Food & Beverages",
+      "clothingTextiles": "Clothing & Textiles"
+    },
+    "stats": {
+      "totalProducts": "Total Products",
+      "activeVendors": "Active Vendors",
+      "categories": "Categories"
+    },
+    "sections": {
+      "featuredProducts": "Featured Products",
+      "allProducts": "All Products ({count})",
+      "viewAll": "View All"
+    },
+    "sort": {
+      "byName": "Sort by Name",
+      "byPrice": "Sort by Price",
+      "byRating": "Sort by Rating",
+      "byNewest": "Sort by Newest"
+    },
+    "search": {
+      "title": "Search Products",
+      "hint": "Enter product name, description, or vendor..."
+    },
+    "filter": {
+      "title": "Filter Products",
+      "category": "Category",
+      "apply": "Apply"
+    },
+    "product": {
+      "verifiedVendor": "Verified Vendor",
+      "viewStore": "View Store",
+      "description": "Description",
+      "specifications": "Specifications",
+      "contactVendor": "Contact Vendor",
+      "requestQuote": "Request Quote",
+      "reviews": "reviews",
+      "inStock": "In Stock",
+      "outOfStock": "Out of Stock",
+      "addToCart": "Add to Cart",
+      "quantity": "Quantity",
+      "minOrder": "Min Order",
+      "wholesalePrice": "Wholesale Price",
+      "wholesaleMin": "Wholesale Min",
+      "unit": "Unit",
+      "category": "Category",
+      "vendor": "Vendor",
+      "rating": "Rating",
+      "stock": "Stock",
+      "share": "Share",
+      "favorite": "Add to Favorites",
+      "removeFavorite": "Remove from Favorites",
+      "cartAdded": "Added to Cart",
+      "cartError": "Failed to add to cart",
+      "selectQuantity": "Select Quantity",
+      "totalPrice": "Total Price",
+      "wholesaleAvailable": "Wholesale Available",
+      "contactForQuote": "Contact for Quote",
+      "viewAllImages": "View All Images"
+    }
   }
 }

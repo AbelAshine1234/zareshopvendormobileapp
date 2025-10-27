@@ -10,12 +10,21 @@ import '../../../shared/widgets/selectors/language_switcher_button.dart';
 import '../../../shared/widgets/selectors/theme_selector_button.dart';
 import '../../../shared/utils/theme/app_themes.dart';
 import '../../../shared/widgets/common/app_widgets.dart';
+import '../../../shared/widgets/common/global_loader.dart';
 import '../bloc/vendor_info_bloc.dart';
 import '../bloc/vendor_info_event.dart';
 import '../bloc/vendor_info_state.dart';
 import '../bloc/vendor_update_bloc.dart';
 import '../bloc/vendor_update_event.dart';
 import '../bloc/vendor_update_state.dart';
+import '../../contacts/screens/contacts_screen.dart';
+import '../../contacts/contacts_service.dart';
+import '../../addresses/screens/addresses_screen.dart';
+import '../../change_password/change_password.dart';
+import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/bloc/auth_event.dart';
+import '../../auth/bloc/auth_state.dart';
+import '../../payments/screens/payment_management_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -40,9 +49,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context.read<VendorInfoBloc>().add(LoadVendorInfo());
     });
     
-    return BlocListener<VendorUpdateBloc, VendorUpdateState>(
+    return BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is VendorUpdateSuccess) {
+          if (state is AuthUnauthenticated) {
+            // Navigate to splash screen when user is logged out
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/splash',
+              (route) => false,
+            );
+          }
+        },
+        child: BlocListener<VendorUpdateBloc, VendorUpdateState>(
+          listener: (context, state) {
+          if (state is VendorUpdateLoading) {
+            GlobalLoader.show(
+              context,
+              message: 'Updating cover image...',
+            );
+          } else if (state is VendorUpdatePolling) {
+            GlobalLoader.show(
+              context,
+              message: 'Processing image...',
+            );
+          } else if (state is VendorUpdateSuccess) {
+            GlobalLoader.hide(context);
             GlobalSnackBar.showSuccess(
               context: context,
               message: 'Cover image updated successfully!',
@@ -50,9 +81,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Refresh vendor info to show updated image
             context.read<VendorInfoBloc>().add(LoadVendorInfo());
           } else if (state is VendorUpdateError) {
+            GlobalLoader.hide(context);
             GlobalSnackBar.showError(
               context: context,
               message: 'Failed to update cover image: ${state.message}',
+            );
+          } else if (state is VendorUpdatePollingTimeout) {
+            GlobalLoader.hide(context);
+            GlobalSnackBar.showError(
+              context: context,
+              message: 'Image processing is taking longer than expected. Please try again.',
             );
           }
         },
@@ -61,86 +99,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
             builder: (context, localization, themeProvider, child) {
               final theme = themeProvider.currentTheme;
               
-              return BlocBuilder<VendorUpdateBloc, VendorUpdateState>(
-                builder: (context, updateState) {
-                  final isUpdating = updateState is VendorUpdateLoading;
-                  
-                  return Scaffold(
-                    backgroundColor: theme.background,
-                    appBar: AppBar(
-                      backgroundColor: Colors.transparent,
-                      elevation: 0,
-                      title: const SizedBox.shrink(),
-                      actions: const [
-                        LanguageSwitcherButton(),
-                        SizedBox(width: 8),
-                        ThemeSelectorButton(),
-                        SizedBox(width: 16),
-                      ],
-                    ),
-                    body: Stack(
+              return Scaffold(
+                backgroundColor: theme.background,
+                appBar: AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  title: const SizedBox.shrink(),
+                  actions: const [
+                    LanguageSwitcherButton(),
+                    SizedBox(width: 8),
+                    ThemeSelectorButton(),
+                    SizedBox(width: 16),
+                  ],
+                ),
+                body: SafeArea(
+                  child: SingleChildScrollView(
+                    child: Column(
                       children: [
-                        SafeArea(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                BlocBuilder<VendorInfoBloc, VendorInfoState>(
-                                  builder: (context, vendorInfoState) {
-                                    return BlocBuilder<VendorUpdateBloc, VendorUpdateState>(
-                                      builder: (context, updateState) {
-                                        return _buildProfileHeader(theme, vendorInfoState, updateState);
-                                      },
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 24),
-                                ..._buildAllSections(localization, theme),
-                                const SizedBox(height: 32),
-                              ],
-                            ),
-                          ),
+                        BlocBuilder<VendorInfoBloc, VendorInfoState>(
+                          builder: (context, vendorInfoState) {
+                            return BlocBuilder<VendorUpdateBloc, VendorUpdateState>(
+                              builder: (context, updateState) {
+                                return _buildProfileHeader(theme, vendorInfoState, updateState);
+                              },
+                            );
+                          },
                         ),
-                        // Loading overlay
-                        if (isUpdating)
-                          Container(
-                            color: Colors.black.withOpacity(0.3),
-                            child: Center(
-                              child: Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const CircularProgressIndicator(),
-                                      const SizedBox(height: 16),
-                                      const Text(
-                                        'Updating cover image...',
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                        const SizedBox(height: 24),
+                        ..._buildAllSections(localization, theme),
+                        const SizedBox(height: 32),
                       ],
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             },
           ),
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildProfileHeader(AppThemeData theme, VendorInfoState vendorInfoState, VendorUpdateState updateState) {
-    String storeName = 'Name is not available';
+    String storeName = 'Loading...';
     String? coverImageUrl;
-    String statusText = 'Verified Store';
-    Color statusColor = Colors.blue[800]!;
-    Color statusBgColor = Colors.blue[100]!;
-    bool isLoading = updateState is VendorUpdateLoading;
+    String statusText = 'Loading...';
+    Color statusColor = Colors.grey[600]!;
+    Color statusBgColor = Colors.grey[100]!;
+    bool isLoading = false; // Loading is now handled by GlobalLoader
+    bool isVendorInfoLoading = vendorInfoState is VendorInfoLoading;
     
     if (vendorInfoState is VendorInfoLoaded) {
       final vendorData = vendorInfoState.vendorInfo['vendor'];
@@ -184,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             radius: 50,
             backgroundColor: Colors.grey[300],
             child: ClipOval(
-              child: isLoading
+              child: isVendorInfoLoading
                   ? Container(
                       width: 100,
                       height: 100,
@@ -209,15 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             return Icon(Icons.business, size: 50, color: Colors.grey[600]);
                           },
                         )
-                      : Image.asset(
-                          'assets/logo/logo-basic.png',
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.business, size: 50, color: Colors.grey[600]);
-                          },
-                        ),
+                      : Icon(Icons.business, size: 50, color: Colors.grey[600]),
             ),
               ),
               Positioned(
@@ -226,7 +225,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Builder(
                   builder: (context) => GestureDetector(
                     onTap: () {
-                      if (!isLoading) {
+                      if (!isLoading && !isVendorInfoLoading) {
                         GlobalImagePicker.showImageSourceDialog(
                           context: context,
                           onImageSelected: (image) => _showImageConfirmationDialog(image),
@@ -237,7 +236,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: isLoading ? Colors.grey[400] : Colors.blue[600],
+                        color: (isLoading || isVendorInfoLoading) ? Colors.grey[400] : Colors.blue[600],
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
                       ),
@@ -253,30 +252,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            storeName,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.black87),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-              color: statusBgColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                Icon(Icons.check_circle, color: statusColor, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                  statusText,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: statusColor),
+          isVendorInfoLoading
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[600]!),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Loading...',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                )
+              : Text(
+                  storeName,
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.black87),
+                  textAlign: TextAlign.center,
                 ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 8),
+          isVendorInfoLoading
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: statusBgColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        statusText,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: statusColor),
+                      ),
+                    ],
+                  ),
+                )
+              : Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: statusBgColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle, color: statusColor, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        statusText,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: statusColor),
+                      ),
+                    ],
+                  ),
+                ),
         ],
       ),
     );
@@ -287,19 +335,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       {
         'title': 'settings.account.title',
         'items': [
-          {'icon': Icons.image_outlined, 'title': 'settings.account.storeLogo', 'subtitle': 'settings.account.storeLogoDesc'},
-          {'icon': Icons.contact_mail_outlined, 'title': 'settings.account.contactInfo', 'subtitle': 'settings.account.contactInfoDesc'},
-          {'icon': Icons.location_on_outlined, 'title': 'settings.account.addressManagement', 'subtitle': 'settings.account.addressManagementDesc'},
-          {'icon': Icons.lock_outline, 'title': 'settings.account.changePassword', 'subtitle': 'settings.account.changePasswordDesc'},
+          {'icon': Icons.contact_mail_outlined, 'title': 'settings.account.contactInfo', 'subtitle': 'settings.account.contactInfoDesc', 'onTap': _navigateToContacts},
+          {'icon': Icons.location_on_outlined, 'title': 'settings.account.addressManagement', 'subtitle': 'settings.account.addressManagementDesc', 'onTap': _navigateToAddresses},
+        ]
+      },
+      {
+        'title': 'settings.auth.title',
+        'items': [
+          {'icon': Icons.lock_outline, 'title': 'settings.auth.changePassword', 'subtitle': 'settings.auth.changePasswordDesc', 'onTap': _navigateToChangePassword},
         ]
       },
       {
         'title': 'settings.payment.title',
         'items': [
-          {'icon': Icons.account_balance_outlined, 'title': 'settings.payment.paymentMethods', 'subtitle': 'settings.payment.paymentMethodsDesc'},
-          {'icon': Icons.account_balance_wallet_outlined, 'title': 'settings.payment.walletBalance', 'subtitle': 'settings.payment.walletBalanceDesc'},
-          {'icon': Icons.history, 'title': 'settings.payment.payoutHistory', 'subtitle': 'settings.payment.payoutHistoryDesc'},
-          {'icon': Icons.receipt_outlined, 'title': 'settings.payment.invoiceManagement', 'subtitle': 'settings.payment.invoiceManagementDesc'},
+          {'icon': Icons.account_balance_outlined, 'title': 'settings.payment.paymentMethods', 'subtitle': 'settings.payment.paymentMethodsDesc', 'onTap': _navigateToPaymentManagement},
+          {'icon': Icons.account_balance_wallet_outlined, 'title': 'settings.payment.walletBalance', 'subtitle': 'settings.payment.walletBalanceDesc', 'onTap': _navigateToPaymentManagement},
+          {'icon': Icons.history, 'title': 'settings.payment.payoutHistory', 'subtitle': 'settings.payment.payoutHistoryDesc', 'onTap': _navigateToPaymentManagement},
+          {'icon': Icons.receipt_outlined, 'title': 'settings.payment.invoiceManagement', 'subtitle': 'settings.payment.invoiceManagementDesc', 'onTap': _navigateToPaymentManagement},
         ]
       },
       {
@@ -437,10 +489,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
 
+  void _navigateToContacts() {
+    // You can also use the global contacts service from anywhere:
+    // ContactsService.loadContacts(); // Load all contacts
+    // ContactsService.createContact(...); // Create a contact
+    // etc.
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ContactsScreen(),
+      ),
+    );
+  }
+
+  void _navigateToAddresses() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddressesScreen(),
+      ),
+    );
+  }
+
+  void _navigateToChangePassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ChangePasswordScreen(),
+      ),
+    );
+  }
+
+  void _navigateToPaymentManagement() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PaymentManagementScreen(),
+      ),
+    );
+  }
+
+
   void _showLogoutDialog() {
     GlobalDialog.showLogoutConfirmation(context: context).then((confirmed) {
       if (confirmed == true) {
-        // TODO: Implement logout functionality
+        // Trigger logout through AuthBloc
+        context.read<AuthBloc>().add(const LogoutRequested());
       }
     });
   }

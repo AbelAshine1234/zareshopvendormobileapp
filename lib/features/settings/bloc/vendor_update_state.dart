@@ -28,3 +28,18 @@ class VendorUpdateError extends VendorUpdateState {
   @override
   List<Object?> get props => [message];
 }
+
+class VendorUpdatePolling extends VendorUpdateState {
+  final int attempts;
+  final int maxAttempts;
+
+  const VendorUpdatePolling({
+    required this.attempts,
+    required this.maxAttempts,
+  });
+
+  @override
+  List<Object?> get props => [attempts, maxAttempts];
+}
+
+class VendorUpdatePollingTimeout extends VendorUpdateState {}

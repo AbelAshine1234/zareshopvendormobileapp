@@ -10,7 +10,13 @@ import 'features/auth/bloc/auth_bloc.dart';
 import 'core/bloc/app_data.dart';
 import 'features/settings/bloc/vendor_update_bloc.dart';
 import 'features/settings/bloc/vendor_info_bloc.dart';
+import 'features/contacts/bloc/contacts_bloc.dart';
+import 'features/addresses/bloc/address_bloc.dart';
+import 'features/change_password/bloc/change_password_bloc.dart';
+import 'features/payments/bloc/payment_bloc.dart';
 import 'core/services/api_service.dart';
+import 'core/services/storage_service.dart';
+import 'core/services/cart_service.dart';
 
 void main() async {
   // Initialize Flutter binding
@@ -58,11 +64,45 @@ class ZareshopVendorApp extends StatelessWidget {
             );
           },
         ),
+        BlocProvider<ContactsBloc>(
+          create: (context) {
+            print('🚀 [MAIN] Creating ContactsBloc...');
+            return ContactsBloc(
+              apiService: ApiService(),
+              authBloc: context.read<AuthBloc>(),
+            );
+          },
+        ),
+        BlocProvider<AddressBloc>(
+          create: (context) {
+            print('🚀 [MAIN] Creating AddressBloc...');
+            return AddressBloc(
+              apiService: ApiService(),
+              authBloc: context.read<AuthBloc>(),
+            );
+          },
+        ),
+        BlocProvider<ChangePasswordBloc>(
+          create: (context) {
+            print('🚀 [MAIN] Creating ChangePasswordBloc...');
+            return ChangePasswordBloc(
+              apiService: ApiService(),
+              storageService: StorageService(),
+            );
+          },
+        ),
+        BlocProvider<PaymentBloc>(
+          create: (context) {
+            print('🚀 [MAIN] Creating PaymentBloc...');
+            return PaymentBloc();
+          },
+        ),
       ],
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
           ChangeNotifierProvider.value(value: LocalizationService.instance),
+          ChangeNotifierProvider(create: (_) => CartService()),
         ],
         child: Consumer2<ThemeProvider, LocalizationService>(
           builder: (context, themeProvider, localization, child) {

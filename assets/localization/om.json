@@ -387,7 +387,6 @@
     "general": "Walakkaa",
     "notifications": "Beeksisa",
     "privacy": "Iccitii",
-    "security": "Nageenya",
     "about": "Waa'ee",
     "account": {
       "title": "Akkaawuntii",
@@ -460,6 +459,15 @@
       "feedback": "Deebii",
       "feedbackDesc": "Deebii kee qoodi"
     },
+    "auth": {
+      "title": "Mirkaneessa",
+      "changePassword": "Jecha Iccitii Jijjiiri",
+      "changePasswordDesc": "Jecha iccitii akkaawuntii kee fooyya'i",
+      "twoFactorAuth": "Mirkaneessa Lammaffaa",
+      "twoFactorAuthDesc": "Nageenya dabalaa akkaawuntii kee irratti dabali",
+      "loginHistory": "Seenaa Galmaa",
+      "loginHistoryDesc": "Hojii galmaa dhihoo kee ilaali"
+    },
     "security": {
       "title": "Nageenya",
       "logout": "Ba'i",
@@ -517,7 +525,12 @@
     "portfolio": "Portfolio",
     "feed": "Qabii",
     "balance": "Hirmaata",
-    "settings": "Seenuu"
+    "settings": "Seenuu",
+    "dashboard": "Dashboard",
+    "orders": "Ajaja",
+    "products": "Fooyya'iinsa",
+    "b2bMarket": "B2B Sookoo",
+    "analytics": "Qorannoo"
   },
   "splash": {
     "subtitlePortal": "Poortalii Fudhaataa Keessan",
@@ -543,5 +556,71 @@
     "otpError": "Koodii mirkaneessaa dogoggora",
     "didntReceive": "Koodiin hin dhufne? SMS kee ilaali. Badhaasni irra deebi'i erguu sekondii 60 booda mul'ata.",
     "sentSuccess": "OTP milkaa'inaan ergame"
+  },
+  "b2b": {
+    "title": "B2B Sookoo",
+    "searchHint": "Qabiyyee fudhaataa biroo irraa barbaadi...",
+    "categories": {
+      "all": "Hunda",
+      "electronics": "Elektirooniksii",
+      "foodBeverages": "Nyaata fi Dhugaatii",
+      "clothingTextiles": "Uffata fi Huccuu"
+    },
+    "stats": {
+      "totalProducts": "Qabiyyee Hundaa",
+      "activeVendors": "Fudhaataa Socho'aa",
+      "categories": "Gosaalee"
+    },
+    "sections": {
+      "featuredProducts": "Qabiyyee Filannoo",
+      "allProducts": "Qabiyyee Hunda ({count})",
+      "viewAll": "Hunda Ilaali"
+    },
+    "sort": {
+      "byName": "Maqaa Waliin Qoqqoodi",
+      "byPrice": "Gatii Waliin Qoqqoodi",
+      "byRating": "Madaala Waliin Qoqqoodi",
+      "byNewest": "Haarawaa Waliin Qoqqoodi"
+    },
+    "search": {
+      "title": "Qabiyyee Barbaadi",
+      "hint": "Maqaa qabiyyee, ibsa, ykn fudhaataa galchi..."
+    },
+    "filter": {
+      "title": "Qabiyyee Seenuu",
+      "category": "Gosa",
+      "apply": "Raawwadhu"
+    },
+    "product": {
+      "verifiedVendor": "Fudhaataa Mirkaneeffame",
+      "viewStore": "Dukaana Ilaali",
+      "description": "Ibsa",
+      "specifications": "Ibsawwan",
+      "contactVendor": "Fudhaataa Quunnami",
+      "requestQuote": "Gatii Gaafadhu",
+      "reviews": "gamaaggama",
+      "inStock": "Qabaa Keessa",
+      "outOfStock": "Qabaa Ala",
+      "addToCart": "Gara Kaartii Dabaluu",
+      "quantity": "Baay'ina",
+      "minOrder": "Ajajaa Xiqqaa",
+      "wholesalePrice": "Gatii Guddinaa",
+      "wholesaleMin": "Guddina Xiqqaa",
+      "unit": "Tokko",
+      "category": "Gosa",
+      "vendor": "Fudhaataa",
+      "rating": "Madaala",
+      "stock": "Qabaa",
+      "share": "Qoodi",
+      "favorite": "Jaallatamaa Keessatti Dabali",
+      "removeFavorite": "Jaallatamaa Irraa Baasu",
+      "cartAdded": "Kaartii Keessatti Dabalamte",
+      "cartError": "Kaartii Keessatti Dabaluu Hin Milkaa'in",
+      "selectQuantity": "Baay'ina Filadhu",
+      "totalPrice": "Gatii Walakkaa",
+      "wholesaleAvailable": "Guddina Jira",
+      "contactForQuote": "Gatii Qabachuuf Quunnami",
+      "viewAllImages": "Suuraalee Hunda Ilaali"
+    }
   }
 }
