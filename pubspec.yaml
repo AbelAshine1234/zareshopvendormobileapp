@@ -52,12 +52,26 @@ dependencies:
   # QR Code
   qr_flutter: ^4.1.0
   
+  # Video Player
+  video_player: ^2.8.2
+  chewie: ^1.7.5
+  
+  # PDF Generation
+  pdf: ^3.11.2
+  printing: ^5.13.3
+  
+  # Chapa Payment Integration
+  chapasdk: ^0.0.7+1
+  
   # Utilities
   intl: ^0.19.0
   shared_preferences: ^2.2.2
   image_picker: ^1.0.4
   http: ^1.1.0
   mime: ^1.0.4
+  
+  # WebSocket
+  socket_io_client: ^2.0.3+1
   
   # Maps & Location
   google_maps_flutter: ^2.5.0
@@ -67,6 +81,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # Testing
+  bloc_test: ^9.1.0
+  mocktail: ^1.0.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

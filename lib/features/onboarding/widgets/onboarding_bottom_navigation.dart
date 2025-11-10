@@ -33,9 +33,6 @@ class OnboardingBottomNavigation extends StatelessWidget {
                   child: AppSecondaryButton(
                     text: 'common.back'.tr(),
                     onPressed: () {
-                      print('🎯 [ONBOARDING_MAIN] Previous button pressed');
-                      print('🎯 [ONBOARDING_MAIN] Current step: ${state.currentStep}');
-                      print('🎯 [ONBOARDING_MAIN] Dispatching PreviousStep event');
                       context.read<OnboardingBloc>().add(const PreviousStep());
                     },
                     height: 52,
@@ -52,11 +49,6 @@ class OnboardingBottomNavigation extends StatelessWidget {
                       : 'common.continue'.tr(),
                   onPressed: state.canProceed
                       ? () {
-                          print('🎯 [ONBOARDING_MAIN] Continue button pressed');
-                          print('🎯 [ONBOARDING_MAIN] Current step: ${state.currentStep}');
-                          print('🎯 [ONBOARDING_MAIN] Is last step: ${state.isLastStep}');
-                          print('🎯 [ONBOARDING_MAIN] Can proceed: ${state.canProceed}');
-                          print('🎯 [ONBOARDING_MAIN] Dispatching NextStep event');
                           context.read<OnboardingBloc>().add(const NextStep());
                         }
                       : null,

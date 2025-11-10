@@ -127,3 +127,8 @@ class OnboardingError extends OnboardingState {
   @override
   List<Object?> get props => [message, step, code, recoverable];
 }
+
+/// User authenticated state - triggers WebSocket connection
+class OnboardingUserAuthenticated extends OnboardingState {
+  const OnboardingUserAuthenticated();
+}

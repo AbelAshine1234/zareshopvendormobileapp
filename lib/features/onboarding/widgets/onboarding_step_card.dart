@@ -40,11 +40,9 @@ class OnboardingStepCard extends StatelessWidget {
   }
 
   Widget _getStepWidget(int step, AppThemeData theme) {
-    if (step == 6 && subscriptions.isEmpty && !loadingSubscriptions) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        onFetchSubscriptions();
-      });
-    }
+    // Note: Subscription fetching is handled by the parent widget
+    // (onboarding_main_screen.dart) in initState. We don't need to fetch here
+    // as it would cause infinite loops when subscriptions are empty.
     
     switch (step) {
       case 0:

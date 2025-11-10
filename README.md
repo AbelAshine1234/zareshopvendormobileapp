@@ -1,50 +1,47 @@
-# 🛍️ Zareshop Vendor App
+# 🛍️ ZareShop Vendor Mobile App
 
-A comprehensive Flutter vendor management application built with **BLoC architecture** for Ethiopian marketplace vendors.
+A comprehensive Flutter vendor management application for Ethiopian marketplace vendors.
 
-![Flutter](https://img.shields.io/badge/Flutter-3.9.2-blue)
-![Dart](https://img.shields.io/badge/Dart-3.0-blue)
+![Flutter](https://img.shields.io/badge/Flutter-3.24+-blue)
+![Dart](https://img.shields.io/badge/Dart-3.5+-blue)
 ![BLoC](https://img.shields.io/badge/State%20Management-BLoC-purple)
-![License](https://img.shields.io/badge/License-MIT-green)
-flutter emulators --launch Medium_Phone_API_36.1
-# In another terminal, start emulator with flags (if not auto-launched by Studio/CLI):
-emulator -avd Medium_Phone_API_36.1 -accel on -gpu host -no-boot-anim -camera-back none -camera-front none
 
 ## ✨ Features
 
-### 📊 Dashboard
-- Sales overview (daily, weekly, monthly)
-- Interactive sales chart
-- Order statistics with visual indicators
-- Quick action shortcuts
+### 🏪 Core Features
+- **Product Management** - Add, edit, and manage product inventory
+- **Order Management** - Track and fulfill customer orders
+- **B2B Marketplace** - Browse and connect with suppliers
+- **Supplier Directory** - Search and filter 50+ top-ranked suppliers
+- **Wallet Management** - Track earnings, add funds, and request cashouts
+- **Messages** - Direct communication with suppliers and customers
+- **Cart** - Shopping cart for B2B purchases
 
-### 📦 Orders Management
-- Order list with product thumbnails
-- Accept/Decline orders
-- Update order status (Processing, Shipped, Completed)
-- Filter by order status
-- Customer information display
+### 💳 Payment Integration
+- **Chapa SDK** - Ethiopian payment gateway
+- Supports: Telebirr, CBE Birr, M-Pesa, E-Birr
+- Real-time payment processing
+- Automatic wallet fund addition
 
-### 🛍️ Product Management
-- Grid view of products
-- Add, edit, and delete products
-- Discount management
-- Stock tracking with low stock alerts
-- Toggle active/inactive status
+### 🔔 Real-time Features (WebSocket)
+- Vendor approval/rejection notifications
+- Live wallet balance updates
+- Cashout request status updates
+- Auto-reconnection on connection loss
 
-### 💰 Wallet & Finance
-- Balance overview with beautiful gradient card
-- Earnings and withdrawal tracking
-- Transaction history
-- Withdrawal functionality
-- Visual charts
+### 🎨 Theme System
+5 business-specific themes:
+- ☕ **Coffee** - Restaurants/Cafés
+- 🌿 **Green** - Organic/Wellness
+- 📦 **Basic** - Shops/Marketplaces
+- 🌟 **Mustard** - Creative/Marketing
+- 🏭 **Beige** - Industrial/Professional
 
-### 👤 Profile & Settings
-- Vendor profile with banner
-- Contact information
-- Multi-language support (4 Ethiopian languages)
-- Settings and preferences
-- Subscription plan display
+### 🌍 Localization
+Multi-language support:
+- English
+- አማርኛ (Amharic)
+- Afaan Oromoo (Oromo)
 
 ## 🚀 Quick Start
 
@@ -52,129 +49,235 @@ emulator -avd Medium_Phone_API_36.1 -accel on -gpu host -no-boot-anim -camera-ba
 # Install dependencies
 flutter pub get
 
-# Run the app
-flutter run
+# Run on Chrome (Web)
+flutter run -d chrome
+
+# Run on Android
+flutter run -d android
+
+# Run on iOS
+flutter run -d ios
 ```
-
-## 📱 Screenshots
-
-The app includes 5 main screens:
-1. **Dashboard** - Sales overview and statistics
-2. **Orders** - Order management with status updates
-3. **Products** - Product inventory management
-4. **Wallet** - Financial tracking and withdrawals
-5. **Profile** - Settings and vendor information
 
 ## 🏗️ Architecture
 
-This project follows **Clean Architecture** principles with **BLoC pattern** for state management:
+Built with **Clean Architecture** and **BLoC Pattern**:
 
 ```
 lib/
-├── core/           # Theme, constants, navigation
-├── data/           # Data models
-└── features/       # Feature modules
-    └── [feature]/
-        ├── bloc/   # BLoC (events, states, logic)
-        └── screens/# UI screens
+├── core/
+│   ├── navigation/          # GoRouter configuration
+│   ├── services/            # API, Storage, WebSocket, Localization
+│   └── utils/               # Helpers and utilities
+├── features/
+│   ├── auth/                # Login & Authentication
+│   ├── onboarding/          # Vendor registration (8 steps)
+│   ├── products/            # Product management
+│   ├── orders/              # Order tracking
+│   ├── b2b/                 # B2B marketplace
+│   ├── suppliers/           # Supplier directory
+│   ├── wallet_management/   # Wallet & transactions
+│   ├── messages/            # Chat functionality
+│   └── cart/                # Shopping cart
+└── shared/
+    ├── utils/theme/         # Theme system
+    └── widgets/             # Reusable components
 ```
 
-## 🎨 Tech Stack
-
-- **Framework**: Flutter 3.9.2
-- **Language**: Dart 3.0
-- **State Management**: flutter_bloc
-- **Charts**: fl_chart
-- **Image Caching**: cached_network_image
-- **Formatting**: intl
-
-## 🌍 Localization
-
-Supports 4 Ethiopian languages:
-- English (en)
-- አማርኛ - Amharic (am)
-- Afaan Oromoo (om)
-- ትግርኛ - Tigrigna (ti)
-
-## 📚 Documentation
-
-All documentation is organized in the **[docs](docs/)** folder:
-
-- **[Quick Start](docs/QUICK_START.md)** - Get started in 3 steps
-- **[Setup Guide](docs/SETUP_GUIDE.md)** - Detailed installation instructions
-- **[Project Structure](docs/PROJECT_STRUCTURE.md)** - Folder organization
-- **[Features Overview](docs/FEATURES_OVERVIEW.md)** - Detailed feature descriptions
-- **[App Architecture](docs/APP_ARCHITECTURE.md)** - Architecture diagrams
-- **[Build Summary](docs/BUILD_SUMMARY.md)** - Complete build details
-
-> 💡 **Note**: DevTools warnings when running on web are normal and don't affect functionality.
-
-## 🎯 Key Highlights
-
-✅ **BLoC Architecture** - Clean separation of UI and business logic  
-✅ **Ethiopian Context** - Culturally relevant content and languages  
-✅ **Beautiful UI** - Modern, professional design  
-✅ **Mock Data** - Pre-loaded sample data for testing  
-✅ **Production Ready** - Scalable and maintainable structure  
-✅ **Comprehensive Features** - All vendor management needs covered  
-
-## 🔧 Development
-
-### Prerequisites
-- Flutter SDK (3.9.2 or higher)
-- Dart SDK
-- Android Studio or VS Code
-- Android Emulator or iOS Simulator
-
-### Build Commands
-
-```bash
-# Run in debug mode
-flutter run
-
-# Build for Android
-flutter build apk --release
-
-# Build for iOS
-flutter build ios --release
-
-# Run tests
-flutter test
-
-# Clean build
-flutter clean
-```
-
-## 📦 Dependencies
+## 📦 Key Dependencies
 
 ```yaml
-flutter_bloc: ^8.1.3          # State management
-equatable: ^2.0.5             # Value equality
-fl_chart: ^0.65.0             # Charts
-cached_network_image: ^3.3.0  # Image caching
-shimmer: ^3.0.0               # Loading effects
-intl: ^0.19.0                 # Formatting
-shared_preferences: ^2.2.2    # Local storage
+# State Management
+flutter_bloc: ^8.1.6
+equatable: ^2.0.5
+
+# Navigation
+go_router: ^14.6.2
+
+# Networking
+http: ^1.2.2
+socket_io_client: ^2.0.3+1
+
+# Payment
+chapasdk: ^0.0.8+1
+
+# UI/UX
+cached_network_image: ^3.4.1
+shimmer: ^3.0.0
+fl_chart: ^0.69.2
+
+# Storage
+shared_preferences: ^2.3.3
+
+# Localization
+intl: ^0.19.0
 ```
+
+## 🔧 Configuration
+
+### API Endpoints
+Update in `lib/core/services/api_service.dart`:
+```dart
+static const String baseUrl = 'http://localhost:4000/api';
+```
+
+### WebSocket
+Update in `lib/core/services/socket_service.dart`:
+```dart
+static const String socketUrl = 'http://localhost:4000';
+```
+
+### Chapa Payment Keys
+Update in payment dialogs with your keys:
+```dart
+static const String _chapaPublicKey = 'YOUR_PUBLIC_KEY';
+static const String _chapaSecretKey = 'YOUR_SECRET_KEY';
+```
+
+## 🎯 App Flow
+
+1. **Splash Screen** → Login
+2. **Login** → Dashboard (if authenticated)
+3. **Sign Up** → 8-Step Onboarding:
+   - Phone & Password
+   - OTP Verification
+   - Business Info
+   - Shipping Address
+   - Documents Upload
+   - Payout Method
+   - Subscription Plan
+   - Admin Approval
+4. **Dashboard** → Main Navigation (5 tabs)
+
+## 📱 Main Screens
+
+### Bottom Navigation
+1. **Home** - B2B Market with categories and products
+2. **Suppliers** - Top 50 ranked suppliers with search/filter
+3. **Cart** - Shopping cart for B2B orders
+4. **Messages** - Chat with suppliers
+5. **Products** - Vendor's product inventory
+
+### Additional Screens
+- **Settings** - Profile, theme, language, logout
+- **Wallet** - Balance, transactions, add funds, cashout
+- **Orders** - Order management
+- **Product Detail** - View/edit product details
+- **Supplier Detail** - View supplier info, contact
+
+## 🎨 UI Features
+
+- **Dynamic Theming** - 5 complete color palettes
+- **Responsive Design** - Works on mobile, tablet, web
+- **Smooth Animations** - Loading states, transitions
+- **Image Caching** - Fast image loading
+- **Shimmer Effects** - Professional loading placeholders
+
+## 🔐 Authentication
+
+- Phone number + Password login
+- OTP verification
+- JWT token management
+- Auto-login with stored credentials
+- Secure logout with data clearing
+
+## 💰 Wallet Features
+
+- View balance and transaction history
+- Add funds via Chapa payment gateway
+- Request cashouts
+- Real-time balance updates via WebSocket
+- Transaction filtering and search
+
+## 🛒 B2B Features
+
+- Browse supplier marketplace
+- View top 50 ranked suppliers
+- Search and filter suppliers by category
+- Contact suppliers directly
+- View supplier products and details
+- Add products to cart
+
+## 📊 Product Management
+
+- Add new products with images
+- Edit existing products
+- View product inventory
+- Promotions and discounts
+- Stock management
+- Product status toggle
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+flutter test
+
+# Run with coverage
+flutter test --coverage
+
+# Clean and rebuild
+flutter clean && flutter pub get
+```
+
+## 🚢 Build & Deploy
+
+```bash
+# Build APK (Android)
+flutter build apk --release
+
+# Build App Bundle (Android)
+flutter build appbundle --release
+
+# Build iOS
+flutter build ios --release
+
+# Build Web
+flutter build web --release
+```
+
+## 🐛 Known Issues
+
+- DevTools warnings on web are normal and don't affect functionality
+- WebSocket may show connection warnings in debug mode
+- Image loading may be slow on first load (cached afterwards)
+
+## 📝 Development Notes
+
+### State Management
+- Uses BLoC pattern throughout
+- Separate BLoCs for each feature
+- Global providers for theme and localization
+
+### Code Organization
+- Feature-first structure
+- Shared components in `/shared`
+- Reusable widgets and utilities
+- Clean separation of concerns
+
+### Best Practices
+- Null safety enabled
+- Proper error handling
+- Loading states for async operations
+- User feedback via SnackBars
+- Consistent theming
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## 📄 License
 
 This project is licensed under the MIT License.
 
-## 👨‍💻 Author
+## 👨‍💻 Support
 
-Built with ❤️ for Ethiopian Vendors
-
-## 🙏 Acknowledgments
-
-- Flutter team for the amazing framework
-- BLoC library for state management
-- Ethiopian developer community
+For issues and questions, please open an issue on GitHub.
 
 ---
 
-**Ready to manage your vendor business? Get started now!** 🚀
+**Built with ❤️ for Ethiopian Vendors** 🇪🇹

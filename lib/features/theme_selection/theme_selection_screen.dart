@@ -89,6 +89,7 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                               ],
                             ),
                       ),
+                    ),
                     
                     SizedBox(height: AppThemes.spaceXXL),
                     

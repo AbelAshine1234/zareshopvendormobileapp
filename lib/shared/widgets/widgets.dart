@@ -15,3 +15,5 @@ export 'errors/inline_error_banner.dart';
 export 'errors/global_error_widget.dart';
 export 'inputs/password_input.dart';
 export 'inputs/phone_input.dart';
+export 'loading/zareshop_loading_widget.dart';
+export 'video/video_player_widget.dart';

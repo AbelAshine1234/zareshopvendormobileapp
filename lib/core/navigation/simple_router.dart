@@ -1,14 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/forgot_password_otp_screen.dart';
 import '../../features/onboarding/screens/onboarding_main_screen.dart';
-import '../../features/dashboard/screens/dashboard_screen.dart';
-import '../../features/orders/screens/orders_screen.dart';
-import '../../features/products/screens/products_screen.dart';
-import '../../features/wallet/screens/wallet_screen.dart';
-import '../../features/profile/screens/profile_screen.dart';
+import '../../features/settings/screens/settings_screen.dart';
+import '../../features/b2b/screens/b2b_market_screen.dart';
+import '../../features/suppliers/suppliers_screen.dart';
+import '../../features/wallet_management/screens/wallet_management_screen.dart';
+import '../../features/products/products_screen.dart';
+import '../../features/cart/cart_screen.dart';
+import '../../features/messages/messages_screen.dart';
 import '../../shared/screens/admin_approval_screen.dart';
 import 'main_navigation.dart';
 
@@ -16,7 +19,6 @@ class SimpleRouter {
   static final GoRouter router = _createRouter();
 
   static GoRouter _createRouter() {
-    print('🛣️ [SIMPLE_ROUTER] Creating GoRouter with initial location: /splash');
     final router = GoRouter(
       initialLocation: '/splash',
       debugLogDiagnostics: true,
@@ -25,8 +27,6 @@ class SimpleRouter {
           path: '/splash',
           name: 'splash',
           builder: (context, state) {
-            print('🎯 [SIMPLE_ROUTER] /splash route accessed');
-            print('🎯 [SIMPLE_ROUTER] Current location: ${state.uri}');
             return const SplashScreen();
           },
         ),
@@ -34,7 +34,6 @@ class SimpleRouter {
           path: '/login',
           name: 'login',
           builder: (context, state) {
-            print('🔐 [SIMPLE_ROUTER] /login route accessed');
             return const LoginScreen();
           },
         ),
@@ -42,7 +41,6 @@ class SimpleRouter {
           path: '/forgot-password',
           name: 'forgot-password',
           builder: (context, state) {
-            print('🔑 [SIMPLE_ROUTER] /forgot-password route accessed');
             return const ForgotPasswordScreen();
           },
         ),
@@ -50,7 +48,6 @@ class SimpleRouter {
           path: '/forgot-password-otp',
           name: 'forgot-password-otp',
           builder: (context, state) {
-            print('🔑 [SIMPLE_ROUTER] /forgot-password-otp route accessed');
             final phoneNumber = state.extra as String? ?? '';
             return ForgotPasswordOtpScreen(phoneNumber: phoneNumber);
           },
@@ -59,7 +56,6 @@ class SimpleRouter {
           path: '/onboarding',
           name: 'onboarding',
           builder: (context, state) {
-            print('📝 [SIMPLE_ROUTER] /onboarding route accessed');
             final useMockData = state.uri.queryParameters['mock'] == 'true';
             return OnboardingMainScreen(useMockData: useMockData);
           },
@@ -68,7 +64,6 @@ class SimpleRouter {
           path: '/admin-approval',
           name: 'admin-approval',
           builder: (context, state) {
-            print('⏳ [SIMPLE_ROUTER] Admin approval route accessed');
             final fromParam = state.uri.queryParameters['from'];
             final showBack = fromParam == 'login';
             return AdminApprovalScreen(showBack: showBack);
@@ -76,47 +71,75 @@ class SimpleRouter {
         ),
         GoRoute(
           path: '/',
-          name: 'dashboard',
+          name: 'b2b-market-home',
           builder: (context, state) {
-            print('🏠 [SIMPLE_ROUTER] Dashboard route (/) accessed');
-            return const MainNavigation(child: DashboardScreen());
-          },
-        ),
-        GoRoute(
-          path: '/orders',
-          name: 'orders',
-          builder: (context, state) {
-            print('📦 [SIMPLE_ROUTER] Orders route accessed');
-            return const MainNavigation(child: OrdersScreen());
-          },
-        ),
-        GoRoute(
-          path: '/products',
-          name: 'products',
-          builder: (context, state) {
-            print('🛍️ [SIMPLE_ROUTER] Products route accessed');
-            return const MainNavigation(child: ProductsScreen());
+            return const MainNavigation(child: B2BMarketScreen());
           },
         ),
         GoRoute(
           path: '/wallet',
           name: 'wallet',
           builder: (context, state) {
-            print('💰 [SIMPLE_ROUTER] Wallet route accessed');
-            return const MainNavigation(child: WalletScreen());
+            return const MainNavigation(
+              child: WalletManagementScreen(isVendor: true),
+            );
           },
         ),
         GoRoute(
-          path: '/profile',
-          name: 'profile',
+          path: '/b2b-market',
+          name: 'b2b-market',
           builder: (context, state) {
-            print('👤 [SIMPLE_ROUTER] Profile route accessed');
-            return const MainNavigation(child: ProfileScreen());
+            return const MainNavigation(child: B2BMarketScreen());
+          },
+        ),
+        GoRoute(
+          path: '/suppliers',
+          name: 'suppliers',
+          builder: (context, state) {
+            return const MainNavigation(child: SuppliersScreen());
+          },
+        ),
+        GoRoute(
+          path: '/products',
+          name: 'products',
+          builder: (context, state) {
+            return const MainNavigation(child: ProductsScreen());
+          },
+        ),
+        GoRoute(
+          path: '/cart',
+          name: 'cart',
+          builder: (context, state) {
+            return const MainNavigation(child: CartScreen());
+          },
+        ),
+        GoRoute(
+          path: '/my-zare',
+          name: 'my-zare',
+          builder: (context, state) {
+            return const MainNavigation(child: SettingsScreen());
+          },
+        ),
+        GoRoute(
+          path: '/messages',
+          name: 'messages',
+          builder: (context, state) {
+            final tabParam = state.uri.queryParameters['tab'];
+            final initialTab = tabParam != null ? int.tryParse(tabParam) : null;
+            return MainNavigation(
+              child: MessagesScreen(initialTab: initialTab),
+            );
+          },
+        ),
+        GoRoute(
+          path: '/settings',
+          name: 'settings',
+          builder: (context, state) {
+            return const MainNavigation(child: SettingsScreen());
           },
         ),
       ],
     );
-    print('🛣️ [SIMPLE_ROUTER] GoRouter created successfully');
     return router;
   }
 }

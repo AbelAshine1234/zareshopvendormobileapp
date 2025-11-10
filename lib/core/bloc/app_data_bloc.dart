@@ -75,8 +75,8 @@ class AppDataBloc extends Bloc<AppDataEvent, AppDataState> {
       _logError('Failed to fetch subscriptions: $e');
       
       emit(SubscriptionsError(
-        message: 'Failed to load subscriptions. Using default plan.',
-        fallbackSubscriptions: _getFallbackSubscriptions(),
+        message: 'Failed to load subscriptions.',
+        fallbackSubscriptions: [],
       ));
     }
   }
@@ -161,20 +161,13 @@ class AppDataBloc extends Bloc<AppDataEvent, AppDataState> {
 
 
   /// Get fallback subscriptions
+  /// Returns empty list - no fallback subscriptions should be shown
   List<Map<String, dynamic>> _getFallbackSubscriptions() {
-    return [
-      {
-        'id': 1,
-        'name': 'Basic Plan',
-        'price': 99.99,
-        'duration': 'monthly',
-        'features': ['Up to 100 products', 'Basic analytics', 'Email support'],
-      },
-    ];
+    return [];
   }
 
   /// Log error
   void _logError(String message) {
-    print('❌ AppDataBloc Error: $message');
+    // Error logging removed
   }
 }

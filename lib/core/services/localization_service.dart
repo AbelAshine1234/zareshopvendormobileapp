@@ -10,17 +10,21 @@ class LocalizationService extends ChangeNotifier {
   
   Map<String, dynamic> _localizedStrings = {};
   String _currentLanguage = 'en';
+  final Set<String> _loggedMissingKeys = {}; // Cache of already logged missing keys
   
   String get currentLanguage => _currentLanguage;
   
   Future<void> loadLanguage(String languageCode) async {
     try {
+      debugPrint('🌐 [LOCALIZATION] Loading language: $languageCode');
       final String jsonString = await rootBundle.loadString('assets/localization/$languageCode.json');
       _localizedStrings = json.decode(jsonString);
       _currentLanguage = languageCode;
+      _loggedMissingKeys.clear(); // Clear logged keys when language changes
+      debugPrint('🌐 [LOCALIZATION] Successfully loaded $languageCode with ${_localizedStrings.length} keys');
       notifyListeners();
     } catch (e) {
-      debugPrint('Error loading language $languageCode: $e');
+      debugPrint('🌐 [LOCALIZATION] Error loading language $languageCode: $e');
       // Fallback to English if loading fails
       if (languageCode != 'en') {
         await loadLanguage('en');
@@ -36,7 +40,11 @@ class LocalizationService extends ChangeNotifier {
       if (value is Map<String, dynamic> && value.containsKey(k)) {
         value = value[k];
       } else {
-        debugPrint('Translation key not found: $key');
+        // Only log missing keys once to avoid spam
+        if (!_loggedMissingKeys.contains(key)) {
+          debugPrint('🌐 [LOCALIZATION] Translation key not found: $key (current language: $_currentLanguage)');
+          _loggedMissingKeys.add(key);
+        }
         return key; // Return the key itself if translation not found
       }
     }
@@ -54,7 +62,11 @@ class LocalizationService extends ChangeNotifier {
       return result;
     }
     
-    debugPrint('Translation value is not a string: $key');
+    // Only log non-string values once
+    if (!_loggedMissingKeys.contains(key)) {
+      debugPrint('🌐 [LOCALIZATION] Translation value is not a string: $key');
+      _loggedMissingKeys.add(key);
+    }
     return key;
   }
   
@@ -63,9 +75,9 @@ class LocalizationService extends ChangeNotifier {
   
   // Get supported languages
   List<Map<String, String>> get supportedLanguages => [
-    {'code': 'en', 'name': get('languages.en')},
-    {'code': 'am', 'name': get('languages.am')},
-    {'code': 'om', 'name': get('languages.om')},
+    {'code': 'en', 'name': 'English'},
+    {'code': 'am', 'name': 'አማርኛ (Amharic)'},
+    {'code': 'om', 'name': 'Afaan Oromoo'},
   ];
 }
 

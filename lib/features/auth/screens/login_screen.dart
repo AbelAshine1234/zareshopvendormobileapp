@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../shared/shared.dart';
 import '../../../core/services/localization_service.dart';
 import '../../../shared/utils/theme/theme_provider.dart';
+import '../../../core/bloc/socket_bloc.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -75,6 +76,8 @@ class _LoginViewState extends State<_LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
+          // Connect WebSocket after successful login
+          context.read<SocketBloc>().add(const SocketConnect());
           // Navigate to dashboard
           context.go('/');
           setState(() { _inlineErrorMessage = null; });
@@ -83,8 +86,19 @@ class _LoginViewState extends State<_LoginView> {
         } else if (state is AuthError) {
           setState(() { _inlineErrorMessage = state.message; });
         } else if (state is AuthLoginResponse) {
+          // Connect WebSocket after successful login
+          debugPrint('═══════════════════════════════════════════════════════════');
+          debugPrint('🔐 LOGIN SUCCESS: Triggering WebSocket connection');
+          debugPrint('═══════════════════════════════════════════════════════════');
+          context.read<SocketBloc>().add(const SocketConnect());
+          debugPrint('✅ SocketConnect event dispatched');
+          
           final user = state.data['user'] as Map<String, dynamic>?;
+          debugPrint('User data: $user');
           final vendorVerified = (user?['vendor_verified'] == true) || (user?['vendorApproved'] == true);
+          debugPrint('Vendor verified: $vendorVerified');
+          debugPrint('═══════════════════════════════════════════════════════════');
+          
           if (vendorVerified) {
             context.go('/');
           } else {
